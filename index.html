@@ -151,79 +151,6 @@ nav.tabs button.active{background:var(--surface-2); color:var(--ink); border-bot
    dentro de una tabla larga. Convertida en una barra fija abajo, con icono+etiqueta — el patrón
    estándar de apps (Instagram, apps bancarias...) — siempre alcanzable sin buscarla ni hacer scroll,
    independientemente de en qué parte de la página estés. El escritorio (>760px) no cambia nada. */
-@media (max-width:760px){
-  nav.tabs{
-    position:fixed; left:0; right:0; bottom:0; z-index:40; margin-bottom:0;
-    background:var(--surface); border-bottom:none; border-top:1px solid var(--border);
-    box-shadow:0 -2px 10px rgba(0,0,0,.08); flex-wrap:nowrap; justify-content:stretch;
-    padding:2px 2px calc(2px + env(safe-area-inset-bottom));
-  }
-  nav.tabs button{
-    flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2px; padding:7px 2px 5px; border-bottom:none; border-radius:8px; margin-bottom:0;
-    font-size:.62rem; font-weight:600; white-space:normal; line-height:1.1; min-width:0;
-  }
-  nav.tabs button.active{background:transparent; border-bottom:none;}
-  .tab-icon{display:block; width:20px; height:20px; color:var(--ink-muted);}
-  .tab-icon svg{width:100%; height:100%; display:block;}
-  nav.tabs button.active .tab-icon{color:var(--accent);}
-  nav.tabs button.active .tab-label{color:var(--accent);}
-  .tab-num{display:none;}
-  .tab-label{overflow:hidden; text-overflow:ellipsis; max-width:100%;}
-  /* Hueco al final de la página para que la barra fija no tape el último contenido. */
-  .wrap{padding-bottom:calc(70px + env(safe-area-inset-bottom));}
-
-  /* Menos texto, más menú y datos (2026-09-22, a petición del usuario): en un móvil, los bloques de
-     texto explicativo largos (el badge "Motor validado...", los avisos de introducción de cada
-     pestaña, las notas al pie de las tablas) se comen la pantalla sin aportar nada que no se pueda
-     consultar en el escritorio. Ocultos en móvil; el contenido funcional (formulario, menú, cifras)
-     pasa a ocupar casi toda la pantalla desde el principio. */
-  .badge, .notice-box, .payslip-note, .section-title p, #analisisContent > .card > ul.hint{
-    display:none;
-  }
-
-  /* Formulario de perfil plegable en móvil (2026-09-22, a petición del usuario, "lo del perfil tiene
-     que ocupar menos pantalla o que se pueda ocultar"): empieza desplegado (hay que verlo la primera
-     vez), pero tocando la cabecera se pliega y deja sitio a los datos — con un resumen de una línea
-     del perfil actual para no perder de vista qué está seleccionado mientras está plegado. */
-  .profile-bar{padding:10px 14px;}
-  .profile-bar-toggle{
-    display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;
-    appearance:none; border:0; background:transparent; padding:4px 2px; cursor:pointer; text-align:left;
-    color:var(--ink);
-  }
-  .profile-bar-toggle-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
-  .profile-bar-toggle-label{font-family:'Source Serif 4',serif; font-weight:600; font-size:1.05rem;}
-  .profile-bar-summary{
-    font-size:.76rem; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  .profile-bar-chevron{width:20px; height:20px; flex:0 0 auto; color:var(--ink-muted); transition:transform .15s;}
-  .profile-bar.collapsed .profile-bar-chevron{transform:rotate(-90deg);}
-  .profile-bar-body{display:flex; flex-direction:column; gap:14px; margin-top:12px;}
-  .profile-bar.collapsed .profile-bar-body{display:none;}
-
-  /* Cabecera más compacta (2026-09-22, a petición del usuario, "el título también ocupa mucho"): el
-     h1 a tamaño de escritorio ocupaba 4 líneas completas. Se reduce el logo, el título pasa a una
-     escala más pequeña (sigue creciendo con el ancho, pero con un techo mucho más bajo) y se recorta
-     el espaciado alrededor. */
-  header.top{margin-bottom:10px; padding-bottom:10px;}
-  .anpe-logo{height:34px;}
-  h1{font-size:clamp(1.05rem, 0.85rem + 2.5vw, 1.35rem); line-height:1.15;}
-  .eyebrow{font-size:.7rem; margin-bottom:2px;}
-
-  /* Selector de comunidades a comparar, solo en Compara Nómina (2026-09-22) — casillas en chips que
-     envuelven, cómodas de tocar (min 44px de alto). */
-  .compara-picker{display:block; margin-bottom:14px;}
-  .compara-picker-label{margin:0 0 8px; font-size:.78rem; font-weight:600; color:var(--ink-2);}
-  .compara-picker-chips{display:flex; flex-wrap:wrap; gap:6px;}
-  .compara-chip{
-    display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:6px 12px;
-    border:1px solid var(--border); border-radius:999px; background:var(--surface);
-    font-size:.78rem; font-weight:600; color:var(--ink-2); cursor:pointer;
-  }
-  .compara-chip:has(input:checked){background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
-  .compara-chip input{width:16px; height:16px; margin:0; accent-color:var(--accent-ink);}
-}
 nav.tabs button:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible,
 th[tabindex]:focus-visible, a:focus-visible{
   outline:2px solid var(--focus); outline-offset:2px;
@@ -594,6 +521,122 @@ footer.appfoot p{margin:0 0 6px;}
 footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 .flag-warn{color:var(--warn); font-weight:700;}
 .flag-err{color:var(--bad); font-weight:700;}
+
+/* ============================================================================
+   Todas las reglas de móvil van AL FINAL de la hoja de estilos a propósito
+   (2026-09-22): varias de ellas (nav.tabs, .card, .profile-bar-row, los .pb-*
+   de anchos fijos...) tienen su propia regla BASE definida más arriba, fuera
+   de cualquier media query. Un select@media colocado ANTES de esa regla base
+   pierde el empate de especificidad aunque el media query esté activo — CSS
+   respeta el orden de aparición entre selectores de igual especificidad, no
+   "quién tiene un @media". Puesto aquí, al final, este bloque siempre gana.
+   (Bug real detectado y corregido en esta sesión: .pb-row1 no pasaba a grid
+   porque .profile-bar-row{display:flex}, definida después en el archivo,
+   ganaba pese a que el media query si aplicaba.)
+   ============================================================================ */
+@media (max-width:760px){
+  nav.tabs{
+    position:fixed; left:0; right:0; bottom:0; z-index:40; margin-bottom:0;
+    background:var(--surface); border-bottom:none; border-top:1px solid var(--border);
+    box-shadow:0 -2px 10px rgba(0,0,0,.08); flex-wrap:nowrap; justify-content:stretch;
+    padding:2px 2px calc(2px + env(safe-area-inset-bottom));
+  }
+  nav.tabs button{
+    flex:1 1 0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:2px; padding:7px 2px 5px; border-bottom:none; border-radius:8px; margin-bottom:0;
+    font-size:.62rem; font-weight:600; white-space:normal; line-height:1.1; min-width:0;
+  }
+  nav.tabs button.active{background:transparent; border-bottom:none;}
+  .tab-icon{display:block; width:20px; height:20px; color:var(--ink-muted);}
+  .tab-icon svg{width:100%; height:100%; display:block;}
+  nav.tabs button.active .tab-icon{color:var(--accent);}
+  nav.tabs button.active .tab-label{color:var(--accent);}
+  .tab-num{display:none;}
+  .tab-label{overflow:hidden; text-overflow:ellipsis; max-width:100%;}
+  /* Hueco al final de la página para que la barra fija no tape el último contenido. */
+  .wrap{padding-bottom:calc(70px + env(safe-area-inset-bottom));}
+
+  /* Menos texto, más menú y datos (2026-09-22, a petición del usuario): en un móvil, los bloques de
+     texto explicativo largos (el badge "Motor validado...", los avisos de introducción de cada
+     pestaña, las notas al pie de las tablas) se comen la pantalla sin aportar nada que no se pueda
+     consultar en el escritorio. Ocultos en móvil; el contenido funcional (formulario, menú, cifras)
+     pasa a ocupar casi toda la pantalla desde el principio. */
+  .badge, .notice-box, .payslip-note, .section-title p, #analisisContent > .card > ul.hint{
+    display:none;
+  }
+
+  /* Formulario de perfil plegable en móvil (2026-09-22, a petición del usuario, "lo del perfil tiene
+     que ocupar menos pantalla o que se pueda ocultar"): empieza desplegado (hay que verlo la primera
+     vez), pero tocando la cabecera se pliega y deja sitio a los datos — con un resumen de una línea
+     del perfil actual para no perder de vista qué está seleccionado mientras está plegado. */
+  .profile-bar{padding:10px 14px;}
+  .profile-bar-toggle{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;
+    appearance:none; border:0; background:transparent; padding:4px 2px; cursor:pointer; text-align:left;
+    color:var(--ink);
+  }
+  .profile-bar-toggle-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .profile-bar-toggle-label{font-family:'Source Serif 4',serif; font-weight:600; font-size:1.05rem;}
+  .profile-bar-summary{
+    font-size:.76rem; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .profile-bar-chevron{width:20px; height:20px; flex:0 0 auto; color:var(--ink-muted); transition:transform .15s;}
+  .profile-bar.collapsed .profile-bar-chevron{transform:rotate(-90deg);}
+  .profile-bar-body{display:flex; flex-direction:column; gap:14px; margin-top:12px;}
+  .profile-bar.collapsed .profile-bar-body{display:none;}
+
+  /* Cabecera más compacta (2026-09-22, a petición del usuario, "el título también ocupa mucho"): el
+     h1 a tamaño de escritorio ocupaba 4 líneas completas. Se reduce el logo, el título pasa a una
+     escala más pequeña (sigue creciendo con el ancho, pero con un techo mucho más bajo) y se recorta
+     el espaciado alrededor. */
+  header.top{margin-bottom:10px; padding-bottom:10px;}
+  .anpe-logo{height:34px;}
+  h1{font-size:clamp(1.05rem, 0.85rem + 2.5vw, 1.35rem); line-height:1.15;}
+  .eyebrow{font-size:.7rem; margin-bottom:2px;}
+
+  /* Selector de comunidades a comparar, solo en Compara Nómina (2026-09-22) — casillas en chips que
+     envuelven, cómodas de tocar (min 44px de alto). */
+  .compara-picker{display:block; margin-bottom:14px;}
+  .compara-picker-label{margin:0 0 8px; font-size:.78rem; font-weight:600; color:var(--ink-2);}
+  .compara-picker-chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .compara-chip{
+    display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:6px 12px;
+    border:1px solid var(--border); border-radius:999px; background:var(--surface);
+    font-size:.78rem; font-weight:600; color:var(--ink-2); cursor:pointer;
+  }
+  .compara-chip:has(input:checked){background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+  .compara-chip input{width:16px; height:16px; margin:0; accent-color:var(--accent-ink);}
+
+  /* Aprovechar todo el ancho (2026-09-22, a petición del usuario, "no se aprovecha todo el ancho del
+     móvil... quita espacio, sobre todo cuando hay tablas"): body + .card sumaban 38px de margen a
+     cada lado (16px + 22px) — casi 76px de los ~375-390px de una pantalla, más de un 20% del ancho
+     total tirado en aire. Se reduce en general, y las tarjetas que contienen una tabla ancha
+     (.table-scroll/.data-table-scroll) se quedan casi sin relleno lateral para que la tabla tenga el
+     máximo ancho posible antes de necesitar scroll horizontal. */
+  body{padding-inline:6px;}
+  .card{padding:12px 10px;}
+  .card:has(> .table-scroll), .card:has(.table-scroll), .card:has(.data-table-scroll){
+    padding-left:4px; padding-right:4px;
+  }
+  .table-scroll, .data-table-scroll{border-radius:6px;}
+
+  /* Formulario de perfil: 2 columnas en vez de una fila por campo, y centrado (2026-09-22, a
+     petición del usuario, "reorganiza todo lo del perfil, tiene que ocupar menos verticalmente y
+     estar más centrado") — los anchos en px fijos (178px, 210px...) estaban pensados para
+     escritorio; en un móvil de ~375px ni siquiera dos campos cabían en la misma fila, así que cada
+     uno caía en su propia línea y el formulario se hacía kilométrico. */
+  .pb-row1{display:grid; grid-template-columns:1fr 1fr; gap:10px; justify-items:stretch;}
+  .pb-situacion, .pb-cuerpo{width:100%;}
+  .pb-anios{grid-column:1/-1; width:100%;}
+  .pb-irpf{grid-column:1/-1; width:130px; margin-inline:auto;}
+  .pb-switch-group{grid-column:1/-1;}
+  .pb-row2{flex-wrap:wrap; justify-content:center; row-gap:10px;}
+  .pb-group{flex:1 1 100%; width:100%; max-width:360px; margin-inline:auto; justify-content:center;}
+  .pb-row2 > .pb-field{flex:1 1 100%; align-items:center;}
+  .pb-group-fields{display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%;}
+  .pb-comunidad, .pb-isla, .pb-cargo, .pb-tipocentro{width:100%;}
+  .pb-field label{text-align:center;}
+}
 </style>
 </head>
 <body>
@@ -4064,6 +4107,27 @@ const ITEM_DISPLAY_LABEL = {
   'Antigüedad (escala de grados/quinquenios)': 'Antigüedad (grados y quinquenios)'
 };
 function displayLabel(label){ return ITEM_DISPLAY_LABEL[label] || label; }
+// Abreviaturas en móvil (2026-09-22, a petición del usuario, "usa alguna abreviatura como Comp. para
+// complemento y alguna otra"): solo se aplican por debajo de 760px — en escritorio las etiquetas se
+// quedan completas, sin abreviar. Pensadas para la columna de "Concepto" de las tablas anchas
+// (Compara Nómina, Datos CCAA), donde el espacio es lo más crítico.
+const MOBILE_ABBREVIATIONS = [
+  [/\bComplemento\b/g, 'Comp.'], [/\bcomplemento\b/g, 'comp.'],
+  [/\bespecífico\b/gi, 'esp.'], [/\bautonómico\b/gi, 'auton.'],
+  [/\bAntigüedad\b/g, 'Antig.'],
+  [/\bDepartamento\b/g, 'Dpto.'], [/\bdepartamento\b/g, 'dpto.'],
+  [/\bcoordinación\b/gi, 'coord.'],
+  [/\bCotización\b/g, 'Cotiz.'],
+  [/\bFormación Profesional\b/g, 'F.P.'],
+  [/\bProfesional\b/g, 'Prof.'],
+  [/\bResidencia\b/g, 'Resid.'],
+];
+function mobileAbbrev(label){
+  if (typeof label !== 'string' || !window.matchMedia('(max-width:760px)').matches) return label;
+  let out = label;
+  MOBILE_ABBREVIATIONS.forEach(([re, rep]) => { out = out.replace(re, rep); });
+  return out;
+}
 
 // Fixed display order for payslip line items (2026-09-22, a petición del usuario), used by both "Su
 // nómina" (own item labels, kept as-is) and "Compara Nómina" (already-canonicalized labels below) —
@@ -4613,7 +4677,7 @@ function renderComparaNomina(){
       else if (bottomThreshold !== null && v <= bottomThreshold && v !== modalValue) cls = ' class="cell-low"';
       return `<td${cls}>${fmtEUR(v)}</td>`;
     }).join('');
-    return `<tr><td>${label}</td>${cells}</tr>`;
+    return `<tr><td>${mobileAbbrev(label)}</td>${cells}</tr>`;
   };
   // Deducciones/Total líquido rows aren't ranked (a "higher" deduction isn't a "better" one), so
   // they're rendered without the best/worst highlight, unlike the devengos rows above.
@@ -4622,7 +4686,7 @@ function renderComparaNomina(){
       const v = values[i];
       return v === undefined ? `<td class="hint">—</td>` : `<td>${fmtEUR(v)}</td>`;
     }).join('');
-    return `<tr><td>${label}</td>${cells}</tr>`;
+    return `<tr><td>${mobileAbbrev(label)}</td>${cells}</tr>`;
   };
   conceptOrder.sort((a,b) => conceptRank(a) - conceptRank(b));
   extraConceptOrder.sort((a,b) => conceptRank(a) - conceptRank(b));
@@ -5175,7 +5239,7 @@ function buildAdmin(){
           ? `<td class="${pc}"><input type="number" step="0.01" value="${v}" disabled title="No aplica a este cuerpo docente"></td>`
           : `<td class="${pc}"><input type="number" step="0.01" data-community="${name}" data-kind="salary" data-concept="${concept}" data-idxs="${g.idxs.join(',')}" value="${v}"></td>`;
       }).join('');
-      return `<tr><td>${label}</td>${cells}</tr>`;
+      return `<tr><td>${mobileAbbrev(label)}</td>${cells}</tr>`;
     }).join('');
     const genericRows = genericFieldsForCommunity.map(field => {
       const label = CONCEPT_LABELS[field] || field;
@@ -5202,7 +5266,7 @@ function buildAdmin(){
       // fields that just copy the Ministry generic stay unmarked, so the tag identifies exactly the
       // fields that differ (2026-09-20, at the user's request).
       const checkboxHtml = locked ? '' : ` <label class="override-checkbox"><input type="checkbox" data-action="override-toggle" data-community="${name}" data-field="${field}" checked> <em>(valores propios)</em></label>`;
-      return `<tr${isDeduction ? ' class="row-deduction"' : ''}><td><div class="field-label-row">${label}${checkboxHtml}</div></td>${cells}</tr>`;
+      return `<tr${isDeduction ? ' class="row-deduction"' : ''}><td><div class="field-label-row">${mobileAbbrev(label)}${checkboxHtml}</div></td>${cells}</tr>`;
     }).join('');
     const rules = def.rules || {};
     // Baleares' CEA (Complemento Específico Autonómico) seniority ladder — ceaInterinoFlat,
