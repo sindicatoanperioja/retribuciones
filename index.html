@@ -3953,6 +3953,16 @@ if (profileBarToggle){
     profileBarToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
   });
 }
+// Se pliega solo al cambiar de pestaña (2026-09-23, a petición del usuario, "cuando cambies de
+// menú, que automáticamente se colapse el perfil"): en escritorio no tiene efecto visible (el botón
+// y el plegado son solo-móvil, ver CSS), pero en móvil evita tener que plegarlo a mano cada vez tras
+// haberlo abierto para cambiar algo.
+function collapseProfileBar(){
+  const bar = document.getElementById('profileBar');
+  if (!bar || bar.classList.contains('collapsed')) return;
+  bar.classList.add('collapsed');
+  if (profileBarToggle) profileBarToggle.setAttribute('aria-expanded', 'false');
+}
 function updateProfileBarSummary(){
   const el = document.getElementById('profileBarSummary');
   if (!el) return;
@@ -3966,6 +3976,7 @@ function updateProfileBarSummary(){
 --------------------------------------------------------------------------- */
 const tabButtons = Array.from(document.querySelectorAll('nav.tabs button'));
 function activateTab(btn){
+  collapseProfileBar();
   tabButtons.forEach(b => {
     const isActive = b === btn;
     b.classList.toggle('active', isActive);
