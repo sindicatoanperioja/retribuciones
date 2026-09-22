@@ -313,10 +313,18 @@ tbody tr.me td:first-child{font-weight:700; color:var(--accent);}
    table-layout:auto + width:max-content, la tabla crece a su ancho natural y es el contenedor
    .table-scroll (overflow-x:auto) el que se encarga de dejarla desplazar, igual que el resto de
    tablas anchas de la app. */
-#analisisTable{table-layout:auto; width:max-content; min-width:100%;}
+/* overflow:visible pisa el overflow:hidden que .table-scroll table{} pone por defecto (para
+   redondear esquinas): con overflow:hidden en la propia tabla, el sticky de la primera columna se
+   calcula contra la tabla (que nunca se desplaza) en vez de contra el contenedor .table-scroll que
+   sí se desplaza, y la columna "Comunidad" se va con el resto en vez de quedarse fija. El
+   contenedor .table-scroll ya recorta las esquinas redondeadas por su cuenta. */
+#analisisTable{table-layout:auto; width:max-content; min-width:100%; overflow:visible;}
 #analisisTable th{white-space:normal; line-height:1.25; font-size:.66rem; text-align:center; vertical-align:bottom; padding:8px 10px;}
 #analisisTable td{text-align:center; padding:8px 10px;}
-#analisisTable th:first-child, #analisisTable td:first-child{text-align:left;}
+#analisisTable th:first-child, #analisisTable td:first-child{
+  text-align:left; position:sticky; left:0; background:var(--surface); z-index:1;
+}
+#analisisTable th:first-child{background:var(--surface-2); z-index:2;}
 .chart-card{margin:22px 0;}
 .chart-wrap{position:relative; height:460px;}
 .section-title{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap;}
@@ -622,20 +630,29 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 
   /* Formulario de perfil: 2 columnas en vez de una fila por campo, y centrado (2026-09-22, a
      petición del usuario, "reorganiza todo lo del perfil, tiene que ocupar menos verticalmente y
-     estar más centrado") — los anchos en px fijos (178px, 210px...) estaban pensados para
-     escritorio; en un móvil de ~375px ni siquiera dos campos cabían en la misma fila, así que cada
-     uno caía en su propia línea y el formulario se hacía kilométrico. */
-  .pb-row1{display:grid; grid-template-columns:1fr 1fr; gap:10px; justify-items:stretch;}
-  .pb-situacion, .pb-cuerpo{width:100%;}
-  .pb-anios{grid-column:1/-1; width:100%;}
-  .pb-irpf{grid-column:1/-1; width:130px; margin-inline:auto;}
-  .pb-switch-group{grid-column:1/-1;}
-  .pb-row2{flex-wrap:wrap; justify-content:center; row-gap:10px;}
-  .pb-group{flex:1 1 100%; width:100%; max-width:360px; margin-inline:auto; justify-content:center;}
-  .pb-row2 > .pb-field{flex:1 1 100%; align-items:center;}
-  .pb-group-fields{display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%;}
+     estar más centrado" — y luego, tras probarlo, "el perfil más junto: antigüedad y IRPF misma
+     línea, carrera y jefe de departamento tb misma línea, comunidad y cargo también") — los anchos
+     en px fijos (178px, 210px...) estaban pensados para escritorio; en un móvil de ~375px ni
+     siquiera dos campos cabían en la misma fila, así que cada uno caía en su propia línea. Grid de 2
+     columnas en todos los niveles (fila 1, interruptores, fila 2) para que el emparejamiento sea
+     fijo — un flex-wrap depende del ancho del contenido y no siempre empareja igual. */
+  .pb-row1{display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; justify-items:stretch;}
+  .pb-situacion, .pb-cuerpo, .pb-anios, .pb-irpf{width:100%;}
+  .pb-switch-group{
+    grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr; gap:8px 14px;
+    height:auto; padding:10px 14px;
+  }
+  .pb-switch-field{justify-content:center;}
+  .pb-row2{display:grid; grid-template-columns:1fr 1fr; gap:10px; row-gap:10px;}
+  .pb-group{width:100%; max-width:none; margin-inline:0; justify-content:center;}
+  .pb-row2 > .pb-field{grid-column:1/-1; align-items:center;}
+  .pb-group-fields{display:flex; flex-direction:column; gap:8px; width:100%;}
   .pb-comunidad, .pb-isla, .pb-cargo, .pb-tipocentro{width:100%;}
   .pb-field label{text-align:center;}
+  /* La franja de perfil ("Situación laboral"...) queda más apretada verticalmente (menos hueco
+     entre filas) para que ocupe todavía menos alto. */
+  .profile-bar-row{gap:8px;}
+  .profile-bar-body{gap:10px;}
 }
 </style>
 </head>
@@ -4112,9 +4129,12 @@ function displayLabel(label){ return ITEM_DISPLAY_LABEL[label] || label; }
 // quedan completas, sin abreviar. Pensadas para la columna de "Concepto" de las tablas anchas
 // (Compara Nómina, Datos CCAA), donde el espacio es lo más crítico.
 const MOBILE_ABBREVIATIONS = [
+  // Quitar el paréntesis aclaratorio del específico general (2026-09-22, a petición del usuario) —
+  // antes de las sustituciones de palabra suelta, para no dejar restos tipo "(general o esp.)".
+  [/\s*\(general o básico\)/g, ''],
   [/\bComplemento\b/g, 'Comp.'], [/\bcomplemento\b/g, 'comp.'],
   [/\bespecífico\b/gi, 'esp.'], [/\bautonómico\b/gi, 'auton.'],
-  [/\bAntigüedad\b/g, 'Antig.'],
+  [/\bAntigüedad\b/g, 'Antig.'], [/\bquinquenios\b/gi, 'quinq.'],
   [/\bDepartamento\b/g, 'Dpto.'], [/\bdepartamento\b/g, 'dpto.'],
   [/\bcoordinación\b/gi, 'coord.'],
   [/\bCotización\b/g, 'Cotiz.'],
