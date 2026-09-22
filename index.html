@@ -173,7 +173,15 @@ th[tabindex]:focus-visible, a:focus-visible{
 @media (max-width:760px){ .grid.cols-2, .grid.cols-3{grid-template-columns:1fr;} }
 
 /* --- Compact profile bar (replaces the old standalone "Selector de perfil" tab) --- */
-.profile-bar{padding:14px 18px; margin-bottom:16px; display:flex; flex-direction:column; gap:14px;}
+/* Fondo e borde superior propios, distintos del resto de tarjetas (2026-09-23, a petición del
+   usuario, "el bloque de perfil hazlo de otro color"): esta es la única tarjeta de ENTRADA (el
+   perfil que el usuario edita), todas las demás son de SALIDA (resultados); el tinte azul suave
+   (--accent-soft, ya usado para resaltar la fila "me" en las tablas) lo deja claro de un vistazo,
+   sin introducir un color nuevo en la paleta. */
+.profile-bar{
+  padding:14px 18px; margin-bottom:16px; display:flex; flex-direction:column; gap:14px;
+  background:var(--accent-soft); border-top-color:var(--accent);
+}
 .profile-bar-row{display:flex; flex-wrap:wrap; justify-content:center; gap:14px; align-items:flex-end;}
 /* El botón plegable solo existe visualmente en móvil (ver el media query de abajo); en escritorio
    queda oculto y el formulario se ve siempre entero, como antes de este cambio. */
@@ -451,8 +459,17 @@ input.prov-4{box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--prov-neutral) 
   border-top:2px solid var(--border);
 }
 #comparaNominaTable th, #comparaNominaTable td{padding:4px 3px; font-size:.72rem;}
-#comparaNominaTable th{font-size:.62rem; max-width:none;}
-#comparaNominaTable td:first-child, #comparaNominaTable th:first-child{max-width:150px; font-size:.7rem;}
+/* max-width:64px (2026-09-23, a petición del usuario, "los nombres largos ponlos en 2 líneas,
+   país vasco, islas baleares..."): sin tope, "Castilla La Mancha" o "Baleares (Islas)" se pintaban
+   en una sola línea larguísima y esa columna se llevaba mucho más ancho que las demás. Con
+   overflow-wrap:normal (en vez del "anywhere" que hereda de .data-table th) el nombre solo se corta
+   por sus espacios naturales — "País Vasco" pasa a "País" / "Vasco" en dos líneas — nunca a mitad de
+   palabra. */
+#comparaNominaTable th{font-size:.62rem; max-width:64px; overflow-wrap:normal; word-break:normal;}
+/* max-width:110px (antes 150px): a ese ancho "Complemento de formación (sexenios)" — el concepto más
+   largo de esta columna — ya envuelve en exactamente 2 líneas; los 40px de más no aportaban nada,
+   solo alejaban las columnas de comunidad ("no des más margen"). */
+#comparaNominaTable td:first-child, #comparaNominaTable th:first-child{max-width:110px; font-size:.7rem;}
 #comparaNominaTable tr.total td{font-weight:700; border-top:2px solid var(--ink);}
 #comparaNominaTable tr.liquido td{font-weight:700; border-top:2px solid var(--ink);}
 /* Bloque retenciones (2026-09-22, a petición del usuario): sin rojo ni por fila ni por celda — el
@@ -588,7 +605,17 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
   .profile-bar-summary{
     font-size:.76rem; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   }
-  .profile-bar-chevron{width:20px; height:20px; flex:0 0 auto; color:var(--ink-muted); transition:transform .15s;}
+  /* Botón circular con borde, no solo una flechita suelta (2026-09-23, a petición del usuario, "que
+     se vea claro que se puede colapsar"): con el mismo tratamiento que un rank-badge, se lee como un
+     control pulsable en vez de un simple icono decorativo. */
+  .profile-bar-chevron{
+    width:26px; height:26px; padding:5px; box-sizing:border-box; flex:0 0 auto;
+    color:var(--accent); background:var(--surface); border:1px solid var(--accent); border-radius:50%;
+    transition:transform .15s, background .15s;
+  }
+  .profile-bar-toggle:hover .profile-bar-chevron, .profile-bar-toggle:focus-visible .profile-bar-chevron{
+    background:var(--accent); color:var(--accent-ink);
+  }
   .profile-bar.collapsed .profile-bar-chevron{transform:rotate(-90deg);}
   .profile-bar-body{display:flex; flex-direction:column; gap:14px; margin-top:12px;}
   .profile-bar.collapsed .profile-bar-body{display:none;}
@@ -4807,9 +4834,24 @@ function renderComparaNomina(){
   const rankByIdx = {};
   ranked.forEach((o,pos) => { rankByIdx[o.i] = pos + 1; });
   const rankBadgeCls = rank => rank <= 3 ? ' rank-badge-high' : rank >= 16 ? ' rank-badge-low' : '';
+  // Salto de línea explícito para los nombres largos (2026-09-23, a petición del usuario, "los
+  // nombres largos ponlos en 2 líneas, país vasco, islas baleares..."): dejar que el nombre se
+  // envuelva solo, según el ancho que le toque a la columna, no basta — esta tabla estira su ancho
+  // total hasta llenar el contenedor (`.data-table{width:max-content; min-width:100%}`), así que
+  // cualquier hueco que el ajuste de línea liberase se repartía de vuelta entre las columnas y el
+  // nombre volvía a caber en una sola línea. Con un <br> fijo en el sitio elegido, las dos líneas
+  // quedan garantizadas pase lo que pase con el ancho de columna.
+  const COMUNIDAD_HEADER_BREAKS = {
+    'País Vasco': 'País<br>Vasco',
+    'Baleares (Islas)': 'Baleares<br>(Islas)',
+    'Castilla y León': 'Castilla y<br>León',
+    'Castilla La Mancha': 'Castilla<br>La Mancha',
+    'Ceuta y Melilla': 'Ceuta y<br>Melilla',
+  };
   const headHtml = displayOrder.map(name => {
     const rank = rankByIdx[E.COMUNIDAD_ORDER.indexOf(name)];
-    return `<th>${name}${rank !== undefined ? `<span class="rank-badge${rankBadgeCls(rank)}">${rank}</span>` : ''}</th>`;
+    const label = COMUNIDAD_HEADER_BREAKS[name] || name;
+    return `<th>${label}${rank !== undefined ? `<span class="rank-badge${rankBadgeCls(rank)}">${rank}</span>` : ''}</th>`;
   }).join('');
   // Softly shades the reference comunidad's own column (2026-09-21, a petición del usuario) — an
   // `nth-child` rule scoped to this render via a computed column number, rather than a class on every
