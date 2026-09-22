@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motor de Cálculo — Comparativa Retributiva Docente</title>
+<style>
+  :root{
+    --bg:#f7f6f2; --surface:#ffffff; --border:#ddd8cc;
+    --ink:#21201c; --ink-2:#55524a; --ink-muted:#8a8677;
+    --accent:#0d6e63; --accent-soft:#d8ece8; --code-bg:#f0eee7;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#1c1b18; --surface:#26241f; --border:#3a372f;
+      --ink:#ece9e2; --ink-2:#c9c5b9; --ink-muted:#948f80;
+      --accent:#5fcabb; --accent-soft:#213b37; --code-bg:#2e2b25;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#1c1b18; --surface:#26241f; --border:#3a372f;
+    --ink:#ece9e2; --ink-2:#c9c5b9; --ink-muted:#948f80;
+    --accent:#5fcabb; --accent-soft:#213b37; --code-bg:#2e2b25;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:'Source Sans 3','Segoe UI',system-ui,sans-serif;
+    line-height:1.65; padding:0 16px;
+  }
+  .wrap{max-width:820px; margin:0 auto; padding:48px 0 80px;}
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:40px 48px;}
+  h1{font-family:Georgia,'Times New Roman',serif; font-size:2rem; line-height:1.25; margin:0 0 8px;}
+  h2{font-family:Georgia,'Times New Roman',serif; font-size:1.5rem; margin:2.2em 0 0.6em; padding-top:0.6em; border-top:1px solid var(--border);}
+  h2:first-of-type{border-top:none; padding-top:0;}
+  h3{font-size:1.15rem; margin:1.6em 0 0.5em; color:var(--ink);}
+  p.byline{color:var(--ink-muted); font-size:0.9rem; margin:0 0 1.5em;}
+  p{margin:0.8em 0;}
+  ul, ol{padding-left:1.4em;}
+  li{margin:0.4em 0;}
+  code{background:var(--code-bg); padding:0.15em 0.4em; border-radius:4px; font-size:0.88em; font-family:'Cascadia Code',Consolas,monospace;}
+  pre{background:var(--code-bg); border:1px solid var(--border); border-radius:8px; padding:16px 18px; overflow-x:auto;}
+  pre code{background:none; padding:0; font-size:0.85em; line-height:1.5;}
+  table{border-collapse:collapse; width:100%; margin:1.2em 0; font-size:0.92em;}
+  th, td{border:1px solid var(--border); padding:8px 12px; text-align:left;}
+  th{background:var(--accent-soft); font-weight:600;}
+  strong{color:var(--ink);}
+  em{color:var(--ink-2);}
+  hr{border:none; border-top:1px solid var(--border); margin:2em 0;}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+<h1>Motor de Cálculo — Comparativa Retributiva Docente</h1>
+<p class="byline">Documentación técnica · 18 de septiembre de 2026</p>
+<h2>1. Visión general</h2>
+<p>La app <strong>Comparativa Retributiva Docente</strong> reconstruye, en una página web autocontenida (HTML+CSS+JS, sin backend), el cálculo que hacía la hoja Excel <code>comparativa.xlsx</code> de ANPE para comparar la nómina del profesorado entre las <strong>18 comunidades y ciudades autónomas</strong> de España.</p>
+<h3>De dónde viene el modelo de datos</h3>
+<p>El Excel original tenía dos hojas clave:</p>
+<ul>
+<li><strong><code>Retribuciones</code></strong> (oculta): 18 bloques de ~36 filas, uno por comunidad, con las cifras de sueldo hechas a mano (sueldo base, trienios, sexenios, complementos...) para cada uno de los 9 "cuerpos docentes", más una fórmula final <code>SUELDO BRUTO ANUAL</code> que combina todo con las reglas propias de esa comunidad.</li>
+<li><strong><code>Nómina mensual</code></strong>: el selector de perfil (cuerpo, años de servicio, tipo de funcionario, tutor, cargo directivo...) y la tabla comparativa de resultados para las 18 comunidades, con gráfico.</li>
+</ul>
+<p>Cada fórmula de cada una de las 18 comunidades se extrajo célula a célula (fórmulas y valores) y se "tradujo" a JavaScript en <code>engine.js</code>, preservando también sus particularidades y, en varios casos, sus <strong>errores originales</strong> (ver sección 5), porque el objetivo explícito era que la app diera <em>exactamente</em> los mismos números que el Excel.</p>
+<h3>Las partes de la interfaz</h3>
+<ol>
+<li><strong>Selector de perfil</strong> — cuerpo docente, años de servicio, tipo de funcionario (carrera/interino), tutor, cargo directivo, tipo de centro, isla (Canarias/Baleares), % de retención IRPF.</li>
+<li><strong>Su nómina</strong> — desglose línea a línea de la nómina de ESE profesor en la comunidad elegida como referencia, con todos sus complementos y, si se indica el % de IRPF, el líquido a percibir. <em>(añadido a partir del ejemplo real "Nómina La Rioja")</em></li>
+<li><strong>Resultados</strong> — tabla comparativa de las 18 comunidades para ese mismo perfil, gráfico de barras, comparativa "vs. comunidad elegida" y "vs. media nacional".</li>
+<li><strong>Datos maestros</strong> — los datos de sueldo editables de cada comunidad (equivalente a la hoja <code>Retribuciones</code>), su fecha de última actualización, sus "reglas del juego" explicadas en texto, y los parámetros/umbrales de sus particularidades como campos editables (ver sección 4).</li>
+</ol>
+<h2>2. Cómo se ejecuta todo</h2>
+<p>Todo vive en un único fichero <code>engine.js</code>, cargado por <code>index.html</code>. No hay servidor: cada cambio en el selector o en los datos maestros vuelve a ejecutar el motor en el navegador y repinta resultados al instante.</p>
+<h3>Estructura de datos por comunidad</h3>
+<p>Cada una de las 18 comunidades es un objeto con tres partes:</p>
+<pre><code class="language-js">COMUNIDADES['Andalucía'] = {
+  salaryData: { sueldoBase: [...9 valores...], destino: [...], especifico: [...], sexenio: {...}, ... },
+  rules:      { /* umbrales, fechas, porcentajes editables — vacío si la comunidad no tiene ninguno */ },
+  calc(idx, anios, flags, cargoAmt, salaryData, rules, today) {
+    // la fórmula &quot;SUELDO BRUTO ANUAL&quot; de esa comunidad, tal cual estaba en el Excel
+    return annualGross;
+  }
+}
+</code></pre>
+<ul>
+<li><strong><code>salaryData</code></strong>: los números que en el Excel eran "celdas que se cambian a mano" (columna por cada uno de los 9 cuerpos docentes: Maestros, PTFP, Maestros TAPD, Secundaria, EOI, Música, Artes Plásticas, Catedráticos, Inspección). Es lo que se edita en la pestaña <strong>Datos maestros</strong>.</li>
+<li><strong><code>rules</code></strong>: los "números mágicos" de las fórmulas de cada comunidad (fechas de cambio de tabla, umbrales de años, porcentajes, importes fijos heredados) — también editables en <strong>Datos maestros</strong>, en un panel de reglas propio de cada comunidad.</li>
+<li><strong><code>calc(...)</code></strong>: la función que reproduce, en JavaScript, la fórmula real de Excel de esa comunidad.</li>
+</ul>
+<p>Como algunas comunidades comparten exactamente la misma "forma" de fórmula (solo cambian las cifras), existe una fábrica <code>makeStandard(salaryData, opciones)</code> que genera el objeto completo para 9 de las 18 comunidades (Cantabria, Castilla La Mancha, Castilla y León, Cataluña, Extremadura, Galicia, Madrid, Valencia, País Vasco), parametrizada con pequeñas banderas (<code>tutorDead</code>, <code>maestroESODead</code>, <code>s5ExcludeIdx</code>, <code>finalTerms</code>, etc.) que capturan sus únicas diferencias reales.</p>
+<h3>Flujo de una llamada</h3>
+<pre><code>perfil del selector (cuerpo, años, funcionario, tutor, cargo directivo, tipo de centro, isla, % IRPF)
+        │
+        ▼
+computeAll(perfil)                     ── recorre las 18 comunidades
+        │
+        ▼  (por cada comunidad)
+computeNational(comunidad, perfil)     ── capa &quot;nacional&quot;: MUFACE/SS, IRPF, líquido
+        │
+        ▼
+computeCommunity(comunidad, perfil)    ── resuelve cargo directivo, índice de cuerpo docente
+        │
+        ▼
+def.calc(idx, años, flags, cargoAmt, salaryData, rules, today)  ── la fórmula propia de la comunidad
+        │
+        ▼
+{ annual, mensualBruto, liquido, muface, clasesPasivas, retencionIRPF, ... }
+</code></pre>
+<ol>
+<li><strong><code>computeCommunity</code></strong> determina el índice del cuerpo docente elegido (0–8), su grupo profesional (A1/A2), y busca el importe de "cargo directivo" en la matriz de esa comunidad (tabla <code>tipo de centro × cargo</code>, extraída de <code>Nomómina mensual!row29</code> en el Excel). Si esa combinación concreta era un error en el Excel original, corta aquí y devuelve un error explicativo (ver §5).</li>
+<li>Llama a <strong><code>def.calc(...)</code></strong>, que es literalmente la fórmula <code>SUELDO BRUTO ANUAL</code> de esa comunidad en el Excel, puerto a JS.</li>
+<li><strong><code>computeNational</code></strong> aplica la capa que en el Excel vivía en <code>Nómina mensual</code> y es <strong>igual para las 18 comunidades</strong>: reparte el bruto anual en bruto mensual, aplica el descuento de MUFACE o Seguridad Social según sea funcionario de carrera o interino, aplica el % de IRPF que haya puesto el usuario, y calcula el líquido a percibir (ver §3).</li>
+<li><strong><code>computeAll</code></strong> simplemente repite esto para las 18 comunidades y devuelve un objeto <code>{ comunidad: resultado }</code> que alimenta las pestañas 2, 3 y 4 de la interfaz.</li>
+</ol>
+<h2>3. Reglas nacionales comunes a las 18 comunidades</h2>
+<h3>Trienios</h3>
+<p>Se cobra un "trienio" completo por cada 3 años de servicio: <code>INT(años / 3)</code>. Cada comunidad tiene su propio importe de trienio y de "extra trienio" (la parte del trienio que se cobra en las pagas extra), pero la fórmula <code>trienios × INT(años/3)</code> es idéntica en todas.</p>
+<h3>Sexenios (función <code>sexenioStandard</code>)</h3>
+<p>La mayoría de comunidades usa la misma "escalera" de sexenios, agrupados de 6 en 6 años (<code>INT(años/6)</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Tramo</th>
+<th>Años de servicio</th>
+<th>Sexenios que se suman</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>&lt; 6</td>
+<td>ninguno (algunas comunidades añaden aquí un importe "sin sexenio")</td>
+</tr>
+<tr>
+<td>1</td>
+<td>6–11</td>
+<td>1º</td>
+</tr>
+<tr>
+<td>2</td>
+<td>12–17</td>
+<td>1º+2º</td>
+</tr>
+<tr>
+<td>3</td>
+<td>18–23</td>
+<td>1º+2º+3º</td>
+</tr>
+<tr>
+<td>4</td>
+<td>24–29</td>
+<td>1º+2º+3º+4º</td>
+</tr>
+<tr>
+<td>5+</td>
+<td>≥30</td>
+<td>1º+2º+3º+4º+5º</td>
+</tr>
+</tbody>
+</table>
+<p>Esta escalera se aplica <strong>dos veces</strong> en la mayoría de comunidades: una vez ampliada a los 12 pagos mensuales (<code>×12</code>) y otra vez para las 2 pagas extra (<code>×2</code>) — en conjunto equivale a pagarla 14 veces al año, igual que el sueldo base. Algunas comunidades (Canarias, Aragón, Murcia) usan una <strong>tabla de sexenios reducida</strong> solo para el cálculo de la paga extra (ver §4).</p>
+<h3>Grupo profesional (A1/A2)</h3>
+<p>Se deriva automáticamente del cuerpo docente elegido: <strong>597‑Maestros</strong>, <strong>591‑PTFP</strong> y <strong>596‑Maestros TAPD</strong> son grupo <strong>A2</strong>; el resto (Secundaria, EOI, Música, Artes Plásticas, Catedráticos, Inspección) son grupo <strong>A1</strong>. Este grupo determina, entre otras cosas, qué tabla de "cargo directivo" se usa.</p>
+<h3>MUFACE vs. Seguridad Social</h3>
+<p>Si el perfil es <strong>funcionario de carrera</strong>, se descuenta la cuota fija de MUFACE y de Derechos Pasivos/Clases Pasivas que tiene cada comunidad en sus datos maestros (duplicada si se ha marcado "nómina con paga extra"). Si es <strong>interino</strong>, en su lugar se aplican los porcentajes generales de Seguridad Social sobre el bruto mensual:</p>
+<ul>
+<li>Contingencias Comunes y MEI: <strong>4,82 %</strong></li>
+<li>Desempleo: <strong>1,55 %</strong></li>
+<li>Formación Profesional: <strong>0,10 %</strong></li>
+</ul>
+<h3>IRPF y líquido a percibir</h3>
+<p>El usuario indica un <strong>% de retención de IRPF</strong> en el selector (por defecto 24 %). El motor calcula:</p>
+<pre><code>sueldoBrutoMensual = sueldoBrutoAnual / 12
+retencionIRPF      = -sueldoBrutoMensual × %IRPF
+totalDescuentos     = MUFACE/SS + DerechosPasivos/Desempleo + FormaciónProfesional + retenciónIRPF
+líquidoMensual      = sueldoBrutoMensual + totalDescuentos
+</code></pre>
+<p>Este mismo cálculo (idéntico para las 18 comunidades, solo cambian las cifras de MUFACE/Clases Pasivas de cada una) es el que alimenta la nueva pestaña <strong>"Su nómina"</strong>, inspirada en el desglose real de la nómina individual de La Rioja.</p>
+<h2>4. Particularidades y motor de cada comunidad</h2>
+<p>Nueve comunidades (Cantabria, Castilla‑La Mancha, Castilla y León, Cataluña, Extremadura, Galicia, Madrid, Valencia, País Vasco) comparten la misma "forma" de fórmula genérica (<code>makeStandard</code>) y solo cambian en cifras y en pequeños interruptores (si la tutoría o el adicional de ESO están realmente activos, si falta el 5º sexenio para algún cuerpo, etc.). El resto tiene un motor propio porque su fórmula original en Excel era estructuralmente distinta. Todos los umbrales, fechas y porcentajes mencionados aquí son <strong>editables</strong> en la pestaña Datos maestros.</p>
+<ul>
+<li><strong>Canarias</strong>: tabla de sexenios reducida específica para la paga extra (los sexenios "normales" se pagan ×12, los reducidos ×2). Si el destino es una isla no capitalina, cambia entera la residencia (importe distinto) y se añade un trienio de residencia propio.</li>
+<li><strong>Andalucía</strong>: reproduce un <strong>bug real del Excel</strong> — en el tramo de sexenios ≥24 años la fórmula original se salta el 1º sexenio en la suma (<code>SUM(s2:s5</code> en vez de <code>SUM(s1:s5)</code>). Además, sus condiciones de "maestro 1º/2º ESO" y "tutor" comparaban contra la letra <code>"s"</code>, que nunca coincide con el valor real del selector (<code>"SI"</code>); son condiciones muertas en el Excel original, y se han dejado igual.</li>
+<li><strong>Aragón</strong>: tiene una tabla de sexenios distinta para las pagas mensuales y para las extraordinarias (nota explícita en el propio Excel). El complemento específico autonómico es siempre el 90 % del complemento específico. También hereda condiciones muertas (adicional ESO/tutoría) igual que Andalucía.</li>
+<li><strong>Asturias</strong>: tiene una fecha de corte real en el Excel (<code>1 septiembre 2026</code>) que cambia el importe base de "sin sexenio" antes/después de esa fecha — editable como regla. Tiene dos tramos de "Complemento Evaluación Docente" (tramo A desde 5 años, tramo B, el doble, desde 10).</li>
+<li><strong>Baleares (Islas)</strong>: la comunidad con más reglas propias — (1) un complemento específico autonómico que escala con la antigüedad <strong>solo para funcionarios de carrera</strong> (escala no monótona: el tramo de ≥24 años paga menos que el de ≥18, tal cual estaba en el Excel), con un importe plano para interinos; (2) una indemnización de residencia que depende de la isla elegida (Mallorca/Menorca/Ibiza/Formentera) y del grupo profesional (A1/A2); (3) "Carrera Profesional" en dos tramos por años de servicio, sin relación con lo de "funcionario de carrera". También conserva una constante histórica del Excel (13,98€) como valor de repuesto en un caso límite de la fórmula de sexenios.</li>
+<li><strong>Cantabria</strong>: reproduce un <strong>error real del Excel original</strong>: la tabla de "cargo directivo" para el grupo A2 solo funciona si el tipo de centro es "A"; cualquier otro tipo de centro daba <code>#¡REF!</code> en el Excel para esos cuerpos — la app lo muestra como "dato no disponible en el Excel original" en vez de inventar una cifra. El 5º sexenio de Inspección tampoco estaba enlazado en el Excel (se trata como 0).</li>
+<li><strong>Castilla‑La Mancha</strong>: la fila "Reducción 3 %" existe en la plantilla del Excel pero nunca se usaba en su fórmula real — no se aplica.</li>
+<li><strong>Castilla y León</strong>: tenía una tabla de "carrera profesional" incompatible con sexenios documentada en el propio Excel, pero que tampoco estaba conectada a ninguna fórmula activa — no se aplica.</li>
+<li><strong>Cataluña</strong>: es la única de este grupo con importe base de tutoría distinto de cero para todos los cuerpos, aunque la condición que la activaba también era una comparación muerta (<code>"s"</code>) en el Excel original.</li>
+<li><strong>Extremadura</strong>: el adicional de maestros 1º/2º ESO no era un importe fijo, sino la diferencia entre el complemento de destino de Secundaria y el de Maestros — se replica igual. La tutoría solo la cobraban los cuerpos de Secundaria en adelante.</li>
+<li><strong>Galicia</strong>: es la única comunidad donde la tutoría se paga siempre (×12), sin depender del selector "¿tutor?" — así estaba en el Excel.</li>
+<li><strong>La Rioja</strong>: tiene dos "pistas" de importes distintas para el complemento de carrera profesional/evaluación docente según el cuerpo (Maestros vs. Secundaria), con umbrales de años distintos y asimétricos entre sí (uno mira "más de 11/5 años", el otro "más de 10/menos de 4").</li>
+<li><strong>Madrid</strong>: el Excel documenta que el cargo directivo tiene una parte variable según el número de alumnos matriculados, pero esa parte <strong>nunca llegó a implementarse</strong> en ninguna fórmula real — se usa siempre el importe fijo.</li>
+<li><strong>Murcia</strong>: la más compleja técnicamente — usa una tabla auxiliar "desplazada" (en otras columnas de la hoja) solo para calcular las pagas extra de sexenios, destino y productividad, con valores distintos (normalmente menores) que los de la paga mensual ordinaria. Además el Excel original <strong>contaba dos veces</strong> cierto importe de productividad en la fórmula anual; se ha reproducido tal cual para mantener el mismo resultado.</li>
+<li><strong>Valencia</strong>: igual que Extremadura, el adicional de maestros 1º/2º ESO se calcula como diferencia de complementos de destino, no como cifra fija.</li>
+<li><strong>Ceuta y Melilla</strong>: integra la indemnización de residencia directamente en el sueldo base mensual (no como complemento aparte) y tiene su propio trienio de residencia.</li>
+<li><strong>País Vasco</strong>: sigue el patrón genérico casi sin excepciones; en el Excel original tenía una nota de "sin actualizar" en sus datos de partida.</li>
+<li><strong>Navarra</strong>: modelo <strong>completamente distinto</strong> al resto — no tiene complemento de destino ni el sistema de trienios/sexenios; en su lugar usa una escalera única de "grado y quinquenio" con 13 umbrales de antigüedad (desde 5 hasta 40 años, algunos en años y meses exactos) que da un único importe de antigüedad sumado al sueldo base y al complemento específico.</li>
+</ul>
+<h2>5. Errores heredados del Excel (a propósito) y validación</h2>
+<h3>Por qué se replican errores en vez de "arreglarlos"</h3>
+<p>El encargo explícito fue que la app diera <strong>los mismos resultados que el Excel</strong>, no una versión corregida de él. Por eso, cuando el Excel original tenía un fallo de fórmula, un dato mal enlazado o una condición que nunca se cumplía, la app lo reproduce en vez de "arreglarlo" silenciosamente — arreglarlo habría roto la paridad numérica con el documento oficial de referencia. Cada caso está documentado con un comentario en <code>engine.js</code> junto al código que lo reproduce.</p>
+<h3>Errores que la app muestra explícitamente (no números inventados)</h3>
+<ul>
+<li><strong>Cantabria</strong>: la tabla de cargo directivo para el grupo A2 (Maestros/PTFP/Maestros TAPD) solo tenía datos para el tipo de centro "A" en el Excel; para cualquier otro tipo de centro, el Excel original daba <code>#¡REF!</code>. La app detecta esta combinación y devuelve el mensaje <em>"Dato no disponible en el Excel original"</em> en vez de calcular una cifra.</li>
+<li><strong>Murcia</strong>: una celda de la tabla auxiliar de productividad tenía texto en vez de un número (<code>"597-Maestros"</code> en la celda <code>AA489</code>), lo que producía <code>#¡VALOR!</code> en el Excel para la combinación "tipo de centro E + Secretaría". Se reproduce igual.</li>
+</ul>
+<h3>Condiciones "muertas" (nunca se activaban en el Excel)</h3>
+<p>Varias comunidades comparaban el selector de "maestro 1º/2º ESO" o "tutor" contra la letra suelta <code>"s"</code> en veze de contra el valor real que produce el desplegable (<code>"SI"</code>/<code>"NO"</code>). En Excel, esa comparación nunca era verdadera, así que esos complementos <strong>nunca se sumaban</strong>, aunque la casilla existiera. Afecta a Andalucía, Aragón, Baleares, Cantabria, Castilla y León, Cataluña, Extremadura, La Rioja, Madrid, País Vasco y Valencia (según el concepto). Se ha mantenido el mismo comportamiento.</p>
+<h3>Inconsistencias numéricas propias del Excel</h3>
+<ul>
+<li><strong>Andalucía</strong>: en el tramo de ≥24 años de sexenios, la suma se salta el 1º sexenio (<code>SUM(sexenio2:sexenio5</code> en vez de incluir el 1º) — posible error de copiado en el Excel original, reproducido tal cual.</li>
+<li><strong>Aragón</strong>: la columna del cuerpo "597‑Maestros" tenía una fórmula de sexenios ligeramente distinta a la de los demás cuerpos de la misma comunidad.</li>
+<li><strong>Murcia</strong>: un importe de productividad se sumaba dos veces en la fórmula anual del Excel original.</li>
+</ul>
+<h3>Cómo se validó</h3>
+<p>No bastaba con revisar las fórmulas a ojo: se generaron <strong>11 perfiles de prueba</strong> distintos (variando cuerpo docente, años de servicio cruzando todos los umbrales de trienios/sexenios, tipo de funcionario, cargo directivo, tipo de centro, isla de Canarias e isla de Baleares) y se recalcularon en <strong>el propio Excel original</strong> mediante automatización de Microsoft Excel (COM), obteniendo así un fichero de referencia (<code>ground_truth_fixture.json</code>) con los sueldos brutos anuales reales de las 18 comunidades para cada perfil.</p>
+<p>El motor JavaScript (<code>engine.js</code>) se ejecuta contra esos mismos 11 perfiles (<code>validate.js</code>) y se compara, comunidad por comunidad, con esas cifras reales del Excel. Resultado final: <strong>198 de 198 combinaciones (11 perfiles × 18 comunidades) coinciden al céntimo</strong>, incluyendo los dos casos que en el propio Excel eran errores de fórmula (Cantabria y Murcia), que se marcan como tal en veze de forzar un número.</p>
+</div></div>
+</body>
+</html>
