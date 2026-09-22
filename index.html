@@ -295,10 +295,16 @@ tbody tr.me td:first-child{font-weight:700; color:var(--accent);}
 #mainTable td:nth-child(2), #mainTable th:nth-child(2){text-align:left;}
 /* Análisis tab: headers wrap onto two lines instead of forcing wide columns, and every Sí/No pill
    sits centered so all columns line up at the same distance regardless of header text length. */
-#analisisTable{table-layout:fixed;}
-#analisisTable th{white-space:normal; line-height:1.25; font-size:.66rem; text-align:center; vertical-align:bottom; padding:8px 6px;}
-#analisisTable td{text-align:center; padding:8px 6px;}
-#analisisTable th:first-child, #analisisTable td:first-child{text-align:left; width:15%;}
+/* table-layout:fixed obligaba a repartir 8 columnas en el ancho del contenedor pasara lo que pasara
+   — en móvil no hay sitio ni para el texto ni para las pastillas Sí/No, y acaban pintándose unas
+   encima de otras (2026-09-22, a petición del usuario, "la vista en el móvil es muy mala"). Con
+   table-layout:auto + width:max-content, la tabla crece a su ancho natural y es el contenedor
+   .table-scroll (overflow-x:auto) el que se encarga de dejarla desplazar, igual que el resto de
+   tablas anchas de la app. */
+#analisisTable{table-layout:auto; width:max-content; min-width:100%;}
+#analisisTable th{white-space:normal; line-height:1.25; font-size:.66rem; text-align:center; vertical-align:bottom; padding:8px 10px;}
+#analisisTable td{text-align:center; padding:8px 10px;}
+#analisisTable th:first-child, #analisisTable td:first-child{text-align:left;}
 .chart-card{margin:22px 0;}
 .chart-wrap{position:relative; height:460px;}
 .section-title{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap;}
@@ -445,9 +451,14 @@ input.prov-4{box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--prov-neutral) 
 }
 #comparaNominaTable th .rank-badge.rank-badge-high{background:color-mix(in srgb, var(--good) 22%, var(--surface)); border-color:var(--good); color:var(--good);}
 #comparaNominaTable th .rank-badge.rank-badge-low{background:color-mix(in srgb, var(--bad) 18%, var(--surface)); border-color:var(--bad); color:var(--bad);}
+/* white-space:normal (2026-09-22, a petición del usuario, "la vista en el móvil es muy mala"): con
+   nowrap, una etiqueta larga ("Complemento específico (general o básico)") no se recortaba ni
+   envolvía — simplemente pintaba por ENCIMA de la celda vecina, ilegible, especialmente en móvil
+   donde esa celda vecina está a solo unos px de distancia. Ahora envuelve en varias líneas dentro de
+   su propio ancho (la fila crece, nunca invade la columna siguiente). */
 .data-table td:first-child, .data-table th:first-child{
   text-align:left; position:sticky; left:0; background:var(--surface); font-size:.78rem; font-weight:600;
-  white-space:nowrap; padding:6px 6px; z-index:1;
+  white-space:normal; overflow-wrap:break-word; padding:6px 6px; z-index:1;
 }
 .data-table th:first-child{background:var(--surface-2); z-index:2;}
 .data-table input[type=number]{width:62px; padding:5px 3px; font-size:.74rem; border-radius:5px;}
