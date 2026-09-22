@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const engine = require('./engine.js');
 
-const fixturePath = path.join(__dirname, '..', 'ground_truth_fixture.json');
+const fixturePath = path.join(__dirname, 'ground_truth_fixture.json');
 const fixture = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
 
 function mapProfile(p){
