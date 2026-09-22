@@ -3968,7 +3968,15 @@ function updateProfileBarSummary(){
   if (!el) return;
   const cuerpoLabel = (document.getElementById('f-cuerpo').selectedOptions[0] || {}).textContent || '';
   const cuerpoCode = cuerpoLabel.split('-')[0] || cuerpoLabel;
-  el.textContent = `${state.comunidadRef} · ${cuerpoCode} · ${state.anios} años`;
+  // Interruptores activos (Tutor, Carrera profesional...) en el resumen (2026-09-23, a petición del
+  // usuario, "si hay algún check puesto, ponlo en el resumen de perfil"): plegado, antes no había
+  // forma de saber si Tutor o Carrera profesional estaban activados sin desplegar el formulario.
+  const activeSwitches = Array.from(document.querySelectorAll('#profileBarBody .switch[data-val="SI"]'))
+    .map(sw => sw.previousElementSibling && sw.previousElementSibling.tagName === 'LABEL' ? sw.previousElementSibling.textContent.trim() : '')
+    .filter(Boolean);
+  const parts = [state.comunidadRef, cuerpoCode, `${state.anios} años`];
+  if (activeSwitches.length) parts.push(activeSwitches.join(', '));
+  el.textContent = parts.join(' · ');
 }
 
 /* ---------------------------------------------------------------------------
