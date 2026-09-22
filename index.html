@@ -20,6 +20,15 @@
    que el usuario rechazó por no sentirse como la marca. Source Serif 4 sigue
    usándose para titulares (más sobrio que Fraunces); IBM Plex Mono sigue
    reservado para las cifras grandes (stat tiles, totales de nómina).
+
+   Auditoría de contraste 2026-09-22 (WCAG AA, a petición del usuario — "revisa
+   todo el diseño"): --ink-muted, --accent, --good y --warn en modo claro
+   estaban por debajo de 4.5:1 sobre --bg/--surface (el peor caso, --ink-muted,
+   daba 2.81:1 — usado en casi todos los textos pequeños de la app: hints,
+   etiquetas de stat-tile, cabeceras de tabla, pie de página). Se oscurecieron
+   ligeramente los cuatro (mismo tono, solo un poco más profundos) hasta que
+   todos superan 4.5:1 sobre cualquier fondo claro de la app. El modo oscuro ya
+   pasaba de sobra (7-8:1) y no se ha tocado.
    ============================================================================ */
 :root{
   --bg: #f4f6f8;
@@ -28,16 +37,16 @@
   --border: #d7dee4;
   --ink: #1f2937;
   --ink-2: #4b5563;
-  --ink-muted: #8a95a1;
-  --accent: #0f7fb0;
+  --ink-muted: #5f6e78;
+  --accent: #0c6f9c;
   --accent-ink: #ffffff;
   --accent-soft: #dcedf5;
   --accent-2: #2f8f5b;
-  --good: #2f8f5b;
-  --warn: #b8863a;
+  --good: #237049;
+  --warn: #94651f;
   --bad: #b64f42;
-  --info: #0f7fb0;
-  --focus: #0f7fb0;
+  --info: #0c6f9c;
+  --focus: #0c6f9c;
   --shadow: 0 1px 2px rgba(31,41,55,.05), 0 3px 10px rgba(31,41,55,.06);
   --radius: 8px;
   --chart-grid: #e3e8ec;
@@ -77,6 +86,9 @@
   --prov-neutral: #eef1f4;
 }
 *{box-sizing:border-box;}
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{ animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+}
 body{
   background:var(--bg); color:var(--ink);
   font-family:'Source Sans 3', system-ui, sans-serif;
@@ -114,6 +126,9 @@ header.top p{color:var(--ink-2); margin:6px 0 0; max-width:60ch; font-size:.95re
   border:1px solid var(--border); background:var(--surface); color:var(--ink-2);
   white-space:nowrap;
 }
+/* En móvil el texto del badge es una frase larga, no una etiqueta corta — nowrap la empujaba fuera de
+   la pantalla en vez de partirse en varias líneas (2026-09-22, auditoría de diseño para móvil). */
+@media (max-width:600px){ .badge{white-space:normal; text-align:left;} }
 /* Ledger/folder-tab strip, not a rounded segmented-pill control: tabs sit flush on the page baseline,
    the active one lifts slightly and gets a thick accent underline (2026-09-22, frontend-design pass). */
 nav.tabs{
@@ -127,7 +142,8 @@ nav.tabs button{
 }
 nav.tabs button:hover{color:var(--ink); background:var(--surface-2);}
 nav.tabs button.active{background:var(--surface-2); color:var(--ink); border-bottom-color:var(--accent);}
-nav.tabs button:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible{
+nav.tabs button:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible,
+th[tabindex]:focus-visible, a:focus-visible{
   outline:2px solid var(--focus); outline-offset:2px;
 }
 .panel{display:none;}
@@ -178,11 +194,23 @@ nav.tabs button:focus-visible, button:focus-visible, select:focus-visible, input
   border:1px solid var(--border); border-radius:9px; background:var(--surface-2); flex:0 0 auto;
 }
 .pb-switch-field{display:flex; align-items:center; gap:7px; flex:0 0 auto;}
+/* Con las 4 casillas (Maestro ESO/Tutor/Jefe de departamento/Carrera profesional) esta caja no cabe
+   en un móvil — antes se quedaba a su ancho fijo (flex:0 0 auto) dentro de una fila centrada, así que
+   sobresalía por los dos lados de la pantalla y la primera casilla quedaba inalcanzable (2026-09-22,
+   auditoría de diseño para móvil). En móvil pasa a ocupar el ancho disponible y las casillas se parten
+   en varias líneas dentro de la propia caja. */
+@media (max-width:600px){
+  .pb-switch-group{ flex:1 1 100%; flex-wrap:wrap; height:auto; padding:10px 14px; row-gap:10px; }
+}
 .pb-switch-field label{font-size:.76rem; font-weight:600; color:var(--ink-2); white-space:nowrap; margin:0;}
 .switch{
   position:relative; width:38px; height:22px; flex:0 0 auto; padding:0; cursor:pointer;
   border:1px solid var(--border); border-radius:999px; background:var(--surface-2); transition:background .15s, border-color .15s;
 }
+/* Invisible expanded hit area (2026-09-22, auditoría de diseño): el track visual se queda igual de
+   compacto, pero el área realmente clicable/tocable crece hacia un tamaño más cómodo, sin invadir
+   filas vecinas en esta barra de perfil tan densa. */
+.switch::before{ content:''; position:absolute; top:-8px; bottom:-8px; left:-5px; right:-5px; }
 .switch .switch-thumb{
   position:absolute; top:1px; left:1px; width:18px; height:18px; border-radius:50%;
   background:var(--ink-muted); transition:transform .15s, background .15s;
@@ -193,7 +221,11 @@ nav.tabs button:focus-visible, button:focus-visible, select:focus-visible, input
 /* Row 2 (equipo directivo | comunidad): two clearly separated boxes, side by side on one line;
    each box lays its own fields out horizontally too (never stacked). No heading text above either
    box — the field labels inside (Cargo directivo, Comunidad, ...) already say what they are. */
-.pb-row2{flex-wrap:nowrap; overflow-x:auto; padding-bottom:2px;}
+/* overflow-y:hidden explícito (2026-09-22, a petición del usuario): sin él, overflow-x:auto por sí
+   solo hace que overflow-y se compute también a "auto" (regla del propio CSS), así que un desajuste
+   de un par de píxeles entre los <select> y la caja bastaba para sacar una barra de scroll vertical
+   diminuta que no servía para nada — mismo patrón que ya se corrigió antes en nav.tabs. */
+.pb-row2{flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; padding-bottom:2px;}
 .pb-group{
   display:flex; align-items:center; flex:0 0 auto;
   padding:9px 14px; border:1px solid var(--border); border-radius:9px; background:var(--surface-2);
@@ -285,7 +317,9 @@ table.payslip td{padding:7px 4px; border-bottom:1px solid var(--border);}
 table.payslip td:last-child, table.payslip th:last-child{text-align:right; white-space:nowrap; font-variant-numeric:tabular-nums;}
 table.payslip tr.total td{font-weight:700; border-top:2px solid var(--ink); border-bottom:none;}
 table.payslip tr.total td:last-child, table.payslip tr.liquido td:last-child{font-family:'IBM Plex Mono', monospace;}
-table.payslip tr.deduction td:last-child{color:var(--bad);}
+/* Sin color rojo (2026-09-22, a petición del usuario): las retenciones se leen igual de claras en
+   negro/tinta normal, como el bloque de la paga extra — el signo "-" y la cabecera "Deducciones" ya
+   dejan claro qué es cada importe, sin necesitar un color de alarma. */
 table.payslip tr.liquido td{font-weight:700; color:var(--accent); font-size:1.05rem; border-top:2px solid var(--accent);}
 /* Paga-extra rows: a plain neutral divider (no colour wash — blue is already the brand accent used
    for buttons/tabs/links elsewhere, so re-using it here just added noise) plus a small gap from the
@@ -395,13 +429,14 @@ input.prov-4{box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--prov-neutral) 
 #comparaNominaTable td:first-child, #comparaNominaTable th:first-child{max-width:150px; font-size:.7rem;}
 #comparaNominaTable tr.total td{font-weight:700; border-top:2px solid var(--ink);}
 #comparaNominaTable tr.liquido td{font-weight:700; border-top:2px solid var(--ink);}
-/* Deduction rows here get the same calm treatment as "Su nómina" (coloured amount, no row wash) —
-   the reddish full-row background from the admin data-entry tables (.data-table tr.row-deduction)
-   is deliberately overridden back to plain, since a comparison table with 18 columns made that wash
-   read as a solid red band rather than a subtle flag (2026-09-22, a petición del usuario). */
+/* Bloque retenciones (2026-09-22, a petición del usuario): sin rojo ni por fila ni por celda — el
+   propio bloque, con su cabecera "Retenciones" (ver retencionesHeaderRow), ya deja claro qué es sin
+   necesitar color de alarma; el rojo por celda rompía además la columna sombreada de la comunidad de
+   referencia (ver refColStyle), que dejaba esas celdas en blanco. Sigue anulando la franja roja de
+   fondo heredada de las tablas de edición (.data-table tr.row-deduction), que aquí, con 18 columnas,
+   leía como una banda roja sólida en vez de un aviso puntual. */
 #comparaNominaTable tr.row-deduction{background:none;}
 #comparaNominaTable tr.row-deduction td:first-child{border-left:none;}
-#comparaNominaTable tr.row-deduction td:not(:first-child){color:var(--bad);}
 #comparaNominaTable tr.table-gap td{border:none; padding:10px 0 0;}
 #comparaNominaTable th .rank-badge{
   display:flex; align-items:center; justify-content:center; margin:4px auto 0;
@@ -434,7 +469,7 @@ input.prov-4{box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--prov-neutral) 
   font-size:.78rem; font-weight:600; text-decoration:none; color:var(--ink-2);
 }
 .admin-sidebar a .sidebar-label{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
-.admin-sidebar a .stale-flag{flex:0 0 auto; font-size:.75rem;}
+.admin-sidebar a .stale-flag{flex:0 0 auto; font-size:.85rem; color:var(--warn);}
 .admin-sidebar a:hover{background:var(--surface-2); color:var(--ink);}
 .admin-sidebar a.active{background:var(--accent); color:var(--accent-ink);}
 .admin-sidebar a.sidebar-ministerio{margin-bottom:6px; padding-bottom:8px; border-bottom:1px solid var(--border); border-radius:6px 6px 0 0;}
@@ -448,6 +483,11 @@ input.prov-4{box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--prov-neutral) 
     flex-direction:row; flex-wrap:wrap; overflow-y:visible; overflow-x:auto;
   }
   .admin-sidebar a.sidebar-ministerio{margin-bottom:0; padding-bottom:8px; border-bottom:none; border-right:1px solid var(--border); border-radius:6px;}
+  /* En columna (móvil), align-items:flex-start deja que .admin-content encoja/crezca a su ancho de
+     contenido en vez de ocupar el ancho del contenedor — con una tabla ancha dentro (aunque tenga su
+     propio scroll horizontal en .data-table-scroll), eso empujaba TODA la página a desbordar en
+     horizontal (2026-09-22, auditoría de diseño para móvil). */
+  .admin-content{width:100%;}
 }
 .rules-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:10px 14px; margin-bottom:6px;}
 .rules-grid label{font-size:.74rem;}
@@ -564,20 +604,20 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
   </div>
 
   <nav class="tabs" role="tablist">
-    <button role="tab" data-tab="nomina" class="active">1 &middot; Su nómina</button>
-    <button role="tab" data-tab="comparaNomina">2 &middot; Compara Nómina</button>
-    <button role="tab" data-tab="resultados">3 &middot; Comparativa sueldos</button>
-    <button role="tab" data-tab="analisis">4 &middot; Análisis</button>
-    <button role="tab" data-tab="admin">5 &middot; Datos CCAA</button>
+    <button id="tab-nomina" role="tab" data-tab="nomina" class="active" aria-selected="true" aria-controls="panel-nomina" tabindex="0">1 &middot; Su nómina</button>
+    <button id="tab-comparaNomina" role="tab" data-tab="comparaNomina" aria-selected="false" aria-controls="panel-comparaNomina" tabindex="-1">2 &middot; Compara Nómina</button>
+    <button id="tab-resultados" role="tab" data-tab="resultados" aria-selected="false" aria-controls="panel-resultados" tabindex="-1">3 &middot; Comparativa sueldos</button>
+    <button id="tab-analisis" role="tab" data-tab="analisis" aria-selected="false" aria-controls="panel-analisis" tabindex="-1">4 &middot; Análisis</button>
+    <button id="tab-admin" role="tab" data-tab="admin" aria-selected="false" aria-controls="panel-admin" tabindex="-1">5 &middot; Datos CCAA</button>
   </nav>
 
   <!-- ===================== TAB 1: SU NÓMINA ===================== -->
-  <section class="panel active" id="panel-nomina">
+  <section class="panel active" id="panel-nomina" role="tabpanel" aria-labelledby="tab-nomina">
     <div id="nominaContent"></div>
   </section>
 
   <!-- ===================== TAB 2: RESULTADOS ===================== -->
-  <section class="panel" id="panel-resultados">
+  <section class="panel" id="panel-resultados" role="tabpanel" aria-labelledby="tab-resultados">
     <div class="summary-strip" id="statTiles"></div>
 
     <div class="card chart-card">
@@ -596,13 +636,13 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
       <div class="table-scroll">
         <table id="mainTable">
           <thead><tr>
-            <th data-key="rank">#</th>
-            <th data-key="community">Comunidad</th>
-            <th data-key="annual">Bruto anual</th>
-            <th data-key="mensualBruto">Bruto mensual</th>
-            <th data-key="liquido">Líquido mensual est.</th>
-            <th data-key="deltaRef">Vs. referencia</th>
-            <th data-key="deltaAvg">Vs. media</th>
+            <th data-key="rank" tabindex="0">#</th>
+            <th data-key="community" tabindex="0">Comunidad</th>
+            <th data-key="annual" tabindex="0">Bruto anual</th>
+            <th data-key="mensualBruto" tabindex="0">Bruto mensual</th>
+            <th data-key="liquido" tabindex="0">Líquido mensual est.</th>
+            <th data-key="deltaRef" tabindex="0">Vs. referencia</th>
+            <th data-key="deltaAvg" tabindex="0">Vs. media</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -622,7 +662,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
   </section>
 
   <!-- ===================== TAB 3: DATOS CCAA ===================== -->
-  <section class="panel" id="panel-admin">
+  <section class="panel" id="panel-admin" role="tabpanel" aria-labelledby="tab-admin">
     <div class="notice-box">
       Estos son los datos de cada comunidad autónoma (CCAA). Partieron de la hoja <em>Retribuciones</em> del Excel
       original de ANPE, pero se han revisado y corregido comunidad por comunidad contra las tablas oficiales de
@@ -640,12 +680,12 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
   </section>
 
   <!-- ===================== TAB 4: ANÁLISIS ===================== -->
-  <section class="panel" id="panel-analisis">
+  <section class="panel" id="panel-analisis" role="tabpanel" aria-labelledby="tab-analisis">
     <div id="analisisContent"></div>
   </section>
 
   <!-- ===================== TAB 5: COMPARA NÓMINA ===================== -->
-  <section class="panel" id="panel-comparaNomina">
+  <section class="panel" id="panel-comparaNomina" role="tabpanel" aria-labelledby="tab-comparaNomina">
     <div class="notice-box">
       Compara, concepto a concepto, la nómina mensual de las 18 comunidades para el perfil actual (cuerpo,
       antigüedad, cargo directivo, etc. — el mismo que en "1 · Su nómina"). Cada fila es un concepto retributivo; cada
@@ -3699,16 +3739,33 @@ document.querySelectorAll('.switch[data-toggle]').forEach(sw => {
 /* ---------------------------------------------------------------------------
    Tabs
 --------------------------------------------------------------------------- */
-document.querySelectorAll('nav.tabs button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
-    if (btn.dataset.tab === 'resultados') renderChart();
-    if (btn.dataset.tab === 'nomina') renderNomina();
-    if (btn.dataset.tab === 'analisis') renderAnalisis();
-    if (btn.dataset.tab === 'comparaNomina') renderComparaNomina();
+const tabButtons = Array.from(document.querySelectorAll('nav.tabs button'));
+function activateTab(btn){
+  tabButtons.forEach(b => {
+    const isActive = b === btn;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    b.tabIndex = isActive ? 0 : -1;
+  });
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  if (btn.dataset.tab === 'resultados') renderChart();
+  if (btn.dataset.tab === 'nomina') renderNomina();
+  if (btn.dataset.tab === 'analisis') renderAnalisis();
+  if (btn.dataset.tab === 'comparaNomina') renderComparaNomina();
+}
+tabButtons.forEach((btn, i) => {
+  btn.addEventListener('click', () => activateTab(btn));
+  // Patrón ARIA Tabs (roving tabindex + flechas): ←/→ mueven el foco entre pestañas y las activan
+  // en el momento (activación automática), Inicio/Fin saltan a la primera/última (2026-09-22,
+  // auditoría de accesibilidad — antes solo eran operables con el ratón).
+  btn.addEventListener('keydown', e => {
+    let next = null;
+    if (e.key === 'ArrowRight') next = tabButtons[(i+1) % tabButtons.length];
+    else if (e.key === 'ArrowLeft') next = tabButtons[(i-1+tabButtons.length) % tabButtons.length];
+    else if (e.key === 'Home') next = tabButtons[0];
+    else if (e.key === 'End') next = tabButtons[tabButtons.length-1];
+    if (next){ e.preventDefault(); next.focus(); activateTab(next); }
   });
 });
 
@@ -4074,18 +4131,33 @@ function renderNomina(){
   </div>`;
 }
 
+// Cabeceras ordenables operables por teclado (2026-09-22, auditoría de accesibilidad): antes solo el
+// ratón podía activarlas (un <th> no recibe foco ni Enter/Espacio por defecto), y no anunciaban su
+// estado de orden. tabindex="0" en el HTML las hace alcanzables con Tab; aria-sort refleja columna y
+// dirección actuales para lectores de pantalla.
+function updateMainTableAriaSort(){
+  document.querySelectorAll('#mainTable thead th[data-key]').forEach(th=>{
+    th.setAttribute('aria-sort', th.dataset.key===sortKey ? (sortDir===1 ? 'ascending' : 'descending') : 'none');
+  });
+}
 document.querySelectorAll('#mainTable thead th').forEach(th=>{
-  th.addEventListener('click', ()=>{
+  const doSort = ()=>{
     const key = th.dataset.key;
     if (sortKey===key) sortDir *= -1; else { sortKey = key; sortDir = key==='community' ? 1 : -1; }
+    updateMainTableAriaSort();
     renderResultados();
+  };
+  th.addEventListener('click', doSort);
+  th.addEventListener('keydown', e=>{
+    if (e.key==='Enter' || e.key===' '){ e.preventDefault(); doSort(); }
   });
 });
+updateMainTableAriaSort();
 
 function currentAccentColors(){
   const css = getComputedStyle(document.documentElement);
   return {
-    accent: css.getPropertyValue('--accent').trim() || '#0f7fb0',
+    accent: css.getPropertyValue('--accent').trim() || '#0c6f9c',
     accent2: css.getPropertyValue('--accent-2').trim() || '#2f8f5b',
     grid: css.getPropertyValue('--chart-grid').trim() || '#e3e8ec',
     ink2: css.getPropertyValue('--ink-2').trim() || '#4b5563'
@@ -4227,6 +4299,7 @@ function renderAnalisis(){
   </tr>`).join('');
   const countTrue = key => rows.filter(r=>r[key]).length;
   const arrow = key => key===analisisSortKey ? (analisisSortDir===1 ? ' ▲' : ' ▼') : '';
+  const ariaSort = key => key===analisisSortKey ? (analisisSortDir===1 ? 'ascending' : 'descending') : 'none';
 
   root.innerHTML = `
     <div class="card">
@@ -4234,8 +4307,8 @@ function renderAnalisis(){
       <p>Existencia del concepto, no el importe. Pulsa una cabecera para ordenar.</p></div>
       <div class="table-scroll"><table id="analisisTable">
         <thead><tr>
-          <th data-key="name">Comunidad${arrow('name')}</th>
-          ${cols.map(c => `<th data-key="${c.key}">${c.label} (${countTrue(c.key)}/18)${arrow(c.key)}</th>`).join('')}
+          <th data-key="name" tabindex="0" aria-sort="${ariaSort('name')}">Comunidad${arrow('name')}</th>
+          ${cols.map(c => `<th data-key="${c.key}" tabindex="0" aria-sort="${ariaSort(c.key)}">${c.label} (${countTrue(c.key)}/18)${arrow(c.key)}</th>`).join('')}
         </tr></thead>
         <tbody>${tableRows}</tbody>
       </table></div>
@@ -4249,10 +4322,14 @@ function renderAnalisis(){
 
   root.querySelectorAll('#analisisTable thead th').forEach(th => {
     th.style.cursor = 'pointer';
-    th.addEventListener('click', () => {
+    const doSort = () => {
       const key = th.dataset.key;
       if (analisisSortKey === key) analisisSortDir *= -1; else { analisisSortKey = key; analisisSortDir = 1; }
       renderAnalisis();
+    };
+    th.addEventListener('click', doSort);
+    th.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); doSort(); }
     });
   });
 }
@@ -4339,6 +4416,7 @@ function renderComparaNomina(){
     }
     perCommunity[name] = {
       error: false, map, extraMap, mensualBruto: r.mensualBruto, liquido: r.liquido, annual: r.annual,
+      muface: r.muface, clasesPasivas: r.clasesPasivas,
       deductions: {
         'Cuotas MUFACE': r.cuotasMuface,
         'Derechos Pasivos': r.derechosPasivos,
@@ -4449,11 +4527,38 @@ function renderComparaNomina(){
     });
     return plainRowHtml(label, values).replace('<tr>', '<tr class="row-deduction">');
   }).join('');
+  // Bloque retenciones (2026-09-22, a petición del usuario): mismo tratamiento que "Conceptos paga
+  // extra" — una cabecera de bloque neutra en vez de texto rojo por celda, que antes rompía visualmente
+  // la columna sombreada de la comunidad de referencia (ver refColStyle) al quedar en blanco.
+  const retencionesHeaderRow = deductionRowsHtml
+    ? `<tr class="extra-header-row"><td colspan="${E.COMUNIDAD_ORDER.length + 1}">Retenciones</td></tr>`
+    : '';
   const totalNetoValues = E.COMUNIDAD_ORDER.map(name => {
     const info = perCommunity[name];
     return info.error ? undefined : info.liquido;
   });
   const totalNetoRow = rowHtml('Total líquido mensual', totalNetoValues).replace('<tr>', '<tr class="liquido">');
+  // Total líquido anual (2026-09-22, a petición del usuario, "añade el total líquido anual al final
+  // del todo"): misma estimación que el stat-tile de "Su nómina" (liquidoAnualEstimado en
+  // renderNomina) — bruto anual validado menos MUFACE/Derechos Pasivos (×14) y las cotizaciones SS/
+  // IRPF (×12 sobre la base anual/12) — replicada aquí por comunidad, con la situación laboral y el
+  // % IRPF compartidos (el mismo perfil que el resto de esta tabla).
+  const irpfPct = (typeof profile.irpf === 'number') ? profile.irpf : 0.24;
+  const totalNetoAnualValues = E.COMUNIDAD_ORDER.map(name => {
+    const info = perCommunity[name];
+    if (info.error) return undefined;
+    const baseCotizSS = info.annual / 12;
+    let annualDeductions;
+    if (situ === 'clasesPasivas'){
+      annualDeductions = 14 * (-info.muface) + 14 * info.clasesPasivas;
+    } else if (situ === 'ssocial'){
+      annualDeductions = 14 * (-info.muface) + 12 * baseCotizSS * (E.SS_RATES.contingenciasSSocial + E.SS_RATES.mei);
+    } else { // interino
+      annualDeductions = 12 * baseCotizSS * (E.SS_RATES.contingenciasGeneral + E.SS_RATES.desempleo + E.SS_RATES.formacionProfesional + E.SS_RATES.mei);
+    }
+    return info.annual - annualDeductions - info.annual * irpfPct;
+  });
+  const totalNetoAnualRow = plainRowHtml('Total líquido anual (estimado)', totalNetoAnualValues).replace('<tr>', '<tr class="liquido">');
   // A blank spacer row sets the deducciones/total líquido block a little apart from the devengos
   // above, since they're a visually distinct section (what gets withheld, not what's earned).
   const gapRow = `<tr class="table-gap"><td colspan="${E.COMUNIDAD_ORDER.length + 1}"></td></tr>`;
@@ -4469,12 +4574,15 @@ function renderComparaNomina(){
   }).join('');
   // Softly shades the reference comunidad's own column (2026-09-21, a petición del usuario) — an
   // `nth-child` rule scoped to this render via a computed column number, rather than a class on every
-  // cell, since the column position is the same in every row already. Skips cells that already carry
-  // a best/worst highlight (`.cell-high`/`.cell-low`) so that signal still wins where both apply.
+  // cell, since the column position is the same in every row already. Used to skip `.cell-high`/
+  // `.cell-low` cells (back when those carried their own background fill, to avoid a colour clash) —
+  // since 2026-09-22 those are text-only (no background), so excluding them just left plain-white
+  // gaps in an otherwise shaded column, breaking it visually. Every cell in the column shades the same
+  // now; the green/red text sits on top of the tint without conflict.
   const refCommunityIdx = E.COMUNIDAD_ORDER.indexOf(state.comunidadRef);
   const refColStyle = refCommunityIdx >= 0
     ? `<style>#comparaNominaTable th:nth-child(${refCommunityIdx + 2}),
-        #comparaNominaTable td:nth-child(${refCommunityIdx + 2}):not(.cell-high):not(.cell-low){
+        #comparaNominaTable td:nth-child(${refCommunityIdx + 2}){
           background:color-mix(in srgb, var(--accent) 8%, transparent);
         }</style>`
     : '';
@@ -4484,7 +4592,7 @@ function renderComparaNomina(){
       <div class="table-scroll">
         <table id="comparaNominaTable" class="data-table">
           <thead><tr><th>Concepto</th>${headHtml}</tr></thead>
-          <tbody>${rowsHtml}${extraHeaderRow}${extraRowsHtml}${totalBrutoRow}${annualRow}${gapRow}${deductionRowsHtml}${totalNetoRow}</tbody>
+          <tbody>${rowsHtml}${extraHeaderRow}${extraRowsHtml}${totalBrutoRow}${annualRow}${gapRow}${retencionesHeaderRow}${deductionRowsHtml}${totalNetoRow}${totalNetoAnualRow}</tbody>
         </table>
       </div>
     </div>`;
@@ -4794,9 +4902,13 @@ function isStaleUpdate(dateStr){
   const oneYearMs = 365 * 24 * 60 * 60 * 1000;
   return (Date.now() - d.getTime()) > oneYearMs;
 }
+// Inline SVG (currentColor, scales with font-size) replacing an emoji glyph as an icon (2026-09-22,
+// auditoría de diseño): an emoji renders in its own fixed color regardless of surrounding CSS, so it
+// couldn't pick up --warn like the rest of the app's warning indicators.
+const WARN_TRIANGLE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:1em;height:1em;vertical-align:-0.15em;"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
 function staleBadge(dateStr){
   return isStaleUpdate(dateStr)
-    ? ` <span class="stale-flag" title="${dateStr ? 'Sin revisar hace más de un año (última revisión: '+dateStr+')' : 'Nunca revisado'}">⚠️</span>`
+    ? ` <span class="stale-flag" title="${dateStr ? 'Sin revisar hace más de un año (última revisión: '+dateStr+')' : 'Nunca revisado'}">${WARN_TRIANGLE_SVG}</span>`
     : '';
 }
 // Targeted refresh for a single community's "última actualización" indicators — used instead of a
@@ -4928,7 +5040,7 @@ function buildAdmin(){
     }).join('') + `</div>` : `<p class="no-rules">${SPECIAL_NOTES[name] ? SPECIAL_NOTES[name] + ' ' : ''}No hay parámetros configurables especiales: solo cifras.</p>`;
 
     const updatedFlag = meta.updated ? meta.updated : '';
-    const updatedWarn = meta.updated ? '' : ' <span class="flag-warn">⚠ Sin fecha de actualización registrada en el Excel original</span>';
+    const updatedWarn = meta.updated ? '' : ` <span class="flag-warn">${WARN_TRIANGLE_SVG} Sin fecha de actualización registrada en el Excel original</span>`;
 
     // Baleares' island×group residencia matrix (rules.residencia) is a nested object the generic
     // flat-rule-editing mechanism above (typeof v === 'number' || 'string') can't handle — it needs
