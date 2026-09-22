@@ -143,6 +143,7 @@ nav.tabs button{
 nav.tabs button:hover{color:var(--ink); background:var(--surface-2);}
 nav.tabs button.active{background:var(--surface-2); color:var(--ink); border-bottom-color:var(--accent);}
 .tab-icon{display:none;} /* el icono solo se ve en la barra fija móvil, ver más abajo */
+.compara-picker{display:none;} /* el selector de comunidades solo se ve en móvil, ver más abajo */
 
 /* Barra de pestañas fija abajo en móvil (2026-09-22, a petición del usuario, "rediseñar para móvil
    desde cero"): antes nav.tabs vivía DESPUÉS del formulario de perfil en el flujo normal de la
@@ -180,6 +181,48 @@ nav.tabs button.active{background:var(--surface-2); color:var(--ink); border-bot
   .badge, .notice-box, .payslip-note, .section-title p, #analisisContent > .card > ul.hint{
     display:none;
   }
+
+  /* Formulario de perfil plegable en móvil (2026-09-22, a petición del usuario, "lo del perfil tiene
+     que ocupar menos pantalla o que se pueda ocultar"): empieza desplegado (hay que verlo la primera
+     vez), pero tocando la cabecera se pliega y deja sitio a los datos — con un resumen de una línea
+     del perfil actual para no perder de vista qué está seleccionado mientras está plegado. */
+  .profile-bar{padding:10px 14px;}
+  .profile-bar-toggle{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;
+    appearance:none; border:0; background:transparent; padding:4px 2px; cursor:pointer; text-align:left;
+    color:var(--ink);
+  }
+  .profile-bar-toggle-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .profile-bar-toggle-label{font-family:'Source Serif 4',serif; font-weight:600; font-size:1.05rem;}
+  .profile-bar-summary{
+    font-size:.76rem; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .profile-bar-chevron{width:20px; height:20px; flex:0 0 auto; color:var(--ink-muted); transition:transform .15s;}
+  .profile-bar.collapsed .profile-bar-chevron{transform:rotate(-90deg);}
+  .profile-bar-body{display:flex; flex-direction:column; gap:14px; margin-top:12px;}
+  .profile-bar.collapsed .profile-bar-body{display:none;}
+
+  /* Cabecera más compacta (2026-09-22, a petición del usuario, "el título también ocupa mucho"): el
+     h1 a tamaño de escritorio ocupaba 4 líneas completas. Se reduce el logo, el título pasa a una
+     escala más pequeña (sigue creciendo con el ancho, pero con un techo mucho más bajo) y se recorta
+     el espaciado alrededor. */
+  header.top{margin-bottom:10px; padding-bottom:10px;}
+  .anpe-logo{height:34px;}
+  h1{font-size:clamp(1.05rem, 0.85rem + 2.5vw, 1.35rem); line-height:1.15;}
+  .eyebrow{font-size:.7rem; margin-bottom:2px;}
+
+  /* Selector de comunidades a comparar, solo en Compara Nómina (2026-09-22) — casillas en chips que
+     envuelven, cómodas de tocar (min 44px de alto). */
+  .compara-picker{display:block; margin-bottom:14px;}
+  .compara-picker-label{margin:0 0 8px; font-size:.78rem; font-weight:600; color:var(--ink-2);}
+  .compara-picker-chips{display:flex; flex-wrap:wrap; gap:6px;}
+  .compara-chip{
+    display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:6px 12px;
+    border:1px solid var(--border); border-radius:999px; background:var(--surface);
+    font-size:.78rem; font-weight:600; color:var(--ink-2); cursor:pointer;
+  }
+  .compara-chip:has(input:checked){background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
+  .compara-chip input{width:16px; height:16px; margin:0; accent-color:var(--accent-ink);}
 }
 nav.tabs button:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible,
 th[tabindex]:focus-visible, a:focus-visible{
@@ -205,6 +248,9 @@ th[tabindex]:focus-visible, a:focus-visible{
 /* --- Compact profile bar (replaces the old standalone "Selector de perfil" tab) --- */
 .profile-bar{padding:14px 18px; margin-bottom:16px; display:flex; flex-direction:column; gap:14px;}
 .profile-bar-row{display:flex; flex-wrap:wrap; justify-content:center; gap:14px; align-items:flex-end;}
+/* El botón plegable solo existe visualmente en móvil (ver el media query de abajo); en escritorio
+   queda oculto y el formulario se ve siempre entero, como antes de este cambio. */
+.profile-bar-toggle{display:none;}
 .pb-field{display:flex; flex-direction:column; gap:5px; flex:0 0 auto;}
 .pb-field label{font-size:.72rem; font-weight:600; color:var(--ink-2); white-space:nowrap;}
 .pb-field select, .pb-field input[type=number]{
@@ -567,6 +613,19 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
        shared `state`/buildProfile()) instead of living in its own tab — pick a profile once and
        both panels below recompute immediately. -->
   <div class="card profile-bar" id="profileBar">
+    <!-- Cabecera plegable, visible SOLO en móvil (2026-09-22, a petición del usuario, "lo del perfil
+         tiene que ocupar menos pantalla o que se pueda ocultar"): en escritorio no aparece y el
+         formulario se ve siempre entero, como antes. En móvil, tocar aquí pliega/despliega el
+         formulario — empieza desplegado, y una vez configurado el perfil se puede ocultar para dejar
+         sitio a los datos. -->
+    <button type="button" class="profile-bar-toggle" id="profileBarToggle" aria-expanded="true" aria-controls="profileBarBody">
+      <span class="profile-bar-toggle-text">
+        <span class="profile-bar-toggle-label">Perfil</span>
+        <span class="profile-bar-summary" id="profileBarSummary"></span>
+      </span>
+      <svg class="profile-bar-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="profile-bar-body" id="profileBarBody">
     <div class="profile-bar-row pb-row1">
       <div class="pb-field pb-situacion" title="Determina cómo se calculan las deducciones (MUFACE, derechos pasivos, Seguridad Social).">
         <label for="f-situacion">Situación laboral</label>
@@ -650,6 +709,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
         <label>Mes paga extra</label>
         <button type="button" class="switch" role="switch" aria-checked="false" data-toggle="pagaExtra" data-val="NO"><span class="switch-thumb"></span></button>
       </div>
+    </div>
     </div>
   </div>
 
@@ -3700,7 +3760,11 @@ const state = {
   cuerpo: '590-Profesores Enseñanza Secundaria', situacionLaboral:'interino', anios:12, maestroESO:'NO', pagaExtra:'NO',
   islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', tutor:'NO', cargoDirectivo:'Sin cargo',
   tipoCentro:'A', comunidadRef:'La Rioja', irpf:0.215, jefeDepartamento:'NO', tablaCargo:'A1',
-  carreraGeneral:'NO'
+  carreraGeneral:'NO',
+  // Comunidades elegidas para comparar en "Compara Nómina" en móvil (2026-09-22, a petición del
+  // usuario): en escritorio no se usa, se siguen mostrando las 18. Arranca solo con la comunidad de
+  // referencia; el propio selector de casillas invita a añadir 1-2 más.
+  comparaPicker: ['La Rioja']
 };
 let chartInstance = null;
 let sortKey = 'annual', sortDir = -1;
@@ -3791,6 +3855,25 @@ document.querySelectorAll('.switch[data-toggle]').forEach(sw => {
   });
 });
 
+// Formulario de perfil plegable en móvil (2026-09-22): el botón solo se ve por debajo de 760px (ver
+// CSS), pero el listener no hace daño en escritorio — simplemente nunca se dispara porque el botón
+// no es clicable (display:none). El resumen de una línea se actualiza en cada recompute() para que,
+// plegado, siga diciendo qué perfil está activo.
+const profileBarToggle = document.getElementById('profileBarToggle');
+if (profileBarToggle){
+  profileBarToggle.addEventListener('click', () => {
+    const bar = document.getElementById('profileBar');
+    const collapsed = bar.classList.toggle('collapsed');
+    profileBarToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+  });
+}
+function updateProfileBarSummary(){
+  const el = document.getElementById('profileBarSummary');
+  if (!el) return;
+  const cuerpoLabel = (document.getElementById('f-cuerpo').selectedOptions[0] || {}).textContent || '';
+  el.textContent = `${state.comunidadRef} · ${cuerpoLabel} · ${state.anios} años`;
+}
+
 /* ---------------------------------------------------------------------------
    Tabs
 --------------------------------------------------------------------------- */
@@ -3871,6 +3954,7 @@ function buildProfile(){
 
 function recompute(){
   updateConditionalFields();
+  updateProfileBarSummary();
   const profile = buildProfile();
   lastResults = E.computeAll(profile, new Date());
   renderResultados();
@@ -4483,6 +4567,13 @@ function renderComparaNomina(){
       },
     };
   });
+  // Comunidades a mostrar como columnas (2026-09-22, a petición del usuario, "elegir 2-3 comunidades
+  // para comparar"): en escritorio siempre las 18; en móvil, solo las que el usuario haya marcado en
+  // el selector de casillas (ver comparaPickerHtml más abajo) — perCommunity/ranked/rankByIdx siguen
+  // calculándose sobre las 18 siempre, así que el ranking mostrado sigue siendo el real de verdad,
+  // aunque no se vean todas las columnas.
+  const isMobileCompara = window.matchMedia('(max-width:760px)').matches;
+  const displayOrder = (isMobileCompara && state.comparaPicker.length) ? state.comparaPicker : E.COMUNIDAD_ORDER;
   // Coloring policy: "Sueldo base" only flags the top value (green) — most comunidades share the
   // Ministry base salary, so a red tie across 17 columns would be noise. "Complemento…"/"Sexenios"
   // rows and the total flag the 3 best (green) and 3 worst (red), since those are the concepts that
@@ -4514,7 +4605,7 @@ function renderComparaNomina(){
         modalValue = [...counts.entries()].reduce((best, cur) => cur[1] > best[1] ? cur : best)[0];
       }
     }
-    const cells = E.COMUNIDAD_ORDER.map((name, i) => {
+    const cells = displayOrder.map((name, i) => {
       const v = values[i];
       if (v === undefined) return `<td class="hint">—</td>`;
       let cls = '';
@@ -4527,7 +4618,7 @@ function renderComparaNomina(){
   // Deducciones/Total líquido rows aren't ranked (a "higher" deduction isn't a "better" one), so
   // they're rendered without the best/worst highlight, unlike the devengos rows above.
   const plainRowHtml = (label, values) => {
-    const cells = E.COMUNIDAD_ORDER.map((name, i) => {
+    const cells = displayOrder.map((name, i) => {
       const v = values[i];
       return v === undefined ? `<td class="hint">—</td>` : `<td>${fmtEUR(v)}</td>`;
     }).join('');
@@ -4536,7 +4627,7 @@ function renderComparaNomina(){
   conceptOrder.sort((a,b) => conceptRank(a) - conceptRank(b));
   extraConceptOrder.sort((a,b) => conceptRank(a) - conceptRank(b));
   const rowsHtml = conceptOrder.map(label => {
-    const values = E.COMUNIDAD_ORDER.map(name => {
+    const values = displayOrder.map(name => {
       const info = perCommunity[name];
       return info.error ? undefined : info.map[label];
     });
@@ -4545,16 +4636,16 @@ function renderComparaNomina(){
   // Paga-extra rows get their own colour (`.row-extra`) and a single block title above them instead
   // of repeating "(paga extra)" on every concept name (2026-09-21, a petición del usuario).
   const extraHeaderRow = (pagaExtraOn && extraConceptOrder.length)
-    ? `<tr class="extra-header-row"><td colspan="${E.COMUNIDAD_ORDER.length + 1}">Conceptos paga extra</td></tr>`
+    ? `<tr class="extra-header-row"><td colspan="${displayOrder.length + 1}">Conceptos paga extra</td></tr>`
     : '';
   const extraRowsHtml = pagaExtraOn ? extraConceptOrder.map(label => {
-    const values = E.COMUNIDAD_ORDER.map(name => {
+    const values = displayOrder.map(name => {
       const info = perCommunity[name];
       return info.error ? undefined : (info.extraMap ? info.extraMap[label] : undefined);
     });
     return rowHtml(label, values).replace('<tr>', '<tr class="row-extra">');
   }).join('') : '';
-  const totalBrutoValues = E.COMUNIDAD_ORDER.map(name => {
+  const totalBrutoValues = displayOrder.map(name => {
     const info = perCommunity[name];
     return info.error ? undefined : info.mensualBruto;
   });
@@ -4562,11 +4653,18 @@ function renderComparaNomina(){
   // The validated annual gross (always includes both pagas extra, regardless of the "Mes paga
   // extra" toggle above, which only affects the monthly display), shown right under the monthly
   // total since they're the two "bottom line" figures for the ordinary devengos.
-  const annualValues = E.COMUNIDAD_ORDER.map(name => {
+  // annualValuesAll (2026-09-22): SIEMPRE las 18, aunque en móvil solo se muestren unas pocas — el
+  // ranking (rankByIdx, más abajo) tiene que reflejar la posición real entre las 18, no solo entre
+  // las mostradas. annualRowValues es lo que de verdad se pinta en la fila de la tabla.
+  const annualValuesAll = E.COMUNIDAD_ORDER.map(name => {
     const info = perCommunity[name];
     return info.error ? undefined : info.annual;
   });
-  const annualRow = rowHtml('Total bruto anual', annualValues).replace('<tr>', '<tr class="total">');
+  const annualRowValues = displayOrder.map(name => {
+    const info = perCommunity[name];
+    return info.error ? undefined : info.annual;
+  });
+  const annualRow = rowHtml('Total bruto anual', annualRowValues).replace('<tr>', '<tr class="total">');
   // Only show a deduction row when it actually applies for the current profile — situación laboral
   // is shared across all 18 comunidades, so each deduction is either present for all of them or none.
   const deductionLabels = Object.keys(perCommunity[E.COMUNIDAD_ORDER[0]]?.deductions || {});
@@ -4574,7 +4672,7 @@ function renderComparaNomina(){
     const info = perCommunity[name];
     return !info.error && !isZero(info.deductions[label] || 0);
   })).map(label => {
-    const values = E.COMUNIDAD_ORDER.map(name => {
+    const values = displayOrder.map(name => {
       const info = perCommunity[name];
       if (info.error) return undefined;
       const v = info.deductions[label] || 0;
@@ -4586,9 +4684,9 @@ function renderComparaNomina(){
   // extra" — una cabecera de bloque neutra en vez de texto rojo por celda, que antes rompía visualmente
   // la columna sombreada de la comunidad de referencia (ver refColStyle) al quedar en blanco.
   const retencionesHeaderRow = deductionRowsHtml
-    ? `<tr class="extra-header-row"><td colspan="${E.COMUNIDAD_ORDER.length + 1}">Retenciones</td></tr>`
+    ? `<tr class="extra-header-row"><td colspan="${displayOrder.length + 1}">Retenciones</td></tr>`
     : '';
-  const totalNetoValues = E.COMUNIDAD_ORDER.map(name => {
+  const totalNetoValues = displayOrder.map(name => {
     const info = perCommunity[name];
     return info.error ? undefined : info.liquido;
   });
@@ -4599,7 +4697,7 @@ function renderComparaNomina(){
   // IRPF (×12 sobre la base anual/12) — replicada aquí por comunidad, con la situación laboral y el
   // % IRPF compartidos (el mismo perfil que el resto de esta tabla).
   const irpfPct = (typeof profile.irpf === 'number') ? profile.irpf : 0.24;
-  const totalNetoAnualValues = E.COMUNIDAD_ORDER.map(name => {
+  const totalNetoAnualValues = displayOrder.map(name => {
     const info = perCommunity[name];
     if (info.error) return undefined;
     const baseCotizSS = info.annual / 12;
@@ -4616,15 +4714,17 @@ function renderComparaNomina(){
   const totalNetoAnualRow = plainRowHtml('Total líquido anual (estimado)', totalNetoAnualValues).replace('<tr>', '<tr class="liquido">');
   // A blank spacer row sets the deducciones/total líquido block a little apart from the devengos
   // above, since they're a visually distinct section (what gets withheld, not what's earned).
-  const gapRow = `<tr class="table-gap"><td colspan="${E.COMUNIDAD_ORDER.length + 1}"></td></tr>`;
+  const gapRow = `<tr class="table-gap"><td colspan="${displayOrder.length + 1}"></td></tr>`;
   // The 1-18 ranking by the annual figure (1 = highest-paying comunidad for this profile, 18 the
-  // lowest) is shown right under each comunidad's name in the header, not as its own row.
-  const ranked = annualValues.map((v,i) => ({v,i})).filter(o => o.v !== undefined).sort((a,b) => b.v - a.v);
+  // lowest) is shown right under each comunidad's name in the header, not as its own row. Calculado
+  // siempre sobre annualValuesAll (las 18) — el ranking mostrado es el real, aunque en móvil solo se
+  // vean 2-3 columnas (2026-09-22).
+  const ranked = annualValuesAll.map((v,i) => ({v,i})).filter(o => o.v !== undefined).sort((a,b) => b.v - a.v);
   const rankByIdx = {};
   ranked.forEach((o,pos) => { rankByIdx[o.i] = pos + 1; });
   const rankBadgeCls = rank => rank <= 3 ? ' rank-badge-high' : rank >= 16 ? ' rank-badge-low' : '';
-  const headHtml = E.COMUNIDAD_ORDER.map((name,i) => {
-    const rank = rankByIdx[i];
+  const headHtml = displayOrder.map(name => {
+    const rank = rankByIdx[E.COMUNIDAD_ORDER.indexOf(name)];
     return `<th>${name}${rank !== undefined ? `<span class="rank-badge${rankBadgeCls(rank)}">${rank}</span>` : ''}</th>`;
   }).join('');
   // Softly shades the reference comunidad's own column (2026-09-21, a petición del usuario) — an
@@ -4633,16 +4733,28 @@ function renderComparaNomina(){
   // `.cell-low` cells (back when those carried their own background fill, to avoid a colour clash) —
   // since 2026-09-22 those are text-only (no background), so excluding them just left plain-white
   // gaps in an otherwise shaded column, breaking it visually. Every cell in the column shades the same
-  // now; the green/red text sits on top of the tint without conflict.
-  const refCommunityIdx = E.COMUNIDAD_ORDER.indexOf(state.comunidadRef);
+  // now; the green/red text sits on top of the tint without conflict. Usa displayOrder (2026-09-22):
+  // en móvil el índice de columna real es el de la comunidad DENTRO de lo mostrado, no de las 18.
+  const refCommunityIdx = displayOrder.indexOf(state.comunidadRef);
   const refColStyle = refCommunityIdx >= 0
     ? `<style>#comparaNominaTable th:nth-child(${refCommunityIdx + 2}),
         #comparaNominaTable td:nth-child(${refCommunityIdx + 2}){
           background:color-mix(in srgb, var(--accent) 8%, transparent);
         }</style>`
     : '';
+  // Selector de comunidades a comparar — solo se ve en móvil (CSS), pero se genera siempre; en
+  // escritorio queda oculto y sin efecto (displayOrder ya es E.COMUNIDAD_ORDER ahí). Máximo 4
+  // marcadas a la vez (comparaPickerMax más abajo) para que las columnas resultantes quepan.
+  const comparaPickerHtml = `
+    <div class="compara-picker" id="comparaPicker">
+      <p class="compara-picker-label">Comparar (máx. 4):</p>
+      <div class="compara-picker-chips">
+        ${E.COMUNIDAD_ORDER.map(name => `<label class="compara-chip"><input type="checkbox" value="${name}"${state.comparaPicker.includes(name) ? ' checked' : ''}> ${name}</label>`).join('')}
+      </div>
+    </div>`;
   root.innerHTML = `
     <div class="card">
+      ${comparaPickerHtml}
       ${refColStyle}
       <div class="table-scroll">
         <table id="comparaNominaTable" class="data-table">
@@ -4651,6 +4763,22 @@ function renderComparaNomina(){
         </table>
       </div>
     </div>`;
+  const pickerEl = document.getElementById('comparaPicker');
+  if (pickerEl){
+    pickerEl.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const comparaPickerMax = 4;
+        if (cb.checked && state.comparaPicker.length >= comparaPickerMax){
+          cb.checked = false; // ya hay 4 marcadas — no se añade una quinta
+          return;
+        }
+        state.comparaPicker = cb.checked
+          ? [...state.comparaPicker, cb.value]
+          : state.comparaPicker.filter(n => n !== cb.value);
+        renderComparaNomina();
+      });
+    });
+  }
 }
 
 function renderChart(){
