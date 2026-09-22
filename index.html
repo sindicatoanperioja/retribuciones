@@ -182,6 +182,14 @@ th[tabindex]:focus-visible, a:focus-visible{
   padding:14px 18px; margin-bottom:16px; display:flex; flex-direction:column; gap:14px;
   background:var(--accent-soft); border-top-color:var(--accent);
 }
+/* El propio contenido plegable necesita su gap (2026-09-23, a petición del usuario, "los bloques de
+   Comunidad y Cargo Directivo se pegan por arriba con los selectores"): el gap:14px de .profile-bar
+   de arriba solo separa SUS hijos directos (el botón de plegar y este div), no las dos filas de
+   dentro — desde que el formulario vive en #profileBarBody (para poder ocultarlo entero al plegar),
+   pb-row1 y pb-row2 son hijos de este div en vez de hijos de .profile-bar, y sin esta regla quedaban
+   pegados el uno al otro sin ningún espacio en escritorio (en móvil colaba porque el media query de
+   abajo sí le pone display:flex + gap a este mismo div). */
+.profile-bar-body{display:flex; flex-direction:column; gap:14px;}
 .profile-bar-row{display:flex; flex-wrap:wrap; justify-content:center; gap:14px; align-items:flex-end;}
 /* El botón plegable solo existe visualmente en móvil (ver el media query de abajo); en escritorio
    queda oculto y el formulario se ve siempre entero, como antes de este cambio. */
@@ -248,7 +256,7 @@ th[tabindex]:focus-visible, a:focus-visible{
 .pb-row2{flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; padding-bottom:2px;}
 .pb-group{
   display:flex; align-items:center; flex:0 0 auto;
-  padding:9px 14px; border:1px solid var(--border); border-radius:9px; background:var(--surface-2);
+  padding:6px 14px; border:1px solid var(--border); border-radius:9px; background:var(--surface-2);
 }
 .pb-group-fields{display:flex; flex-wrap:nowrap; gap:12px; align-items:flex-end;}
 .pb-cargo{width:170px;}
@@ -4708,39 +4716,44 @@ function renderComparaNomina(){
   // Ministry base salary, so a red tie across 17 columns would be noise. "Complemento…"/"Sexenios"
   // rows and the total flag the 3 best (green) and 3 worst (red), since those are the concepts that
   // actually differentiate comunidades. Everything else keeps a single best/worst highlight.
-  // "Complemento de destino" is a special case within that: unlike "Sueldo base" it DOES vary enough
-  // to be worth ranking (top 3 in green), but most comunidades still share the plain Ministry rate —
-  // marking that shared rate red just because a couple of comunidades pay even less would flag the
-  // "normal" value as if it were a bad outlier, so it's excluded from ever turning red.
   const rowMode = label => {
     const l = label.toLowerCase();
     if (l.startsWith('sueldo base')) return 'top-only';
-    if (l.startsWith('complemento de destino')) return 'top3-no-modal-red';
     if (l.includes('complemento') || l.includes('sexenio') || l.startsWith('total bruto') || l.startsWith('total líquido')) return 'top3';
     return 'default';
   };
+  // El valor mayoritario nunca se destaca, gane o pierda el umbral (2026-09-23, a petición del
+  // usuario, "cuando la mayoría tiene una cifra no la marques en rojo ni en verde, por ejemplo los
+  // trienios son todos casi iguales, no destaques a ninguno si tienen 8 o 9 iguales, solo cuando
+  // alguno destaca por arriba o por abajo"): si 8-9 de las 18 comunidades pagan exactamente lo mismo,
+  // esa cifra es "lo normal", no un máximo o un mínimo que merezca color — aunque matemáticamente sea
+  // la más alta o la más baja de los valores distintos. Solo las comunidades que de verdad se separan
+  // de esa mayoría se colorean.
   const rowHtml = (label, values) => {
     const mode = rowMode(label);
     const defined = values.filter(v => v !== undefined);
     const uniqueDesc = [...new Set(defined)].sort((a,b)=>b-a);
     const uniqueAsc = [...new Set(defined)].sort((a,b)=>a-b);
-    let topThreshold = null, bottomThreshold = null, modalValue = null;
+    let topThreshold = null, bottomThreshold = null, majorityValue = null;
+    if (defined.length){
+      const counts = new Map();
+      defined.forEach(v => counts.set(v, (counts.get(v)||0) + 1));
+      const [modeVal, modeCount] = [...counts.entries()].reduce((best, cur) => cur[1] > best[1] ? cur : best);
+      if (modeCount >= Math.ceil(defined.length / 2)) majorityValue = modeVal;
+    }
     if (uniqueDesc.length > 1) {
-      const n = (mode === 'top3' || mode === 'top3-no-modal-red') ? 3 : 1;
+      const n = mode === 'top3' ? 3 : 1;
       topThreshold = uniqueDesc[Math.min(n-1, uniqueDesc.length-1)];
       if (mode !== 'top-only') bottomThreshold = uniqueAsc[Math.min(n-1, uniqueAsc.length-1)];
-      if (mode === 'top3-no-modal-red'){
-        const counts = new Map();
-        defined.forEach(v => counts.set(v, (counts.get(v)||0) + 1));
-        modalValue = [...counts.entries()].reduce((best, cur) => cur[1] > best[1] ? cur : best)[0];
-      }
     }
     const cells = displayOrder.map((name, i) => {
       const v = values[i];
       if (v === undefined) return `<td class="hint">—</td>`;
       let cls = '';
-      if (topThreshold !== null && v >= topThreshold) cls = ' class="cell-high"';
-      else if (bottomThreshold !== null && v <= bottomThreshold && v !== modalValue) cls = ' class="cell-low"';
+      if (v !== majorityValue){
+        if (topThreshold !== null && v >= topThreshold) cls = ' class="cell-high"';
+        else if (bottomThreshold !== null && v <= bottomThreshold) cls = ' class="cell-low"';
+      }
       return `<td${cls}>${fmtEUR(v)}</td>`;
     }).join('');
     return `<tr><td>${mobileAbbrev(label)}</td>${cells}</tr>`;
