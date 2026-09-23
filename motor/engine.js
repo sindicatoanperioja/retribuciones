@@ -2226,14 +2226,16 @@ COMUNIDADES['Navarra'] = {
       if (d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: esoAdd});
       if (d.jefeDepartamento && d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
       if (antig !== 0) items.push({label:'Antigüedad (escala de grados/quinquenios)', monthly: antig});
-      // Source quirk (Nómina mensual!row41 for Navarra's column T): the ORDINARY total is
-      // `=SUM(T17:T21)+T36` — Cargo directivo (row29) sits OUTSIDE the T17:T21 range, so it never
-      // reaches the ordinary display. But T36 (added only when pagaExtra="si") is
-      // `=IF($C$9="si",SUM(T17:T35),0)` — a full RE-SUM of the whole ordinary block, which DOES
-      // include row29. So unlike every other community (where Cargo directivo is simply missing
-      // from the whole paga-extra block), Navarra's paga-extra bonus genuinely re-includes it —
-      // keepInPagaExtra opts this item out of the universal "exclude cargo from pagaExtraTotal" rule.
-      items.push({label:'Cargo directivo', monthly: cargoAmt, displayMonthly: 0, hidden: true, keepInPagaExtra: true});
+      // Corrected 2026-09-24 (a petición del usuario, "olvídate de la excel ya... el importe lo
+      // tienen que cobrar todos los meses"): el Excel original de Navarra oculta esta fila del total
+      // ordinario mensual (su fórmula T17:T21 deja fuera la fila 29 de Cargo directivo, y solo la
+      // reincorpora en el re-cálculo de la paga extra, T36) — un director de Navarra parecía no cobrar
+      // el complemento salvo en junio/diciembre. Se trata igual que en el resto de comunidades: se
+      // muestra cada mes con normalidad (displayMonthly por defecto = monthly) y no se reincluye aparte
+      // en la paga extra (sin keepInPagaExtra, sigue la regla general que ya excluye el cargo del
+      // bloque de paga extra en todas las comunidades). El total anual no cambia — seguía siendo
+      // correcto ya antes de este cambio, solo el desglose mensual estaba mal mostrado.
+      items.push({label:'Cargo directivo', monthly: cargoAmt});
     }
     return base;
   }
