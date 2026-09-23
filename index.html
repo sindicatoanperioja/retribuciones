@@ -4542,6 +4542,126 @@ function pagaExtraGaps(name){
   return [...gaps];
 }
 
+// ---------------------------------------------------------------------------
+// Análisis profundo (2026-09-23, a petición del usuario: "un análisis algo más
+// profundo, más datos que pueda sacar de diferencias entre las CCAA" + "un
+// análisis fijo para 5 sujetos, y destaques lo que sea").
+// ---------------------------------------------------------------------------
+
+// Sueldo bruto anual de cada comunidad para un perfil dado, de mayor a menor (se reutiliza tanto
+// para el perfil interactivo como para los 5 perfiles fijos de abajo).
+function annualByComunidad(profile){
+  const today = new Date();
+  return E.COMUNIDAD_ORDER.map(name => {
+    let r;
+    try { r = E.computeNational(name, profile, today); } catch(e){ r = { error: true }; }
+    return r.error ? null : { community: name, annual: r.annual };
+  }).filter(Boolean).sort((a,b) => b.annual - a.annual);
+}
+
+// Qué concepto retributivo separa más a las comunidades entre sí, para el perfil interactivo
+// actual: por cada concepto (Sueldo base, Complemento específico, Sexenios...), la diferencia entre
+// la comunidad que más paga y la que menos, de mayor a menor diferencia. Responde a "qué otros datos
+// puedo sacar de las diferencias entre CCAA" con un dato que cambia según el perfil elegido, no un
+// un texto fijo.
+function conceptSpreadAnalysis(profile){
+  const today = new Date();
+  const isZero = v => Math.abs(v) < 0.005;
+  const byLabel = new Map(); // label -> [{community, monthly}]
+  E.COMUNIDAD_ORDER.forEach(name => {
+    let r;
+    try { r = E.computeNational(name, profile, today, true); } catch(e){ r = { error: true }; }
+    if (r.error) return;
+    (r.items||[]).forEach(it => {
+      if (it.extraOnly || it.hidden) return;
+      const v = it.displayMonthly !== undefined ? it.displayMonthly : it.monthly;
+      if (isZero(v)) return;
+      const label = compareCanonicalLabel(displayLabel(it.label));
+      if (!byLabel.has(label)) byLabel.set(label, []);
+      byLabel.get(label).push({ community: name, monthly: v });
+    });
+  });
+  const rows = [];
+  byLabel.forEach((entries, label) => {
+    if (entries.length < 2) return; // un solo dato no es "diferencia entre comunidades"
+    const max = entries.reduce((a,b) => b.monthly>a.monthly?b:a, entries[0]);
+    const min = entries.reduce((a,b) => b.monthly<a.monthly?b:a, entries[0]);
+    rows.push({
+      label, count: entries.length,
+      maxCommunity: max.community, maxVal: max.monthly,
+      minCommunity: min.community, minVal: min.monthly,
+      spreadMonthly: max.monthly - min.monthly,
+      spreadAnnual: (max.monthly - min.monthly) * 12,
+    });
+  });
+  rows.sort((a,b) => b.spreadAnnual - a.spreadAnnual);
+  return rows;
+}
+
+// Los 5 perfiles fijos pedidos por el usuario, textualmente:
+// 1. Maestro, funcionario Seguridad Social, 0 años, sin complementos.
+// 2. Profesor 598 (especialista FP), interino, 8 años.
+// 3. Secundaria (590), funcionario Clases Pasivas, 12 años, Carrera profesional.
+// 4. Maestro, funcionario Clases Pasivas, 20 años, Director de centro tipo A.
+// 5. Inspector (510), funcionario Clases Pasivas, 25 años.
+// `tablaCargo` se deja sin definir a propósito en los 5 (en vez de copiar el "A1" del formulario
+// interactivo): así resuelve sola a la tabla que le toca por cuerpo (CEIP para Maestro, IES para
+// Secundaria...) en vez de forzar la del formulario, que no pinta nada aquí.
+const FIXED_PROFILES = [
+  {
+    id:'maestro-0', title:'Maestro novel',
+    desc:'597-Maestros · Funcionario Seguridad Social · 0 años · sin complementos',
+    profile:{ cuerpo:'597-Maestros', situacionLaboral:'ssocial', anios:0, maestroESO:'NO', tutor:'NO',
+      jefeDepartamento:'NO', carreraGeneral:'NO', cargoDirectivo:'Sin cargo', tipoCentro:'A',
+      islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', pagaExtra:'NO', irpf:0.19 },
+  },
+  {
+    id:'pessfp-598', title:'Profesor especialista FP (598), interino',
+    desc:`${E.CUERPO_598_LABEL} · Interino o Laboral · 8 años`,
+    profile:{ cuerpo:E.CUERPO_598_LABEL, situacionLaboral:'interino', anios:8, maestroESO:'NO', tutor:'NO',
+      jefeDepartamento:'NO', carreraGeneral:'NO', cargoDirectivo:'Sin cargo', tipoCentro:'A',
+      islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', pagaExtra:'NO', irpf:0.19 },
+  },
+  {
+    id:'secundaria-carrera', title:'Secundaria con carrera profesional',
+    desc:'590-Profesores Enseñanza Secundaria · Funcionario Clases Pasivas · 12 años · Carrera profesional',
+    profile:{ cuerpo:'590-Profesores Enseñanza Secundaria', situacionLaboral:'clasesPasivas', anios:12,
+      maestroESO:'NO', tutor:'NO', jefeDepartamento:'NO', carreraGeneral:'SI', cargoDirectivo:'Sin cargo',
+      tipoCentro:'A', islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', pagaExtra:'NO', irpf:0.19 },
+  },
+  {
+    id:'maestro-director', title:'Maestro, Director de centro (tamaño A)',
+    desc:'597-Maestros · Funcionario Clases Pasivas · 20 años · Dirección, centro tamaño A',
+    profile:{ cuerpo:'597-Maestros', situacionLaboral:'clasesPasivas', anios:20, maestroESO:'NO', tutor:'NO',
+      jefeDepartamento:'NO', carreraGeneral:'NO', cargoDirectivo:'Dirección', tipoCentro:'A',
+      islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', pagaExtra:'NO', irpf:0.19 },
+  },
+  {
+    id:'inspector-25', title:'Inspector veterano',
+    desc:'510-Inspección · Funcionario Clases Pasivas · 25 años',
+    profile:{ cuerpo:'510-Inspección', situacionLaboral:'clasesPasivas', anios:25, maestroESO:'NO', tutor:'NO',
+      jefeDepartamento:'NO', carreraGeneral:'NO', cargoDirectivo:'Sin cargo', tipoCentro:'A',
+      islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', pagaExtra:'NO', irpf:0.19 },
+  },
+];
+
+// Para cada uno de los 5 perfiles: ranking completo, máx./mín./media/brecha y el propio ranking (para
+// el resumen "quién repite arriba/abajo en todos los perfiles" que se calcula después).
+function computeFixedProfilesStats(){
+  return FIXED_PROFILES.map(fp => {
+    const ranked = annualByComunidad(fp.profile);
+    if (!ranked.length) return { ...fp, error:true };
+    const avg = ranked.reduce((s,r)=>s+r.annual,0) / ranked.length;
+    const max = ranked[0], min = ranked[ranked.length-1];
+    return {
+      ...fp, ranked, avg, max, min,
+      spread: max.annual - min.annual,
+      spreadPct: (max.annual - min.annual) / avg,
+      top3: ranked.slice(0,3), bottom3: ranked.slice(-3).reverse(),
+    };
+  });
+}
+
 function renderAnalisis(){
   const root = document.getElementById('analisisContent');
   if (!root) return;
@@ -4616,6 +4736,62 @@ function renderAnalisis(){
   const arrow = key => key===analisisSortKey ? (analisisSortDir===1 ? ' ▲' : ' ▼') : '';
   const ariaSort = key => key===analisisSortKey ? (analisisSortDir===1 ? 'ascending' : 'descending') : 'none';
 
+  // Qué concepto marca más la diferencia, para el perfil actualmente elegido (2026-09-23, a
+  // petición del usuario, "más datos que pueda sacar de diferencias entre las CCAA"): se recalcula
+  // cada vez que cambia el perfil, a diferencia de los 5 perfiles fijos de abajo.
+  const spreadRows = conceptSpreadAnalysis(buildProfile()).slice(0, 6);
+  const spreadHtml = spreadRows.length ? `
+    <div class="card" style="margin-top:22px;">
+      <div class="section-title"><h2>Qué concepto marca más la diferencia</h2>
+      <p>Para el perfil elegido arriba: brecha anual entre la comunidad que más paga ese concepto y la que menos, de mayor a menor brecha.</p></div>
+      <div class="table-scroll"><table class="data-table">
+        <thead><tr><th>Concepto</th><th>Comunidad que más paga</th><th>Comunidad que menos paga</th><th>Brecha anual</th></tr></thead>
+        <tbody>${spreadRows.map(r => `<tr>
+          <td>${r.label}</td>
+          <td>${r.maxCommunity} <span class="hint">(${fmtEUR(r.maxVal)}/mes)</span></td>
+          <td>${r.minCommunity} <span class="hint">(${fmtEUR(r.minVal)}/mes)</span></td>
+          <td><strong>${fmtEUR(r.spreadAnnual)}</strong></td>
+        </tr>`).join('')}</tbody>
+      </table></div>
+      <p class="hint" style="margin-top:10px;">Solo cuenta comunidades donde el concepto existe y no es cero; un concepto que cobran pocas comunidades puede tener una brecha grande sin ser representativo de las 18.</p>
+    </div>` : '';
+
+  // Análisis fijo de 5 perfiles tipo (2026-09-23, a petición del usuario): a diferencia de todo lo
+  // demás de esta pestaña, estos 5 perfiles NO dependen del formulario de arriba — son fijos, para
+  // poder comparar siempre los mismos 5 casos de referencia pase lo que pase con el perfil elegido.
+  const fixedStats = computeFixedProfilesStats();
+  const top3Count = {}, bottom3Count = {};
+  fixedStats.forEach(fp => {
+    if (fp.error) return;
+    fp.top3.forEach(r => { top3Count[r.community] = (top3Count[r.community]||0) + 1; });
+    fp.bottom3.forEach(r => { bottom3Count[r.community] = (bottom3Count[r.community]||0) + 1; });
+  });
+  const topPodium = Object.entries(top3Count).sort((a,b)=>b[1]-a[1])[0];
+  const bottomPodium = Object.entries(bottom3Count).sort((a,b)=>b[1]-a[1])[0];
+  const crossHighlight = (topPodium && topPodium[1] >= 3)
+    ? `<strong>${topPodium[0]}</strong> está entre las 3 comunidades que más pagan en ${topPodium[1]} de los 5 perfiles analizados${bottomPodium && bottomPodium[1] >= 3 && bottomPodium[0] !== topPodium[0] ? `, mientras que <strong>${bottomPodium[0]}</strong> está entre las 3 que menos pagan en ${bottomPodium[1]} de los 5` : ''}.`
+    : 'Ninguna comunidad se repite de forma consistente entre las 3 mejores en los 5 perfiles: quién paga más depende mucho del perfil concreto (cuerpo, antigüedad, cargo...), no solo de la comunidad.';
+  const fixedProfilesHtml = `
+    <div class="card" style="margin-top:22px;">
+      <div class="section-title"><h2>Análisis fijo: 5 perfiles tipo</h2>
+      <p>Sueldo bruto anual por comunidad para 5 perfiles de referencia, siempre los mismos (no cambian con el formulario de arriba).</p></div>
+      <p style="margin:0 0 16px;">${crossHighlight}</p>
+      <div class="grid cols-2">
+        ${fixedStats.map(fp => fp.error ? '' : `
+          <div class="card" style="box-shadow:none;">
+            <div class="section-title"><h2 style="font-size:1rem;">${fp.title}</h2></div>
+            <p class="hint" style="margin-top:-6px;">${fp.desc}</p>
+            <div class="summary-strip" style="margin-top:10px; margin-bottom:10px;">
+              <div class="stat-tile"><div class="label">Máximo</div><div class="value">${fmtEUR(fp.max.annual)}</div><div class="sub">${fp.max.community}</div></div>
+              <div class="stat-tile"><div class="label">Mínimo</div><div class="value">${fmtEUR(fp.min.annual)}</div><div class="sub">${fp.min.community}</div></div>
+              <div class="stat-tile"><div class="label">Media</div><div class="value">${fmtEUR(fp.avg)}</div><div class="sub">Brecha: ${fmtEUR(fp.spread)} (${fmtPct(fp.spreadPct)})</div></div>
+            </div>
+            <p class="hint" style="margin:0;"><strong>Top 3:</strong> ${fp.top3.map(r=>`${r.community} (${fmtEUR(r.annual)})`).join(' · ')}</p>
+            <p class="hint" style="margin:4px 0 0;"><strong>Últimas 3:</strong> ${fp.bottom3.map(r=>`${r.community} (${fmtEUR(r.annual)})`).join(' · ')}</p>
+          </div>`).join('')}
+      </div>
+    </div>`;
+
   root.innerHTML = `
     <div class="card">
       <div class="section-title"><h2>Qué complementos tiene cada comunidad</h2>
@@ -4633,6 +4809,8 @@ function renderAnalisis(){
         <li>Paga extra = mes ordinario: no cuenta sueldo/trienios/tutoría/adicional ESO/carrera/residencia (van igual en todas). "No" = reduce específico, singular, autonómico, sexenios, jefe de departamento o productividad.</li>
       </ul>
     </div>
+    ${spreadHtml}
+    ${fixedProfilesHtml}
   `;
 
   root.querySelectorAll('#analisisTable thead th').forEach(th => {
