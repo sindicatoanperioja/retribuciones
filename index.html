@@ -4549,16 +4549,48 @@ function pagaExtraGaps(name){
 // análisis fijo para 5 sujetos, y destaques lo que sea").
 // ---------------------------------------------------------------------------
 
-// Sueldo bruto anual de cada comunidad para un perfil dado, de mayor a menor (se reutiliza tanto
-// para el perfil interactivo como para los 5 perfiles fijos de abajo).
+// Si el tamaño de centro pedido no existe para esa comunidad (fila entera a 0 en su tabla de cargo
+// directivo — p. ej. Baleares no tiene CEIP de tamaño A), busca el tamaño real más cercano, probando
+// primero el inmediatamente más pequeño (2026-09-23, a petición del usuario: "Baleares no tiene
+// colegios tipo A. Cuando pase esto, busca el más cercano que tenga, en este caso pone el sueldo del
+// B."). Solo se aplica aquí, a la comparación de los 5 perfiles fijos — el motor de cálculo general
+// (Su nómina, Compara Nómina...) sigue devolviendo el 0 real cuando un profesor de verdad no tiene esa
+// combinación, que es la respuesta correcta para un caso real; aquí, en cambio, el tamaño "A" es el
+// mismo para las 18 comunidades a propósito, así que sustituir por el tamaño más parecido es lo que
+// hace la comparación justa en vez de castigar con un 0 a la comunidad que no tiene esa categoría.
+function nearestAvailableTipo(community, profile){
+  if (!profile.cargoDirectivo || profile.cargoDirectivo === 'Sin cargo') return profile.tipoCentro;
+  const idx = E.cuerpoIndex(profile.cuerpo);
+  const table = E.CARGO_TABLE[community] && E.CARGO_TABLE[community][E.groupOf(idx)];
+  if (!table) return profile.tipoCentro;
+  const rowEmpty = tipo => !table[tipo] || E.CARGOS.every(c => table[tipo][c] === 0);
+  if (!rowEmpty(profile.tipoCentro)) return profile.tipoCentro;
+  const i0 = E.TIPOS.indexOf(profile.tipoCentro);
+  if (i0 === -1) return profile.tipoCentro;
+  for (let d = 1; d < E.TIPOS.length; d++){
+    const up = i0 + d, down = i0 - d;
+    if (up < E.TIPOS.length && !rowEmpty(E.TIPOS[up])) return E.TIPOS[up];
+    if (down >= 0 && !rowEmpty(E.TIPOS[down])) return E.TIPOS[down];
+  }
+  return profile.tipoCentro;
+}
+
+// Sueldo bruto anual de cada comunidad para un perfil dado, de mayor a menor (para los 5 perfiles
+// fijos de abajo). `substitutions` recoge qué comunidades recibieron un tamaño de centro distinto del
+// pedido, para poder avisar de ello en la tarjeta correspondiente.
 function annualByComunidad(profile){
   const today = new Date();
+  const substitutions = [];
   const rows = E.COMUNIDAD_ORDER.map(name => {
+    const tipo = nearestAvailableTipo(name, profile);
+    if (tipo !== profile.tipoCentro) substitutions.push({ community: name, tipo });
+    const p = (tipo === profile.tipoCentro) ? profile : { ...profile, tipoCentro: tipo };
     let r;
-    try { r = E.computeNational(name, profile, today); } catch(e){ r = { error: true }; }
+    try { r = E.computeNational(name, p, today); } catch(e){ r = { error: true }; }
     return r.error ? null : { community: name, annual: r.annual };
   }).filter(Boolean).sort((a,b) => b.annual - a.annual);
   rows.forEach((r,i) => { r.rank = i+1; });
+  rows.substitutions = substitutions;
   return rows;
 }
 
@@ -4622,6 +4654,7 @@ function computeFixedProfilesStats(){
       spread: max.annual - min.annual,
       spreadPct: (max.annual - min.annual) / avg,
       top3: ranked.slice(0,3), bottom3: ranked.slice(-3).reverse(),
+      substitutions: ranked.substitutions || [],
     };
   });
 }
@@ -4734,6 +4767,7 @@ function renderAnalisis(){
             </div>
             <p class="hint" style="margin:0;"><strong>Top 3:</strong> ${fp.top3.map(r=>`${r.community} (${fmtEUR(r.annual)})`).join(' · ')}</p>
             <p class="hint" style="margin:4px 0 0;"><strong>Últimas 3:</strong> ${fp.bottom3.map(r=>`${r.community} (${fmtEUR(r.annual)})`).join(' · ')}</p>
+            ${fp.substitutions.length ? `<p class="hint" style="margin:8px 0 0;">Sin centros de tamaño ${fp.profile.tipoCentro}, se usa el más cercano que sí tienen: ${fp.substitutions.map(s=>`${s.community} (tamaño ${s.tipo})`).join(' · ')}.</p>` : ''}
           </div>`).join('')}
       </div>
     </div>`;
