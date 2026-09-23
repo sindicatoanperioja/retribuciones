@@ -221,6 +221,20 @@ th[tabindex]:focus-visible, a:focus-visible{
 }
 .profile-bar.collapsed .profile-bar-chevron{transform:rotate(-90deg);}
 .profile-bar.collapsed .profile-bar-body{display:none;}
+/* En escritorio, desplegado, no se repite un título+resumen que ya se ve en el propio formulario
+   (2026-09-23, a petición del usuario, "no utilices una línea más para el título de perfil y sus
+   datos, solo muestra esos datos si colapsas, pero deja las dos líneas que había antes"): el botón
+   se reduce a solo el círculo de plegar, flotando en la esquina sin ocupar su propia fila — las dos
+   filas del formulario (situación/cuerpo/... y comunidad/cargo) empiezan exactamente donde empezaban
+   antes de tener botón. Al colapsar, el botón vuelve a ocupar una fila normal con el título y el
+   resumen de una línea, igual que en móvil, porque entonces es lo único que hay que mostrar. */
+@media (min-width:761px){
+  .profile-bar{position:relative;}
+  .profile-bar-toggle{position:absolute; top:14px; right:18px; width:auto; padding:0; z-index:2;}
+  .profile-bar-toggle-text{display:none;}
+  .profile-bar.collapsed .profile-bar-toggle{position:static; width:100%; padding:4px 2px;}
+  .profile-bar.collapsed .profile-bar-toggle-text{display:flex;}
+}
 .pb-field{display:flex; flex-direction:column; gap:5px; flex:0 0 auto;}
 .pb-field label{font-size:.72rem; font-weight:600; color:var(--ink-2); white-space:nowrap;}
 .pb-field select, .pb-field input[type=number]{
