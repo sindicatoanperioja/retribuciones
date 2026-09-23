@@ -3889,6 +3889,7 @@ const state = {
   comparaPicker: ['La Rioja']
 };
 let chartInstance = null;
+let fixedProfilesChartInstance = null;
 let sortKey = 'annual', sortDir = -1;
 
 /* ---------------------------------------------------------------------------
@@ -4559,45 +4560,6 @@ function annualByComunidad(profile){
   }).filter(Boolean).sort((a,b) => b.annual - a.annual);
 }
 
-// Qué concepto retributivo separa más a las comunidades entre sí, para el perfil interactivo
-// actual: por cada concepto (Sueldo base, Complemento específico, Sexenios...), la diferencia entre
-// la comunidad que más paga y la que menos, de mayor a menor diferencia. Responde a "qué otros datos
-// puedo sacar de las diferencias entre CCAA" con un dato que cambia según el perfil elegido, no un
-// un texto fijo.
-function conceptSpreadAnalysis(profile){
-  const today = new Date();
-  const isZero = v => Math.abs(v) < 0.005;
-  const byLabel = new Map(); // label -> [{community, monthly}]
-  E.COMUNIDAD_ORDER.forEach(name => {
-    let r;
-    try { r = E.computeNational(name, profile, today, true); } catch(e){ r = { error: true }; }
-    if (r.error) return;
-    (r.items||[]).forEach(it => {
-      if (it.extraOnly || it.hidden) return;
-      const v = it.displayMonthly !== undefined ? it.displayMonthly : it.monthly;
-      if (isZero(v)) return;
-      const label = compareCanonicalLabel(displayLabel(it.label));
-      if (!byLabel.has(label)) byLabel.set(label, []);
-      byLabel.get(label).push({ community: name, monthly: v });
-    });
-  });
-  const rows = [];
-  byLabel.forEach((entries, label) => {
-    if (entries.length < 2) return; // un solo dato no es "diferencia entre comunidades"
-    const max = entries.reduce((a,b) => b.monthly>a.monthly?b:a, entries[0]);
-    const min = entries.reduce((a,b) => b.monthly<a.monthly?b:a, entries[0]);
-    rows.push({
-      label, count: entries.length,
-      maxCommunity: max.community, maxVal: max.monthly,
-      minCommunity: min.community, minVal: min.monthly,
-      spreadMonthly: max.monthly - min.monthly,
-      spreadAnnual: (max.monthly - min.monthly) * 12,
-    });
-  });
-  rows.sort((a,b) => b.spreadAnnual - a.spreadAnnual);
-  return rows;
-}
-
 // Los 5 perfiles fijos pedidos por el usuario, textualmente:
 // 1. Maestro, funcionario Seguridad Social, 0 años, sin complementos.
 // 2. Profesor 598 (especialista FP), interino, 8 años.
@@ -4610,37 +4572,37 @@ function conceptSpreadAnalysis(profile){
 const FIXED_PROFILES = [
   {
     id:'maestro-0', title:'Maestro novel',
-    desc:'597-Maestros · Funcionario Seguridad Social · 0 años · sin complementos',
+    desc:'597-Maestros · 0 años · sin complementos',
     profile:{ cuerpo:'597-Maestros', situacionLaboral:'ssocial', anios:0, maestroESO:'NO', tutor:'NO',
       jefeDepartamento:'NO', carreraGeneral:'NO', cargoDirectivo:'Sin cargo', tipoCentro:'A',
       islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', pagaExtra:'NO', irpf:0.19 },
   },
   {
-    id:'pessfp-598', title:'Profesor especialista FP (598), interino',
-    desc:`${E.CUERPO_598_LABEL} · Interino o Laboral · 8 años`,
+    id:'pessfp-598', title:'Profesor especialista FP (598)',
+    desc:`${E.CUERPO_598_LABEL} · 8 años`,
     profile:{ cuerpo:E.CUERPO_598_LABEL, situacionLaboral:'interino', anios:8, maestroESO:'NO', tutor:'NO',
       jefeDepartamento:'NO', carreraGeneral:'NO', cargoDirectivo:'Sin cargo', tipoCentro:'A',
       islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', pagaExtra:'NO', irpf:0.19 },
   },
   {
     id:'secundaria-carrera', title:'Secundaria con carrera profesional',
-    desc:'590-Profesores Enseñanza Secundaria · Funcionario Clases Pasivas · 12 años · Carrera profesional',
+    desc:'590-Profesores Enseñanza Secundaria · 12 años · Carrera profesional',
     profile:{ cuerpo:'590-Profesores Enseñanza Secundaria', situacionLaboral:'clasesPasivas', anios:12,
       maestroESO:'NO', tutor:'NO', jefeDepartamento:'NO', carreraGeneral:'SI', cargoDirectivo:'Sin cargo',
       tipoCentro:'A', islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', pagaExtra:'NO', irpf:0.19 },
   },
   {
     id:'maestro-director', title:'Maestro, Director de centro (tamaño A)',
-    desc:'597-Maestros · Funcionario Clases Pasivas · 20 años · Dirección, centro tamaño A',
+    desc:'597-Maestros · 20 años · Dirección, centro tamaño A · Carrera profesional',
     profile:{ cuerpo:'597-Maestros', situacionLaboral:'clasesPasivas', anios:20, maestroESO:'NO', tutor:'NO',
-      jefeDepartamento:'NO', carreraGeneral:'NO', cargoDirectivo:'Dirección', tipoCentro:'A',
+      jefeDepartamento:'NO', carreraGeneral:'SI', cargoDirectivo:'Dirección', tipoCentro:'A',
       islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', pagaExtra:'NO', irpf:0.19 },
   },
   {
     id:'inspector-25', title:'Inspector veterano',
-    desc:'510-Inspección · Funcionario Clases Pasivas · 25 años',
+    desc:'510-Inspección · 25 años · Carrera profesional',
     profile:{ cuerpo:'510-Inspección', situacionLaboral:'clasesPasivas', anios:25, maestroESO:'NO', tutor:'NO',
-      jefeDepartamento:'NO', carreraGeneral:'NO', cargoDirectivo:'Sin cargo', tipoCentro:'A',
+      jefeDepartamento:'NO', carreraGeneral:'SI', cargoDirectivo:'Sin cargo', tipoCentro:'A',
       islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', pagaExtra:'NO', irpf:0.19 },
   },
 ];
@@ -4736,26 +4698,6 @@ function renderAnalisis(){
   const arrow = key => key===analisisSortKey ? (analisisSortDir===1 ? ' ▲' : ' ▼') : '';
   const ariaSort = key => key===analisisSortKey ? (analisisSortDir===1 ? 'ascending' : 'descending') : 'none';
 
-  // Qué concepto marca más la diferencia, para el perfil actualmente elegido (2026-09-23, a
-  // petición del usuario, "más datos que pueda sacar de diferencias entre las CCAA"): se recalcula
-  // cada vez que cambia el perfil, a diferencia de los 5 perfiles fijos de abajo.
-  const spreadRows = conceptSpreadAnalysis(buildProfile()).slice(0, 6);
-  const spreadHtml = spreadRows.length ? `
-    <div class="card" style="margin-top:22px;">
-      <div class="section-title"><h2>Qué concepto marca más la diferencia</h2>
-      <p>Para el perfil elegido arriba: brecha anual entre la comunidad que más paga ese concepto y la que menos, de mayor a menor brecha.</p></div>
-      <div class="table-scroll"><table class="data-table">
-        <thead><tr><th>Concepto</th><th>Comunidad que más paga</th><th>Comunidad que menos paga</th><th>Brecha anual</th></tr></thead>
-        <tbody>${spreadRows.map(r => `<tr>
-          <td>${r.label}</td>
-          <td>${r.maxCommunity} <span class="hint">(${fmtEUR(r.maxVal)}/mes)</span></td>
-          <td>${r.minCommunity} <span class="hint">(${fmtEUR(r.minVal)}/mes)</span></td>
-          <td><strong>${fmtEUR(r.spreadAnnual)}</strong></td>
-        </tr>`).join('')}</tbody>
-      </table></div>
-      <p class="hint" style="margin-top:10px;">Solo cuenta comunidades donde el concepto existe y no es cero; un concepto que cobran pocas comunidades puede tener una brecha grande sin ser representativo de las 18.</p>
-    </div>` : '';
-
   // Análisis fijo de 5 perfiles tipo (2026-09-23, a petición del usuario): a diferencia de todo lo
   // demás de esta pestaña, estos 5 perfiles NO dependen del formulario de arriba — son fijos, para
   // poder comparar siempre los mismos 5 casos de referencia pase lo que pase con el perfil elegido.
@@ -4776,6 +4718,8 @@ function renderAnalisis(){
       <div class="section-title"><h2>Análisis fijo: 5 perfiles tipo</h2>
       <p>Sueldo bruto anual por comunidad para 5 perfiles de referencia, siempre los mismos (no cambian con el formulario de arriba).</p></div>
       <p style="margin:0 0 16px;">${crossHighlight}</p>
+      <div class="chart-wrap" style="height:480px; margin-bottom:22px;"><canvas id="chartPerfilesFijos" role="img" aria-label="Gráfico de líneas: sueldo bruto anual de cada comunidad en los 5 perfiles tipo"></canvas></div>
+      <p class="hint" style="margin:-12px 0 20px;">Cada línea es una comunidad, siguiendo su sueldo bruto anual a través de los 5 perfiles. <strong>${state.comunidadRef}</strong> (comunidad elegida arriba) se resalta en verde; pasa el ratón sobre cualquier línea para ver de qué comunidad es.</p>
       <div class="grid cols-2">
         ${fixedStats.map(fp => fp.error ? '' : `
           <div class="card" style="box-shadow:none;">
@@ -4809,7 +4753,6 @@ function renderAnalisis(){
         <li>Paga extra = mes ordinario: no cuenta sueldo/trienios/tutoría/adicional ESO/carrera/residencia (van igual en todas). "No" = reduce específico, singular, autonómico, sexenios, jefe de departamento o productividad.</li>
       </ul>
     </div>
-    ${spreadHtml}
     ${fixedProfilesHtml}
   `;
 
@@ -4824,6 +4767,61 @@ function renderAnalisis(){
     th.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); doSort(); }
     });
+  });
+
+  renderFixedProfilesChart(fixedStats);
+}
+
+// Gráfico de líneas: 18 comunidades × 5 perfiles tipo (2026-09-23, a petición del usuario, "haz un
+// gráfico, con todas las CCAA y 5 columnas con los 5 tipos y que se vea cómo evoluciona la comunidad
+// con cada tipo"). Eje X = los 5 perfiles (en el mismo orden que las tarjetas de abajo), una línea
+// por comunidad seguida a través de los 5 — así se ve si una comunidad sube o baja de posición según
+// el perfil, no solo su cifra suelta en cada uno. Colores repartidos por matiz (HSL) para que las 18
+// líneas se distingan entre sí; la comunidad de referencia elegida en el formulario se resalta en
+// verde y más gruesa para no perderla entre las demás 17.
+function renderFixedProfilesChart(fixedStats){
+  const canvas = document.getElementById('chartPerfilesFijos');
+  if (!canvas) return;
+  const validProfiles = fixedStats.filter(fp => !fp.error);
+  if (!validProfiles.length) return;
+  const colors = currentAccentColors();
+  const labels = validProfiles.map(fp => fp.title);
+  const datasets = E.COMUNIDAD_ORDER.map((name, i) => {
+    const isRef = name === state.comunidadRef;
+    const hue = Math.round((360 / E.COMUNIDAD_ORDER.length) * i);
+    return {
+      label: name,
+      data: validProfiles.map(fp => {
+        const row = fp.ranked.find(r => r.community === name);
+        return row ? row.annual : null;
+      }),
+      borderColor: isRef ? colors.accent2 : `hsl(${hue}, 45%, 55%)`,
+      backgroundColor: isRef ? colors.accent2 : `hsl(${hue}, 45%, 55%)`,
+      borderWidth: isRef ? 3.5 : 1.5,
+      pointRadius: isRef ? 4 : 2,
+      pointHoverRadius: 5,
+      order: isRef ? 0 : 1,
+    };
+  });
+  if (fixedProfilesChartInstance) fixedProfilesChartInstance.destroy();
+  fixedProfilesChartInstance = new Chart(canvas.getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'nearest', intersect:true },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ callbacks:{
+          title: items => items[0] ? items[0].dataset.label : '',
+          label: ctx => `${ctx.label}: ${fmtEUR(ctx.parsed.y)}`,
+        } },
+      },
+      scales:{
+        x:{ grid:{display:false}, ticks:{color:colors.ink2} },
+        y:{ grid:{color:colors.grid}, ticks:{color:colors.ink2, callback:v=>fmtEUR(v)} },
+      },
+    },
   });
 }
 
