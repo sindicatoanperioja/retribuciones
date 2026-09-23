@@ -2288,12 +2288,38 @@ const COMUNIDAD_ORDER = ['Andalucía','Aragón','Asturias','Baleares (Islas)','C
   'Castilla La Mancha','Castilla y León','Cataluña','Extremadura','Galicia','La Rioja','Madrid',
   'Murcia','Valencia','Ceuta y Melilla','País Vasco','Navarra'];
 
+// Una fila de tipo de centro "no existe" cuando todos sus cargos están a 0 — el propio dato de
+// origen (p. ej. Baleares CEIP tipo A: sin colegios de ese tamaño en esa comunidad) en vez de un hueco
+// real. Un CARGO_ERROR sigue contando como "existe" (el hueco es un error de fórmula del Excel
+// original a mostrar tal cual, no un tamaño inexistente).
+function tipoRowIsEmpty(table, tipo){
+  return !table[tipo] || CARGOS.every(c => table[tipo][c] === 0);
+}
+// Busca el tipo de centro real más cercano al pedido, en distancia dentro de TIPOS ('A'..'F'),
+// probando primero el tamaño inmediatamente más pequeño (2026-09-23/24, a petición del usuario:
+// "Baleares no tiene colegios tipo A. Cuando pase esto, busca el más cercano que tenga, en este caso
+// pone el sueldo del B" — "cámbialo en todos los lados, es así, olvídate del Excel": aplicado en el
+// propio motor, no solo en un cálculo puntual, para que Su nómina/Compara Nómina/Análisis lo reflejen
+// todos por igual, aunque eso signifique apartarse del 0€ que el Excel original devolvía para un
+// tamaño de centro que esa comunidad simplemente no tiene).
+function nearestAvailableTipo(table, tipoCentro){
+  const i0 = TIPOS.indexOf(tipoCentro);
+  if (i0 === -1) return tipoCentro;
+  for (let d = 1; d < TIPOS.length; d++){
+    const up = i0 + d, down = i0 - d;
+    if (up < TIPOS.length && !tipoRowIsEmpty(table, TIPOS[up])) return TIPOS[up];
+    if (down >= 0 && !tipoRowIsEmpty(table, TIPOS[down])) return TIPOS[down];
+  }
+  return tipoCentro;
+}
 function getCargoAmount(community, groupAG, tipoCentro, cargo){
   const t = CARGO_TABLE[community];
   if (!t) return 0;
   const table = t[groupAG];
-  if (!table || !table[tipoCentro]) return 0;
-  const v = table[tipoCentro][cargo];
+  if (!table) return 0;
+  const tipo = tipoRowIsEmpty(table, tipoCentro) ? nearestAvailableTipo(table, tipoCentro) : tipoCentro;
+  if (!table[tipo]) return 0;
+  const v = table[tipo][cargo];
   if (v === CARGO_ERROR) return CARGO_ERROR;
   return (typeof v === 'number') ? v : 0;
 }
