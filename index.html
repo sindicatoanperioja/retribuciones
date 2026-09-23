@@ -175,12 +175,16 @@ th[tabindex]:focus-visible, a:focus-visible{
 /* --- Compact profile bar (replaces the old standalone "Selector de perfil" tab) --- */
 /* Fondo e borde superior propios, distintos del resto de tarjetas (2026-09-23, a petición del
    usuario, "el bloque de perfil hazlo de otro color"): esta es la única tarjeta de ENTRADA (el
-   perfil que el usuario edita), todas las demás son de SALIDA (resultados); el tinte azul suave
-   (--accent-soft, ya usado para resaltar la fila "me" en las tablas) lo deja claro de un vistazo,
-   sin introducir un color nuevo en la paleta. */
+   perfil que el usuario edita), todas las demás son de SALIDA (resultados). En escritorio (regla de
+   abajo, "quita el azul ese, pon algo mucho más suave") es apenas un tinte, casi blanco; en móvil se
+   queda el azul suave (--accent-soft, ya usado para resaltar la fila "me" en las tablas), donde no se
+   ha pedido cambiarlo. */
 .profile-bar{
   padding:14px 18px; margin-bottom:16px; display:flex; flex-direction:column; gap:14px;
   background:var(--accent-soft); border-top-color:var(--accent);
+}
+@media (min-width:761px){
+  .profile-bar{background:color-mix(in srgb, var(--accent) 6%, var(--surface));}
 }
 /* El propio contenido plegable necesita su gap (2026-09-23, a petición del usuario, "los bloques de
    Comunidad y Cargo Directivo se pegan por arriba con los selectores"): el gap:14px de .profile-bar
