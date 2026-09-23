@@ -160,7 +160,10 @@ th[tabindex]:focus-visible, a:focus-visible{
 /* "Su nómina", "Comparativa sueldos" and "Datos CCAA" stay narrower than the shared 1800px .wrap
    (needed so the nav/menu doesn't shift width between tabs) — otherwise their tables/labels stretch
    edge to edge with huge gaps between text and figures (2026-09-20, at the user's request). */
-#panel-nomina, #panel-resultados, #panel-admin{max-width:1200px; margin-inline:auto;}
+/* Análisis se suma a este grupo (2026-09-23, a petición del usuario, "que la página tenga
+   márgenes a los lados, que ocupe el mismo ancho que Datos CCAA"): con columnas mucho más estrechas
+   (ver #analisisTable más abajo) ya no necesita todo el ancho de .wrap para caber. */
+#panel-nomina, #panel-resultados, #panel-admin, #panel-analisis{max-width:1200px; margin-inline:auto;}
 /* A ledger section, not a floating SaaS card: a top rule carries the weight instead of a heavy drop
    shadow, so stacked sections read as pages of the same register rather than separate tiles. */
 .card{
@@ -376,10 +379,17 @@ tbody tr.me td:first-child{font-weight:700; color:var(--accent);}
    sí se desplaza, y la columna "Comunidad" se va con el resto en vez de quedarse fija. El
    contenedor .table-scroll ya recorta las esquinas redondeadas por su cuenta. */
 #analisisTable{table-layout:auto; width:max-content; min-width:100%; overflow:visible;}
-#analisisTable th{white-space:normal; line-height:1.25; font-size:.66rem; text-align:center; vertical-align:bottom; padding:8px 10px;}
-#analisisTable td{text-align:center; padding:8px 10px;}
+/* Columnas mucho más estrechas y pegadas (2026-09-23, a petición del usuario, "haz las columnas
+   mucho más pequeñas, más pegadas"): menos padding, y un salto de línea fijo en cada concepto (no un
+   max-width dejado a que el texto ajuste solo) por el mismo motivo que en Compara Nómina — la tabla
+   estira su ancho hasta llenar el contenedor, así que un ajuste "libre" perdía el salto de línea en
+   cuanto sobraba sitio. El recuento "(n/18)" baja a su propia línea pequeña con .col-meta, como ya
+   hacían las cabeceras de Datos CCAA. */
+#analisisTable th{white-space:normal; line-height:1.2; font-size:.64rem; text-align:center; vertical-align:bottom; padding:6px 5px; max-width:76px;}
+#analisisTable td{text-align:center; padding:5px 5px;}
+#analisisTable th .col-meta{display:block; margin-top:2px; font-weight:400; color:var(--ink-muted); font-size:.6rem;}
 #analisisTable th:first-child, #analisisTable td:first-child{
-  text-align:left; position:sticky; left:0; background:var(--surface); z-index:1;
+  text-align:left; position:sticky; left:0; background:var(--surface); z-index:1; max-width:130px;
 }
 #analisisTable th:first-child{background:var(--surface-2); z-index:2;}
 .chart-card{margin:22px 0;}
@@ -4574,14 +4584,18 @@ function renderAnalisis(){
     };
   });
 
+  // headerLabel: salto de línea fijo en dos líneas (2026-09-23, a petición del usuario, "ocupa dos
+  // líneas para los conceptos de las columnas"), igual que se hizo con los nombres de comunidad
+  // largos en Compara Nómina — un ajuste "libre" por ancho no basta porque la tabla estira su ancho
+  // hasta llenar el contenedor y el salto se pierde en cuanto sobra sitio.
   const cols = [
-    {key:'tieneCarrera', label:'Carrera profesional'},
-    {key:'tieneTutoria', label:'Tutoría'},
-    {key:'tieneAutonomico', label:'Compl. autonómico'},
-    {key:'tieneIslaResidencia', label:'Isla o residencia'},
-    {key:'destinoMinisterio', label:'Compl. Destino Ministerio'},
-    {key:'siguenMinisterio', label:'Sigue sueldo Ministerio'},
-    {key:'pagaExtraCompleta', label:'Paga extra = mes ordinario', render: r => r.pagaExtraCompleta
+    {key:'tieneCarrera', label:'Carrera profesional', headerLabel:'Carrera<br>profesional'},
+    {key:'tieneTutoria', label:'Tutoría', headerLabel:'Tutoría'},
+    {key:'tieneAutonomico', label:'Compl. autonómico', headerLabel:'Compl.<br>autonómico'},
+    {key:'tieneIslaResidencia', label:'Isla o residencia', headerLabel:'Isla o<br>residencia'},
+    {key:'destinoMinisterio', label:'Compl. Destino Ministerio', headerLabel:'Compl. Destino<br>Ministerio'},
+    {key:'siguenMinisterio', label:'Sigue sueldo Ministerio', headerLabel:'Sigue sueldo<br>Ministerio'},
+    {key:'pagaExtraCompleta', label:'Paga extra = mes ordinario', headerLabel:'Paga extra =<br>mes ordinario', render: r => r.pagaExtraCompleta
       ? '<span class="pill good">Sí</span>'
       : `<span class="pill bad" title="No cobra en la paga extra (o lo cobra reducido): ${r.pagaExtraGaps.join(', ')}">No</span>`},
   ];
@@ -4609,7 +4623,7 @@ function renderAnalisis(){
       <div class="table-scroll"><table id="analisisTable">
         <thead><tr>
           <th data-key="name" tabindex="0" aria-sort="${ariaSort('name')}">Comunidad${arrow('name')}</th>
-          ${cols.map(c => `<th data-key="${c.key}" tabindex="0" aria-sort="${ariaSort(c.key)}">${c.label} (${countTrue(c.key)}/18)${arrow(c.key)}</th>`).join('')}
+          ${cols.map(c => `<th data-key="${c.key}" tabindex="0" aria-sort="${ariaSort(c.key)}">${c.headerLabel}<span class="col-meta">(${countTrue(c.key)}/18)${arrow(c.key)}</span></th>`).join('')}
         </tr></thead>
         <tbody>${tableRows}</tbody>
       </table></div>
