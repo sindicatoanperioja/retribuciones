@@ -4121,11 +4121,17 @@ function renderResultados(){
 
   // stat tiles
   const mine = lastResults[state.comunidadRef];
+  // Sueldo bruto anual de la comunidad elegida y su diferencia frente a la media (2026-09-23, a
+  // petición del usuario, "añade en una tarjeta el sueldo bruto anual de esa comunidad y cuanto es
+  // la diferencia anual frente a la media"): hasta ahora solo se veía su POSICIÓN en el ranking, no
+  // la cifra en sí ni cuánto se aparta de la media de las 18.
+  const refDeltaAvg = refVal !== null ? refVal - avg : null;
   document.getElementById('statTiles').innerHTML = `
     <div class="stat-tile"><div class="label">Máximo</div><div class="value">${fmtEUR(maxRow.annual)}</div><div class="sub">${maxRow.community}</div></div>
     <div class="stat-tile"><div class="label">Mínimo</div><div class="value">${fmtEUR(minRow.annual)}</div><div class="sub">${minRow.community}</div></div>
     <div class="stat-tile"><div class="label">Media de las 18</div><div class="value">${fmtEUR(avg)}</div><div class="sub">Brecha máx.–mín.: ${fmtEUR(maxRow.annual-minRow.annual)}</div></div>
     <div class="stat-tile"><div class="label">Posición de ${state.comunidadRef}</div><div class="value">${refRank ? `${refRank}.ª de ${okRows.length}` : '—'}</div><div class="sub">Por sueldo bruto anual</div></div>
+    <div class="stat-tile"><div class="label">Sueldo bruto anual de ${state.comunidadRef}</div><div class="value">${fmtEUR(refVal)}</div><div class="sub">Vs. media de las 18: ${refDeltaAvg !== null ? fmtSigned(refDeltaAvg) : '—'}</div></div>
   `;
 
   // table
