@@ -4553,11 +4553,13 @@ function pagaExtraGaps(name){
 // para el perfil interactivo como para los 5 perfiles fijos de abajo).
 function annualByComunidad(profile){
   const today = new Date();
-  return E.COMUNIDAD_ORDER.map(name => {
+  const rows = E.COMUNIDAD_ORDER.map(name => {
     let r;
     try { r = E.computeNational(name, profile, today); } catch(e){ r = { error: true }; }
     return r.error ? null : { community: name, annual: r.annual };
   }).filter(Boolean).sort((a,b) => b.annual - a.annual);
+  rows.forEach((r,i) => { r.rank = i+1; });
+  return rows;
 }
 
 // Los 5 perfiles fijos pedidos por el usuario, textualmente:
@@ -4719,7 +4721,7 @@ function renderAnalisis(){
       <p>Sueldo bruto anual por comunidad para 5 perfiles de referencia, siempre los mismos (no cambian con el formulario de arriba).</p></div>
       <p style="margin:0 0 16px;">${crossHighlight}</p>
       <div class="chart-wrap" style="height:480px; margin-bottom:22px;"><canvas id="chartPerfilesFijos" role="img" aria-label="Gráfico de líneas: sueldo bruto anual de cada comunidad en los 5 perfiles tipo"></canvas></div>
-      <p class="hint" style="margin:-12px 0 20px;">Cada línea es una comunidad, siguiendo su sueldo bruto anual a través de los 5 perfiles. <strong>${state.comunidadRef}</strong> (comunidad elegida arriba) se resalta en verde; pasa el ratón sobre cualquier línea para ver de qué comunidad es.</p>
+      <p class="hint" style="margin:-12px 0 20px;">Cada línea es una comunidad, siguiendo su posición en el ranking (1.ª = la que más paga) a través de los 5 perfiles — el importe en euros varía poco de una comunidad a otra y casi no se apreciaba en el gráfico, así que el eje muestra el puesto; pasa el ratón sobre un punto para ver la cifra exacta. <strong>${state.comunidadRef}</strong> (comunidad elegida arriba) se resalta en verde.</p>
       <div class="grid cols-2">
         ${fixedStats.map(fp => fp.error ? '' : `
           <div class="card" style="box-shadow:none;">
@@ -4774,11 +4776,14 @@ function renderAnalisis(){
 
 // Gráfico de líneas: 18 comunidades × 5 perfiles tipo (2026-09-23, a petición del usuario, "haz un
 // gráfico, con todas las CCAA y 5 columnas con los 5 tipos y que se vea cómo evoluciona la comunidad
-// con cada tipo"). Eje X = los 5 perfiles (en el mismo orden que las tarjetas de abajo), una línea
-// por comunidad seguida a través de los 5 — así se ve si una comunidad sube o baja de posición según
-// el perfil, no solo su cifra suelta en cada uno. Colores repartidos por matiz (HSL) para que las 18
-// líneas se distingan entre sí; la comunidad de referencia elegida en el formulario se resalta en
-// verde y más gruesa para no perderla entre las demás 17.
+// con cada tipo"). Eje Y = posición en el ranking (1 = la que más paga), no el importe en euros
+// (2026-09-23, a petición del usuario: "en el gráfico no se aprecia diferencia en muchas comunidades
+// porque los valores están muy cerca" — unos pocos cientos de euros son invisibles en una escala de
+// 30.000-90.000€, pero un salto del puesto 3º al 12º se ve al instante; el importe exacto de cada
+// punto se sigue viendo en el tooltip al pasar el ratón). Eje X = los 5 perfiles (mismo orden que las
+// tarjetas de abajo), una línea por comunidad seguida a través de los 5. Colores repartidos por matiz
+// (HSL) para que las 18 líneas se distingan entre sí; la comunidad de referencia elegida en el
+// formulario se resalta en verde y más gruesa para no perderla entre las demás 17.
 function renderFixedProfilesChart(fixedStats){
   const canvas = document.getElementById('chartPerfilesFijos');
   if (!canvas) return;
@@ -4789,12 +4794,11 @@ function renderFixedProfilesChart(fixedStats){
   const datasets = E.COMUNIDAD_ORDER.map((name, i) => {
     const isRef = name === state.comunidadRef;
     const hue = Math.round((360 / E.COMUNIDAD_ORDER.length) * i);
+    const perProfile = validProfiles.map(fp => fp.ranked.find(r => r.community === name) || null);
     return {
       label: name,
-      data: validProfiles.map(fp => {
-        const row = fp.ranked.find(r => r.community === name);
-        return row ? row.annual : null;
-      }),
+      data: perProfile.map(row => row ? row.rank : null),
+      annualValues: perProfile.map(row => row ? row.annual : null),
       borderColor: isRef ? colors.accent2 : `hsl(${hue}, 45%, 55%)`,
       backgroundColor: isRef ? colors.accent2 : `hsl(${hue}, 45%, 55%)`,
       borderWidth: isRef ? 3.5 : 1.5,
@@ -4814,12 +4818,20 @@ function renderFixedProfilesChart(fixedStats){
         legend:{ display:false },
         tooltip:{ callbacks:{
           title: items => items[0] ? items[0].dataset.label : '',
-          label: ctx => `${ctx.label}: ${fmtEUR(ctx.parsed.y)}`,
+          label: ctx => {
+            const annual = ctx.dataset.annualValues[ctx.dataIndex];
+            return `${ctx.label}: ${ctx.parsed.y}.º puesto (${fmtEUR(annual)})`;
+          },
         } },
       },
       scales:{
         x:{ grid:{display:false}, ticks:{color:colors.ink2} },
-        y:{ grid:{color:colors.grid}, ticks:{color:colors.ink2, callback:v=>fmtEUR(v)} },
+        y:{
+          reverse:true, min:1, max:E.COMUNIDAD_ORDER.length,
+          grid:{color:colors.grid},
+          ticks:{color:colors.ink2, stepSize:1, callback:v=>`${v}.º`},
+          title:{ display:true, text:'Posición (1.ª = la que más paga)', color:colors.ink2 },
+        },
       },
     },
   });
