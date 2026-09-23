@@ -191,9 +191,32 @@ th[tabindex]:focus-visible, a:focus-visible{
    abajo sí le pone display:flex + gap a este mismo div). */
 .profile-bar-body{display:flex; flex-direction:column; gap:14px;}
 .profile-bar-row{display:flex; flex-wrap:wrap; justify-content:center; gap:14px; align-items:flex-end;}
-/* El botón plegable solo existe visualmente en móvil (ver el media query de abajo); en escritorio
-   queda oculto y el formulario se ve siempre entero, como antes de este cambio. */
-.profile-bar-toggle{display:none;}
+/* El botón de plegar/desplegar y el auto-plegado al cambiar de pestaña funcionan igual en escritorio
+   que en móvil (2026-09-23, a petición del usuario, "lo que te decía aplícalo tb a la versión
+   escritorio" — el plegado automático al cambiar de menú era hasta ahora solo-móvil). */
+.profile-bar-toggle{
+  display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;
+  appearance:none; border:0; background:transparent; padding:4px 2px; cursor:pointer; text-align:left;
+  color:var(--ink);
+}
+.profile-bar-toggle-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
+.profile-bar-toggle-label{font-family:'Source Serif 4',serif; font-weight:600; font-size:1.05rem;}
+.profile-bar-summary{
+  font-size:.76rem; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+/* Botón circular con borde, no solo una flechita suelta (2026-09-23, a petición del usuario, "que se
+   vea claro que se puede colapsar"): con el mismo tratamiento que un rank-badge, se lee como un
+   control pulsable en vez de un simple icono decorativo. */
+.profile-bar-chevron{
+  width:26px; height:26px; padding:5px; box-sizing:border-box; flex:0 0 auto;
+  color:var(--accent); background:var(--surface); border:1px solid var(--accent); border-radius:50%;
+  transition:transform .15s, background .15s;
+}
+.profile-bar-toggle:hover .profile-bar-chevron, .profile-bar-toggle:focus-visible .profile-bar-chevron{
+  background:var(--accent); color:var(--accent-ink);
+}
+.profile-bar.collapsed .profile-bar-chevron{transform:rotate(-90deg);}
+.profile-bar.collapsed .profile-bar-body{display:none;}
 .pb-field{display:flex; flex-direction:column; gap:5px; flex:0 0 auto;}
 .pb-field label{font-size:.72rem; font-weight:600; color:var(--ink-2); white-space:nowrap;}
 .pb-field select, .pb-field input[type=number]{
@@ -598,35 +621,12 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
     display:none;
   }
 
-  /* Formulario de perfil plegable en móvil (2026-09-22, a petición del usuario, "lo del perfil tiene
-     que ocupar menos pantalla o que se pueda ocultar"): empieza desplegado (hay que verlo la primera
-     vez), pero tocando la cabecera se pliega y deja sitio a los datos — con un resumen de una línea
-     del perfil actual para no perder de vista qué está seleccionado mientras está plegado. */
+  /* Formulario de perfil plegable (2026-09-22, a petición del usuario, "lo del perfil tiene que
+     ocupar menos pantalla o que se pueda ocultar"; el botón y el auto-plegado en sí ya son iguales en
+     escritorio, ver la regla base de .profile-bar-toggle más arriba): en móvil, algo más apretado y
+     con un pequeño margen bajo el botón que en escritorio no hace falta. */
   .profile-bar{padding:10px 14px;}
-  .profile-bar-toggle{
-    display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;
-    appearance:none; border:0; background:transparent; padding:4px 2px; cursor:pointer; text-align:left;
-    color:var(--ink);
-  }
-  .profile-bar-toggle-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
-  .profile-bar-toggle-label{font-family:'Source Serif 4',serif; font-weight:600; font-size:1.05rem;}
-  .profile-bar-summary{
-    font-size:.76rem; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  }
-  /* Botón circular con borde, no solo una flechita suelta (2026-09-23, a petición del usuario, "que
-     se vea claro que se puede colapsar"): con el mismo tratamiento que un rank-badge, se lee como un
-     control pulsable en vez de un simple icono decorativo. */
-  .profile-bar-chevron{
-    width:26px; height:26px; padding:5px; box-sizing:border-box; flex:0 0 auto;
-    color:var(--accent); background:var(--surface); border:1px solid var(--accent); border-radius:50%;
-    transition:transform .15s, background .15s;
-  }
-  .profile-bar-toggle:hover .profile-bar-chevron, .profile-bar-toggle:focus-visible .profile-bar-chevron{
-    background:var(--accent); color:var(--accent-ink);
-  }
-  .profile-bar.collapsed .profile-bar-chevron{transform:rotate(-90deg);}
-  .profile-bar-body{display:flex; flex-direction:column; gap:14px; margin-top:12px;}
-  .profile-bar.collapsed .profile-bar-body{display:none;}
+  .profile-bar-body{margin-top:12px;}
 
   /* Cabecera más compacta (2026-09-22, a petición del usuario, "el título también ocupa mucho"): el
      h1 a tamaño de escritorio ocupaba 4 líneas completas. Se reduce el logo, el título pasa a una
