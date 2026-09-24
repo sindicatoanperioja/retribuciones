@@ -4512,7 +4512,6 @@ function renderNomina(){
             <tr class="total"><td>Total bruto mensual</td><td>${fmtEUR2(r.mensualBruto)}</td></tr>
           </tbody>
         </table>
-        <p class="payslip-note">Nómina de un mes ordinario${pagaExtraOn ? ', con la paga extraordinaria de junio/diciembre incluida en la misma tabla (filas marcadas "paga extra")' : ''}, replicando el criterio de la hoja "Nómina mensual" del Excel de referencia (no es sueldo bruto anual dividido entre doce: las pagas extraordinarias no se prorratean en la mayoría de comunidades).</p>
       </div>
       <div>
         <h3 style="margin-bottom:8px;">Deducciones</h3>
@@ -4534,8 +4533,8 @@ function renderNomina(){
     </div>
 
     <div class="payslip-annual-strip">
-      <div class="stat-tile"><div class="label">Total bruto anual</div><div class="value">${fmtEUR(r.annual)}</div><div class="sub">Sueldo bruto anual validado (incluye pagas extra)</div></div>
-      <div class="stat-tile"><div class="label">Total líquido anual (estimado)</div><div class="value">${fmtEUR(liquidoAnualEstimado)}</div><div class="sub">Bruto anual menos MUFACE/Derechos Pasivos/SS e IRPF, con el mismo criterio de escalado (&times;14 para MUFACE/Derechos Pasivos, &times;12 para las cotizaciones de Seguridad Social) que usa el propio sueldo bruto anual validado</div></div>
+      <div class="stat-tile"><div class="label">Total bruto anual</div><div class="value">${fmtEUR(r.annual)}</div></div>
+      <div class="stat-tile"><div class="label">Total líquido anual (estimado)</div><div class="value">${fmtEUR(liquidoAnualEstimado)}</div></div>
     </div>
   </div>`;
 }
