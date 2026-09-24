@@ -392,6 +392,10 @@ tbody tr.me td:first-child{font-weight:700; color:var(--accent);}
   text-align:left; position:sticky; left:0; background:var(--surface); z-index:1; max-width:130px;
 }
 #analisisTable th:first-child{background:var(--surface-2); z-index:2;}
+/* Análisis por perfil: gráfico a la izquierda, texto a la derecha; apilados en móvil. */
+.perfil-layout{display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:22px; align-items:start;}
+@media (max-width:760px){ .perfil-layout{grid-template-columns:1fr;} }
+.perfil-analysis p{margin:0 0 12px; font-size:.9rem; line-height:1.55; color:var(--ink);}
 .chart-card{margin:22px 0;}
 .chart-wrap{position:relative; height:460px;}
 .section-title{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap;}
@@ -4681,7 +4685,128 @@ function computeFixedProfilesStats(){
       spreadPct: (max.annual - min.annual) / avg,
       top3: ranked.slice(0,3), bottom3: ranked.slice(-3).reverse(),
       substitutions: ranked.substitutions || [],
+      axisMin: Math.floor((min.annual - (max.annual - min.annual) * 0.25) / 1000) * 1000,
     };
+  });
+}
+
+// Qué conceptos separan más a dos comunidades para un perfil (€/mes, mes ordinario): sirve para
+// explicar POR QUÉ la primera y la última de un perfil están donde están.
+function conceptDrivers(profile, commA, commB){
+  const today = new Date();
+  const monthlyMap = name => {
+    const map = {};
+    let r;
+    try { r = E.computeNational(name, profile, today, true); } catch(e){ return map; }
+    (r.items || []).forEach(it => {
+      if (it.extraOnly || it.hidden) return;
+      const v = it.displayMonthly !== undefined ? it.displayMonthly : it.monthly;
+      if (Math.abs(v) < 0.005) return;
+      const label = compareCanonicalLabel(displayLabel(it.label));
+      map[label] = (map[label] || 0) + v;
+    });
+    return map;
+  };
+  const a = monthlyMap(commA), b = monthlyMap(commB);
+  return [...new Set([...Object.keys(a), ...Object.keys(b)])]
+    .map(label => ({ label, diff: (a[label] || 0) - (b[label] || 0) }))
+    .sort((x, y) => Math.abs(y.diff) - Math.abs(x.diff))
+    .slice(0, 2);
+}
+
+// Análisis en 3-4 párrafos de un perfil fijo, compuesto solo con cifras calculadas (nada de texto
+// prefabricado sobre qué comunidad "debería" ir arriba): panorama, extremos y por qué, comunidad
+// elegida, y qué comunidades rinden mejor/peor aquí que en su posición media de los 5 perfiles.
+function fixedProfileAnalysis(fp, rankHistory){
+  const n = fp.ranked.length;
+  const avg = fp.avg, ref = state.comunidadRef;
+  const paras = [];
+  const above = fp.ranked.filter(r => r.annual > avg).length;
+  paras.push(`La media de las ${n} comunidades es de <strong>${fmtEUR(avg)}</strong> brutos al año. <strong>${fp.max.community}</strong> paga más (${fmtEUR(fp.max.annual)}) y <strong>${fp.min.community}</strong> menos (${fmtEUR(fp.min.annual)}): una brecha de ${fmtEUR(fp.spread)}, el ${(fp.spreadPct*100).toFixed(0)}% de la media. ${above} comunidades quedan por encima de la media y ${n - above} por debajo.`);
+
+  const second = fp.ranked[1];
+  const gapTop = fp.max.annual - second.annual;
+  const packRange = fp.ranked[3].annual - fp.ranked[n-4].annual;
+  const drivers = conceptDrivers(fp.profile, fp.max.community, fp.min.community);
+  const driverTxt = drivers.length
+    ? ` Lo que más separa a ${fp.max.community} de ${fp.min.community} es ${drivers.map(d => `${d.label} (${fmtEUR(Math.abs(d.diff))}/mes ${d.diff >= 0 ? 'más' : 'menos'} en ${fp.max.community})`).join(' y ')}.`
+    : '';
+  paras.push((gapTop > avg * 0.05
+      ? `${fp.max.community} se despega ${fmtEUR(gapTop)} de la segunda, ${second.community} (${fmtEUR(second.annual)}).`
+      : `La cabeza está apretada: ${fp.max.community} le saca solo ${fmtEUR(gapTop)} a ${second.community}.`)
+    + ` El grueso, del puesto 4.º al ${n-3}.º, se mueve en apenas ${fmtEUR(packRange)}, así que unos pocos cientos de euros bastan para cambiar varios puestos.`
+    + driverTxt);
+
+  const row = fp.ranked.find(r => r.community === ref);
+  if (row){
+    const ranks = rankHistory[ref] || [];
+    const best = Math.min(...ranks), worst = Math.max(...ranks);
+    paras.push(`<strong>${ref}</strong> queda en el puesto ${row.rank}.º de ${n} con ${fmtEUR(row.annual)}: ${fmtSigned(row.annual - avg)} frente a la media y ${fmtEUR(fp.max.annual - row.annual)} por debajo de ${fp.max.community}. En los 5 perfiles ocupa los puestos ${ranks.map(r => r + '.º').join(', ')}${row.rank === best && best !== worst ? ' — este es su mejor perfil' : row.rank === worst && best !== worst ? ' — este es su peor perfil' : ''}.`);
+  }
+
+  const deltas = fp.ranked.map(r => {
+    const rs = rankHistory[r.community] || [r.rank];
+    return { community: r.community, delta: rs.reduce((s,x)=>s+x,0) / rs.length - r.rank };
+  });
+  const riser = deltas.reduce((a,b) => b.delta > a.delta ? b : a);
+  const faller = deltas.reduce((a,b) => b.delta < a.delta ? b : a);
+  const extras = [];
+  if (riser.delta >= 3) extras.push(`Frente a su puesto medio en los 5 perfiles, <strong>${riser.community}</strong> mejora ${Math.round(riser.delta)} puestos con este perfil`);
+  if (faller.delta <= -3) extras.push(`<strong>${faller.community}</strong> empeora ${Math.round(-faller.delta)}`);
+  let last = extras.length ? extras.join(' y ') + '.' : '';
+  if (fp.substitutions.length) last += `${last ? ' ' : ''}Nota: ${fp.substitutions.map(s => s.community).join(', ')} no tiene centros de tamaño ${fp.profile.tipoCentro}; se usa el más cercano que sí tiene (tamaño ${fp.substitutions[0].tipo}).`;
+  if (last) paras.push(last);
+  return paras;
+}
+
+// Gráficos de barras (uno por perfil) con todas las comunidades ordenadas, la media como línea
+// discontinua y el importe al final de cada barra.
+let fixedProfileBarInstances = [];
+function renderProfileBarCharts(fixedStats){
+  fixedProfileBarInstances.forEach(c => c.destroy());
+  fixedProfileBarInstances = [];
+  const colors = currentAccentColors();
+  fixedStats.filter(fp => !fp.error).forEach((fp, i) => {
+    const canvas = document.getElementById('chartPerfil' + i);
+    if (!canvas) return;
+    const rows = fp.ranked;
+    const overlay = {
+      id: 'avgAndLabels',
+      afterDatasetsDraw(chart){
+        const {ctx, chartArea, scales} = chart;
+        ctx.save();
+        const x = scales.x.getPixelForValue(fp.avg);
+        ctx.setLineDash([5, 4]); ctx.strokeStyle = colors.ink2; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(x, chartArea.top); ctx.lineTo(x, chartArea.bottom); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.font = '600 10px "Source Sans 3", sans-serif'; ctx.fillStyle = colors.ink2; ctx.textBaseline = 'middle';
+        const surface = getComputedStyle(document.documentElement).getPropertyValue('--surface').trim() || '#fff';
+        chart.getDatasetMeta(0).data.forEach((bar, k) => {
+          const txt = fmtEUR(rows[k].annual), w = ctx.measureText(txt).width;
+          ctx.fillStyle = surface;
+          ctx.fillRect(bar.x + 2, bar.y - 7, w + 4, 14);
+          ctx.fillStyle = colors.ink2; ctx.textAlign = 'left';
+          ctx.fillText(txt, bar.x + 4, bar.y);
+        });
+        ctx.restore();
+      }
+    };
+    fixedProfileBarInstances.push(new Chart(canvas.getContext('2d'), {
+      type:'bar',
+      data:{
+        labels: rows.map(r => r.community),
+        datasets:[{ data: rows.map(r => r.annual), backgroundColor: rows.map(r => r.community === state.comunidadRef ? colors.accent2 : colors.accent), borderRadius:3, maxBarThickness:22 }]
+      },
+      plugins:[overlay],
+      options:{
+        indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: ctx => fmtEUR2(ctx.parsed.x) } } },
+        scales:{
+          x:{ min: fp.axisMin, max: fp.max.annual + fp.spread * 0.2, grid:{color:colors.grid}, ticks:{color:colors.ink2, callback:v=>fmtEUR(v)} },
+          y:{ grid:{display:false}, ticks:{color:colors.ink2} }
+        }
+      }
+    }));
   });
 }
 
@@ -4774,28 +4899,35 @@ function renderAnalisis(){
   const crossHighlight = (topPodium && topPodium[1] >= 3)
     ? `<strong>${topPodium[0]}</strong> está entre las 3 comunidades que más pagan en ${topPodium[1]} de los 5 perfiles analizados${bottomPodium && bottomPodium[1] >= 3 && bottomPodium[0] !== topPodium[0] ? `, mientras que <strong>${bottomPodium[0]}</strong> está entre las 3 que menos pagan en ${bottomPodium[1]} de los 5` : ''}.`
     : 'Ninguna comunidad se repite de forma consistente entre las 3 mejores en los 5 perfiles: quién paga más depende mucho del perfil concreto (cuerpo, antigüedad, cargo...), no solo de la comunidad.';
+  // Un gráfico de barras + un análisis de 3-4 párrafos por cada perfil, y al final el gráfico general
+  // de líneas con los 5 a la vez (2026-09-24, a petición del usuario: "para cada caso una gráfica, de
+  // cómo queda cada comunidad y un pequeño análisis de 3 o 4 párrafos, caso por caso, y la gráfica
+  // general la dejas para el final"). Todo el texto se compone a partir de los datos calculados.
+  const validStats = fixedStats.filter(fp => !fp.error);
+  const rankHistory = {};
+  validStats.forEach(fp => fp.ranked.forEach(r => { (rankHistory[r.community] = rankHistory[r.community] || []).push(r.rank); }));
+  const perfilCards = validStats.map((fp, i) => `
+    <div class="card" style="margin-top:22px;">
+      <div class="section-title"><h2>${i+1}. ${fp.title}</h2><p>${fp.desc}</p></div>
+      <div class="perfil-layout">
+        <div>
+          <div class="chart-wrap" style="height:470px;"><canvas id="chartPerfil${i}" role="img" aria-label="Gráfico de barras: sueldo bruto anual de cada comunidad para el perfil ${fp.title}"></canvas></div>
+          <p class="hint" style="margin-top:6px;">El eje empieza en ${fmtEUR(fp.axisMin)} para que se aprecien las diferencias entre comunidades. Línea discontinua: media de las 18. <strong>${state.comunidadRef}</strong> en verde.</p>
+        </div>
+        <div class="perfil-analysis">${fixedProfileAnalysis(fp, rankHistory).map(p => `<p>${p}</p>`).join('')}</div>
+      </div>
+    </div>`).join('');
   const fixedProfilesHtml = `
     <div class="card" style="margin-top:22px;">
       <div class="section-title"><h2>Análisis fijo: 5 perfiles tipo</h2>
-      <p>Sueldo bruto anual por comunidad para 5 perfiles de referencia, siempre los mismos (no cambian con el formulario de arriba).</p></div>
+      <p>Sueldo bruto anual por comunidad para 5 perfiles de referencia, siempre los mismos (no cambian con el formulario de arriba). Un gráfico y un análisis por perfil, y al final la evolución conjunta.</p></div>
+    </div>
+    ${perfilCards}
+    <div class="card" style="margin-top:22px;">
+      <div class="section-title"><h2>Las 18 comunidades a través de los 5 perfiles</h2></div>
       <p style="margin:0 0 16px;">${crossHighlight}</p>
-      <div class="chart-wrap" style="height:480px; margin-bottom:22px;"><canvas id="chartPerfilesFijos" role="img" aria-label="Gráfico de líneas: sueldo bruto anual de cada comunidad en los 5 perfiles tipo"></canvas></div>
-      <p class="hint" style="margin:-12px 0 20px;">Cada línea es una comunidad, siguiendo su posición en el ranking (1.ª = la que más paga) a través de los 5 perfiles — el importe en euros varía poco de una comunidad a otra y casi no se apreciaba en el gráfico, así que el eje muestra el puesto; pasa el ratón sobre un punto para ver la cifra exacta. <strong>${state.comunidadRef}</strong> (comunidad elegida arriba) se resalta en verde.</p>
-      <div class="grid cols-2">
-        ${fixedStats.map(fp => fp.error ? '' : `
-          <div class="card" style="box-shadow:none;">
-            <div class="section-title"><h2 style="font-size:1rem;">${fp.title}</h2></div>
-            <p class="hint" style="margin-top:-6px;">${fp.desc}</p>
-            <div class="summary-strip" style="margin-top:10px; margin-bottom:10px;">
-              <div class="stat-tile"><div class="label">Máximo</div><div class="value">${fmtEUR(fp.max.annual)}</div><div class="sub">${fp.max.community}</div></div>
-              <div class="stat-tile"><div class="label">Mínimo</div><div class="value">${fmtEUR(fp.min.annual)}</div><div class="sub">${fp.min.community}</div></div>
-              <div class="stat-tile"><div class="label">Media</div><div class="value">${fmtEUR(fp.avg)}</div><div class="sub">Brecha: ${fmtEUR(fp.spread)} (${fmtPct(fp.spreadPct)})</div></div>
-            </div>
-            <p class="hint" style="margin:0;"><strong>Top 3:</strong> ${fp.top3.map(r=>`${r.community} (${fmtEUR(r.annual)})`).join(' · ')}</p>
-            <p class="hint" style="margin:4px 0 0;"><strong>Últimas 3:</strong> ${fp.bottom3.map(r=>`${r.community} (${fmtEUR(r.annual)})`).join(' · ')}</p>
-            ${fp.substitutions.length ? `<p class="hint" style="margin:8px 0 0;">Sin centros de tamaño ${fp.profile.tipoCentro}, se usa el más cercano que sí tienen: ${fp.substitutions.map(s=>`${s.community} (tamaño ${s.tipo})`).join(' · ')}.</p>` : ''}
-          </div>`).join('')}
-      </div>
+      <div class="chart-wrap" style="height:480px; margin-bottom:22px;"><canvas id="chartPerfilesFijos" role="img" aria-label="Gráfico de líneas: posición de cada comunidad en los 5 perfiles tipo"></canvas></div>
+      <p class="hint" style="margin:-12px 0 0;">Cada línea es una comunidad, siguiendo su posición en el ranking (1.ª = la que más paga) a través de los 5 perfiles — el importe en euros varía poco de una comunidad a otra y casi no se apreciaba en el gráfico, así que el eje muestra el puesto; pasa el ratón sobre un punto para ver la cifra exacta. <strong>${state.comunidadRef}</strong> (comunidad elegida arriba) se resalta en verde.</p>
     </div>`;
 
   root.innerHTML = `
@@ -4831,6 +4963,7 @@ function renderAnalisis(){
     });
   });
 
+  renderProfileBarCharts(fixedStats);
   renderFixedProfilesChart(fixedStats);
 }
 
