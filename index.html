@@ -4903,9 +4903,10 @@ function renderAnalisis(){
       // "Isla o residencia": any flavour of the residencia-por-isla/ciudad-autónoma concept — Canarias/
       // Baleares (per-island) or Ceuta y Melilla (folded straight into the base salary as `residencia`).
       tieneIslaResidencia: anyNonZero(sd.residenciaCapitalina) || anyNonZero(sd.residencia) || !!rules.residencia,
-      // "Compl. Destino Ministerio": still uses the Ministry-shared figure as-is, with no "valor
-      // propio" override — see the unified `destino` generic field (2026-09-19).
-      destinoMinisterio: !E.getOverride(name, 'destino'),
+      // "Compl. destino diferente" (2026-09-25, a petición del usuario: la pregunta va al revés — cuáles
+      // tienen el complemento de destino distinto del Ministerio): la comunidad define su propio
+      // "valor propio" para el campo genérico `destino` (2026-09-19).
+      destinoDiferente: !!E.getOverride(name, 'destino'),
       // "Sigue al Ministerio": uses the six original Ministry-generic fields as-is for its base salary,
       // with no override of its own (Navarra is the only one with its own sueldoBase and a reduced set
       // of generic fields — no trienios/extraSueldoBase/extraTrienio concept at all).
@@ -4924,7 +4925,7 @@ function renderAnalisis(){
     {key:'tieneTutoria', label:'Tutoría', headerLabel:'Tutoría'},
     {key:'tieneAutonomico', label:'Compl. autonómico', headerLabel:'Compl.<br>autonómico'},
     {key:'tieneIslaResidencia', label:'Isla o residencia', headerLabel:'Isla o<br>residencia'},
-    {key:'destinoMinisterio', label:'Compl. Destino Ministerio', headerLabel:'Compl. Destino<br>Ministerio'},
+    {key:'destinoDiferente', label:'Compl. destino diferente', headerLabel:'Compl. destino<br>diferente'},
     {key:'siguenMinisterio', label:'Sigue sueldo Ministerio', headerLabel:'Sigue sueldo<br>Ministerio'},
     {key:'pagaExtraCompleta', label:'Paga extra = mes ordinario', headerLabel:'Paga extra =<br>mes ordinario', render: r => r.pagaExtraCompleta
       ? '<span class="pill good">Sí</span>'
@@ -5006,7 +5007,7 @@ function renderAnalisis(){
       </table></div>
       <ul class="hint" style="margin-top:12px; padding-left:18px;">
         <li>Carrera profesional: incluye Castilla y León (C1-C4, excluyente con sexenios); no incluye su "Consolidación punto 4º" (siempre activo, otro concepto).</li>
-        <li>Compl. Destino Ministerio: "No" = tiene "(valores propios)" en Datos CCAA.</li>
+        <li>Compl. destino diferente: "Sí" = usa importes propios (aparece "(valores propios)" en Datos CCAA) en vez de los del Ministerio.</li>
         <li>Paga extra = mes ordinario: no cuenta sueldo/trienios/tutoría/adicional ESO/carrera/residencia (van igual en todas). "No" = reduce específico, singular, autonómico, sexenios, jefe de departamento o productividad.</li>
       </ul>
     </div>
