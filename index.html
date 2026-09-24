@@ -201,16 +201,27 @@ th[tabindex]:focus-visible, a:focus-visible{
 /* El botón de plegar/desplegar y el auto-plegado al cambiar de pestaña funcionan igual en escritorio
    que en móvil (2026-09-23, a petición del usuario, "lo que te decía aplícalo tb a la versión
    escritorio" — el plegado automático al cambiar de menú era hasta ahora solo-móvil). */
+/* Título y datos centrados (2026-09-24, a petición del usuario: "en lugar de Perfil, situación
+   profesional; centra los datos y deja claro que al hacer clic se despliega para cambiarlos"): rejilla
+   de 3 columnas — un hueco del ancho del botón a la izquierda equilibra el círculo de la derecha, así el
+   texto queda centrado de verdad — y una línea de ayuda que dice qué pasa al pulsar. */
 .profile-bar-toggle{
-  display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;
-  appearance:none; border:0; background:transparent; padding:4px 2px; cursor:pointer; text-align:left;
-  color:var(--ink);
+  display:grid; grid-template-columns:34px 1fr 34px; align-items:center; gap:6px; width:100%;
+  appearance:none; border:0; background:transparent; padding:4px 2px; cursor:pointer; text-align:center;
+  color:var(--ink); border-radius:8px;
 }
-.profile-bar-toggle-text{display:flex; flex-direction:column; gap:2px; min-width:0;}
+.profile-bar-toggle::before{content:'';}
+.profile-bar-toggle .profile-bar-chevron{justify-self:end;}
+.profile-bar-toggle-text{display:flex; flex-direction:column; align-items:center; gap:2px; min-width:0;}
 .profile-bar-toggle-label{font-family:'Source Serif 4',serif; font-weight:600; font-size:1.05rem;}
 .profile-bar-summary{
-  font-size:.76rem; color:var(--ink-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-size:.8rem; color:var(--ink-2); font-weight:600; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
+.profile-bar-hint{font-size:.72rem; font-weight:600; color:var(--accent);}
+.profile-bar-hint-close{display:none;}
+.profile-bar:not(.collapsed) .profile-bar-hint-open{display:none;}
+.profile-bar:not(.collapsed) .profile-bar-hint-close{display:inline;}
+.profile-bar-toggle:hover .profile-bar-hint{text-decoration:underline;}
 /* Botón circular con borde, no solo una flechita suelta (2026-09-23, a petición del usuario, "que se
    vea claro que se puede colapsar"): con el mismo tratamiento que un rank-badge, se lee como un
    control pulsable en vez de un simple icono decorativo. */
@@ -233,9 +244,11 @@ th[tabindex]:focus-visible, a:focus-visible{
    resumen de una línea, igual que en móvil, porque entonces es lo único que hay que mostrar. */
 @media (min-width:761px){
   .profile-bar{position:relative;}
-  .profile-bar-toggle{position:absolute; top:14px; right:18px; width:auto; padding:0; z-index:2;}
+  .profile-bar-toggle{position:absolute; top:14px; right:18px; width:auto; padding:0; z-index:2; display:flex;}
+  .profile-bar-toggle::before{display:none;}
   .profile-bar-toggle-text{display:none;}
-  .profile-bar.collapsed .profile-bar-toggle{position:static; width:100%; padding:4px 2px;}
+  .profile-bar.collapsed .profile-bar-toggle{position:static; width:100%; padding:4px 2px; display:grid;}
+  .profile-bar.collapsed .profile-bar-toggle::before{display:block;}
   .profile-bar.collapsed .profile-bar-toggle-text{display:flex;}
 }
 .pb-field{display:flex; flex-direction:column; gap:5px; flex:0 0 auto;}
@@ -765,8 +778,10 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
          sitio a los datos. -->
     <button type="button" class="profile-bar-toggle" id="profileBarToggle" aria-expanded="true" aria-controls="profileBarBody">
       <span class="profile-bar-toggle-text">
-        <span class="profile-bar-toggle-label">Perfil</span>
+        <span class="profile-bar-toggle-label">Situación profesional</span>
         <span class="profile-bar-summary" id="profileBarSummary"></span>
+        <span class="profile-bar-hint profile-bar-hint-open">Pulsa para desplegar y cambiar los datos</span>
+        <span class="profile-bar-hint profile-bar-hint-close">Pulsa para ocultar</span>
       </span>
       <svg class="profile-bar-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
     </button>
