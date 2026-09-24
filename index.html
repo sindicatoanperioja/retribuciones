@@ -249,8 +249,24 @@ th[tabindex]:focus-visible, a:focus-visible{
    width for everything — long-text selects get room to breathe, IRPF stays small. */
 .pb-situacion{width:178px;}
 .pb-cuerpo{width:210px;}
-.pb-anios{width:150px;}
-.pb-anios input[type=range]{width:100%; height:38px;}
+.pb-anios{width:200px;}
+/* Antigüedad: stepper − / número / + con atajos a los saltos donde cambia el sueldo (trienios y
+   sexenios), en vez de un slider difícil de afinar (2026-09-24, a petición del usuario). */
+.anios-stepper{display:flex; height:38px;}
+.anios-stepper button{
+  flex:0 0 40px; border:1px solid var(--border); background:var(--surface-2); color:var(--ink);
+  font-size:1.2rem; font-weight:700; cursor:pointer; touch-action:manipulation;
+}
+.anios-stepper button:first-child{border-radius:7px 0 0 7px;}
+.anios-stepper button:last-child{border-radius:0 7px 7px 0;}
+.anios-stepper button:active{background:var(--accent); color:var(--accent-ink); border-color:var(--accent);}
+.anios-stepper input{flex:1 1 auto; min-width:0; width:auto; text-align:center; border-radius:0; border-left:0; border-right:0; font-weight:700; padding:0 4px;}
+.anios-chips{display:flex; flex-wrap:wrap; gap:4px;}
+.anios-chips button{
+  min-width:26px; height:24px; padding:0 5px; border:1px solid var(--border); border-radius:999px;
+  background:var(--surface); color:var(--ink-2); font-size:.72rem; font-weight:600; cursor:pointer; touch-action:manipulation;
+}
+.anios-chips button.active{background:var(--accent); border-color:var(--accent); color:var(--accent-ink);}
 .pb-irpf{width:76px;}
 .pb-irpf input{width:100%; text-align:center;}
 /* IRPF: a typeable number box with visible up/down arrows (decimals allowed), unlike the admin
@@ -720,6 +736,9 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
      entre filas) para que ocupe todavía menos alto. */
   .profile-bar-row{gap:8px;}
   .profile-bar-body{gap:10px;}
+  /* Los 6 atajos de antigüedad caben en una sola fila en la mitad de ancho de un móvil. */
+  .anios-chips{gap:3px; flex-wrap:nowrap; justify-content:center;}
+  .anios-chips button{min-width:22px; padding:0 3px; font-size:.68rem;}
 }
 </style>
 </head>
@@ -766,8 +785,15 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
         <select id="f-cuerpo"></select>
       </div>
       <div class="pb-field pb-anios">
-        <label for="f-anios">Antigüedad (años): <strong id="f-anios-val">12</strong></label>
-        <input type="range" id="f-anios" min="0" max="50" step="1" value="12">
+        <label for="f-anios">Antigüedad (años)</label>
+        <div class="anios-chips" id="aniosChips" role="group" aria-label="Atajos de antigüedad">
+          <button type="button" data-v="0">0</button><button type="button" data-v="6">6</button><button type="button" data-v="12">12</button><button type="button" data-v="18">18</button><button type="button" data-v="24">24</button><button type="button" data-v="30">30</button>
+        </div>
+        <div class="anios-stepper">
+          <button type="button" id="aniosMinus" aria-label="Un año menos">−</button>
+          <input type="number" id="f-anios" min="0" max="50" step="1" value="12" inputmode="numeric">
+          <button type="button" id="aniosPlus" aria-label="Un año más">+</button>
+        </div>
       </div>
       <div class="pb-field pb-irpf">
         <label for="f-irpf">% IRPF</label>
@@ -3955,7 +3981,7 @@ document.getElementById('f-tablaCargo').value = state.tablaCargo;
 document.getElementById('f-situacion').value = state.situacionLaboral;
 document.getElementById('f-comunidad-ref').value = state.comunidadRef;
 document.getElementById('f-anios').value = state.anios;
-document.getElementById('f-anios-val').textContent = state.anios;
+document.querySelectorAll('#aniosChips button').forEach(b => b.classList.toggle('active', +b.dataset.v === state.anios));
 document.getElementById('f-irpf').value = state.irpf * 100;
 
 /* ---------------------------------------------------------------------------
@@ -3993,8 +4019,30 @@ document.getElementById('f-comunidad-ref').addEventListener('change', e => {
   recompute();
 });
 document.getElementById('f-isla').addEventListener('change', e => { state.islaBaleares = e.target.value; recompute(); });
-document.getElementById('f-anios').addEventListener('input', e => {
-  state.anios = +e.target.value; document.getElementById('f-anios-val').textContent = state.anios; recompute();
+const aniosInput = document.getElementById('f-anios');
+function syncAniosUI(){
+  aniosInput.value = state.anios;
+  document.querySelectorAll('#aniosChips button').forEach(b => b.classList.toggle('active', +b.dataset.v === state.anios));
+}
+function setAnios(v){
+  v = Math.max(0, Math.min(50, Math.round(+v) || 0));
+  if (v === state.anios) { syncAniosUI(); return; }
+  state.anios = v; syncAniosUI(); recompute();
+}
+// Escribir: se aplica según se teclea (si es un número válido); al salir del campo se normaliza.
+aniosInput.addEventListener('input', () => { if (aniosInput.value !== '') { const v = Math.max(0, Math.min(50, Math.round(+aniosInput.value))); if (!isNaN(v) && v !== state.anios){ state.anios = v; recompute(); document.querySelectorAll('#aniosChips button').forEach(b => b.classList.toggle('active', +b.dataset.v === state.anios)); } } });
+aniosInput.addEventListener('change', syncAniosUI);
+aniosInput.addEventListener('focus', () => aniosInput.select());
+document.querySelectorAll('#aniosChips button').forEach(b => b.addEventListener('click', () => setAnios(+b.dataset.v)));
+// − / +: un toque = 1 año; manteniendo pulsado repite y acelera.
+[['aniosMinus', -1], ['aniosPlus', 1]].forEach(([id, step]) => {
+  const btn = document.getElementById(id);
+  let timer = null, delay = 350;
+  const stop = () => { clearTimeout(timer); timer = null; delay = 350; };
+  const tick = () => { setAnios(state.anios + step); delay = Math.max(60, delay * 0.8); timer = setTimeout(tick, delay); };
+  btn.addEventListener('pointerdown', e => { e.preventDefault(); setAnios(state.anios + step); timer = setTimeout(tick, delay); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => btn.addEventListener(ev, stop));
+  btn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); setAnios(state.anios + step); } });
 });
 document.getElementById('f-irpf').addEventListener('input', e => {
   state.irpf = (+e.target.value || 0)/100; recompute();
