@@ -1049,6 +1049,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 // ============================================================================
 // ============================================================================
 // ============================================================================
+// ============================================================================
 // ANPE Comparativa de Retribuciones Docentes — calculation engine
 // Ported cell-by-cell from comparativa.xlsx (sheets Retribuciones + Nómina mensual)
 // Column order for cuerpo docente arrays (index 0..8) = F..N in Retribuciones:
@@ -1282,9 +1283,20 @@ const CARGO_RAW = {
                    A1:[[0,770.50,338.98,338.98,161.08,338.98],[0,663.67,332.41,332.41,161.08,332.41],[0,600.79,239.63,239.63,161.08,239.63],[0,543.85,206.50,206.50,161.08,206.50],[0,0,206.50,206.50,161.08,206.50],[0,0,0,0,161.08,0]] },
   'Galicia': { A2:[[0,711.93,0,287.57,0,287.57],[0,650.24,0,273.89,0,273.89],[0,487.48,0,267.07,0,267.07],[0,376.36,0,212.45,0,212.45],[0,0,0,0,0,0],[0,0,0,0,0,0]],
                A1:[[0,855.23,410.45,410.45,0,410.45],[0,745.13,403.68,403.68,0,403.68],[0,680.31,308.04,308.04,0,308.04],[0,621.66,273.89,273.89,0,273.89],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
-  // "Jefe/a de Estudios Adjunto/a": 175,84€/mes, importe fijo (ANPE La Rioja).
-  'La Rioja': { A2:[[0,662.64,0,230.55,175.84,230.55],[0,599.84,0,216.66,175.84,216.66],[0,434.09,0,209.7,175.84,209.7],[0,320.94,0,154.04,175.84,154.04],[0,195.78,0,120.1,175.84,120.1],[0,84.52,0,0,175.84,0]],
-                A1:[[0,808.65,0,355.71,175.84,355.71],[0,696.48,0,348.79,175.84,348.79],[0,630.48,0,251.4,175.84,251.4],[0,570.74,0,216.66,175.84,216.66],[0,0,0,0,175.84,0],[0,0,0,0,175.84,0]] },
+  // Corregido 2026-09-29 contra el documento oficial "RETRIBUCIONES 2026 — Personal perteneciente a
+  // cuerpos docentes no universitarios, incremento 1,5% respecto a las vigentes a 31-12-2025"
+  // (larioja.org, idMmedia=1698473, el mismo PDF de la Consejería que el usuario ya usó para sueldo/
+  // destino/específico). Dirección/Jefatura de Estudios/Secretaría se habían quedado con las cifras de
+  // antes de la subida del 2,5% de 2025 (+1,5% de 2026 encima, ×1,040375 compuesto en total) — solo
+  // Jefatura de Estudios Adjunta (175,84€) se había actualizado en su momento. Aplicados los importes
+  // exactos del documento (tablas 1.4.2 Infantil/Primaria y 1.4.3 col. "Institutos de Educación
+  // Secundaria"). Además, en Infantil/Primaria el documento limita Jefatura de Estudios Adjunta a los
+  // tipos A/B/C (antes se aplicaba también en D/E/F), Jefatura de Estudios a los tipos A-D (no existe
+  // en E/F) y Secretaría a los tipos A-E (no existe en F) — ajustado a 0€ donde el documento no la lista.
+  // "Jefe/a de Estudios Adjunto/a" en Secundaria: 175,84€/mes, importe fijo para todos los tipos A-F
+  // (el documento no la desglosa por tamaño de centro ahí) — sin cambios.
+  'La Rioja': { A2:[[0,689.40,0,239.85,175.84,239.85],[0,624.07,0,225.41,175.84,225.41],[0,451.61,0,218.16,175.84,218.16],[0,333.89,0,160.26,0,160.26],[0,203.68,0,0,0,124.95],[0,87.93,0,0,0,0]],
+                A1:[[0,841.30,0,370.08,175.84,370.08],[0,724.60,0,362.88,175.84,362.88],[0,655.93,0,261.54,175.84,261.54],[0,593.79,0,225.41,175.84,225.41],[0,0,0,0,175.84,0],[0,0,0,0,175.84,0]] },
   // Corrected 2026-09-21 against ANPE Madrid, "Retribuciones 2026" (febrero 2026): the old values
   // (918,17/495,8118 CEIP, 993,77/596,262 IES) matched nothing real — a stale guess. Madrid's real
   // Director pay is "módulo fijo (653,57€ CEIP/IES) + 0,63€/alumno matriculado", and Vicedirector/
@@ -3858,11 +3870,10 @@ const PROVENANCE = {
     // Carrera profesional (Grado I/II): no aparece en el documento oficial (solo cubre sueldo/trienios/
     // destino/específico/sexenios) — cifra de origen ANPE revisada por el usuario 2026-09-22.
     carreraGradoI:2, carreraGradoII:2,
-    // Tabla de cargo directivo (Dirección/Jefatura de Estudios/Secretaría): sistemáticamente ~4% por
-    // debajo del documento oficial vigente en las ~20 celdas comparadas — cifra de origen ANPE revisada
-    // por el usuario 2026-09-22 (La Jefatura de Estudios Adjunta, 175,84€, campo aparte, sí coincide
-    // con el documento oficial).
-    cargoDirectivo:2
+    // Tabla de cargo directivo (Dirección/Jefatura de Estudios/Secretaría): corregida 2026-09-29 contra
+    // el documento oficial — estaba sistemáticamente ~4% por debajo (le faltaba la subida del 2,5% de
+    // 2025). Ahora coincide cifra a cifra con las tablas 1.4.2/1.4.3 del documento.
+    cargoDirectivo:1
   }
 };
 function provLevel(community, concept, cuerpoIdx){
