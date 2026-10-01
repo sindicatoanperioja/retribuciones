@@ -1057,6 +1057,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 // ============================================================================
 // ============================================================================
 // ============================================================================
+// ============================================================================
 // ANPE Comparativa de Retribuciones Docentes — calculation engine
 // Ported cell-by-cell from comparativa.xlsx (sheets Retribuciones + Nómina mensual)
 // Column order for cuerpo docente arrays (index 0..8) = F..N in Retribuciones:
@@ -1230,8 +1231,12 @@ const CARGO_RAW = {
   // todas las filas) — corregido junto con el resto de la tabla (Director/J.Estudios/Secretario/
   // Vicedirector), que solo tenía la subida del 1,5% pendiente. Tabla Infantil/Primaria también
   // actualizada con la misma subida del 1,5%.
+  // Corregido 2026-10-01 (auditoría general de cargo directivo, a petición del usuario): en Secundaria
+  // los IES de Canarias solo se clasifican en tipos A-D ("Tipos Centros Secundaria", documento oficial,
+  // pág. 2) — tipos E/F no existen ahí, pero Jefatura de Estudios Adjunta se aplicaba igualmente con
+  // 173,21€ en esos dos tamaños inexistentes. Puesta a 0, igual que el resto de cargos en E/F.
   'Canarias': { A2:[[0,560.63,230.04,230.04,0,230.04],[0,511.51,220.47,220.47,0,220.47],[0,385.75,206.07,206.07,0,206.07],[0,293.51,0,160.56,0,160.56],[0,198.90,0,0,0,107.85],[0,124.64,0,0,0,0]],
-                A1:[[0,706.64,346.39,346.39,173.21,346.39],[0,626.80,332.00,332.00,166.03,332.00],[0,564.46,257.69,257.69,128.89,257.69],[0,514.12,206.18,206.18,103.14,206.18],[0,0,0,0,173.21,0],[0,0,0,0,173.21,0]] },
+                A1:[[0,706.64,346.39,346.39,173.21,346.39],[0,626.80,332.00,332.00,166.03,332.00],[0,564.46,257.69,257.69,128.89,257.69],[0,514.12,206.18,206.18,103.14,206.18],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
   // "Jefatura de Estudios Adjunta" (Jefatura de Estudios Adjunta column, IES only) per ANPE Andalucía 2026.
   // Corrected 2026-09-21 against UGT Servicios Públicos Andalucía, "Retribuciones del profesorado
   // andaluz 2026": tipo C (Secundaria, "-20 unidades"/Régimen Especial "-601 alumnos") had "J.
@@ -1240,18 +1245,36 @@ const CARGO_RAW = {
   // for this role, i.e. it doesn't exist there). Tipos D/E/F don't exist for Secundaria in the
   // document at all (only A-C) — they previously carried a stray 151,32€ Jefatura Adjunta value with
   // no other role populated, now zeroed out entirely.
+  // Corregido 2026-10-01 (auditoría general de cargo directivo, a petición del usuario, con dos fuentes
+  // independientes ANPE Andalucía + UGT-SP Andalucía): Jefatura de Estudios y Secretaría de IES estaban
+  // tomando la columna equivocada — el documento tiene DOS columnas distintas, "Vicedirector/Jefe de
+  // Estudios/Secretario" (524,39/437,01/350,90€ para A/B/C) y "Jefatura de Estudios/Secretario de
+  // Sección" (200,53/200,53/192,75€, un rol de sección delegada, no el del centro) — el motor usaba la
+  // segunda columna para Jefatura de Estudios y Secretaría del centro, cuando debía usar la primera
+  // (la misma que ya tenía bien Vicedirector). Corregido a 524,39/437,01/350,90€.
   'Andalucía': { A2:[[0,803.31,0,442.01,0,442.01],[0,703.42,0,355.85,0,355.85],[0,505.11,0,269.68,0,269.68],[0,308.2,0,182.31,0,182.31],[0,208.36,0,0,0,0],[0,0,0,0,0,0]],
-                 A1:[[0,994.55,524.39,200.53,151.32,200.53],[0,797.63,437.01,200.53,151.32,200.53],[0,697.7,350.9,192.75,0,192.75],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
-  // "Jefatura de Estudios Adjunta": 223,81€/mes, importe fijo igual en CEIP e IES (ANPE Aragón).
-  'Aragón': { A2:[[0,737.14,0,305.31,223.81,305.31],[0,667.27,0,286.88,223.81,286.88],[0,482.88,0,277.7,223.81,277.7],[0,367.22,0,204.03,223.81,204.03],[0,269.62,0,0,223.81,171.78],[0,171.91,0,0,223.81,0]],
-              A1:[[0,899.46,459.72,459.72,223.81,459.72],[0,774.74,454.5,454.5,223.81,454.5],[0,701.3,332.96,332.96,223.81,332.96],[0,634.87,286.88,286.88,223.81,286.88],[0,0,0,286.88,223.81,286.88],[0,0,0,0,223.81,0]] },
+                 A1:[[0,994.55,524.39,524.39,151.32,524.39],[0,797.63,437.01,437.01,151.32,437.01],[0,697.7,350.9,350.9,0,350.9],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
+  // "Jefatura de Estudios Adjunta": 223,81€/mes (IES/FP), según ANPE Aragón.
+  // Corregido 2026-10-01 (auditoría general de cargo directivo, a petición del usuario, contra
+  // Tablas_retribuciones_docentes_2026.xlsx, hoja "mensuales"): dos errores. (1) Jefatura de Estudios
+  // Adjunta se aplicaba también en CEIP (todos los tamaños A-F), pero el documento la sitúa solo bajo
+  // "Centros de Educación Secundaria/Formación Profesional" — sin equivalente en Primaria; puesta a 0
+  // en CEIP. (2) Secretario en IES tipo E tenía 286,88€, pero esa celda del documento (K75) corresponde
+  // solo a Jefatura de Estudios (fila 69) — la celda de Secretario tipo E está vacía; puesta a 0.
+  'Aragón': { A2:[[0,737.14,0,305.31,0,305.31],[0,667.27,0,286.88,0,286.88],[0,482.88,0,277.7,0,277.7],[0,367.22,0,204.03,0,204.03],[0,269.62,0,0,0,171.78],[0,171.91,0,0,0,0]],
+              A1:[[0,899.46,459.72,459.72,223.81,459.72],[0,774.74,454.5,454.5,223.81,454.5],[0,701.3,332.96,332.96,223.81,332.96],[0,634.87,286.88,286.88,223.81,286.88],[0,0,0,286.88,223.81,0],[0,0,0,0,223.81,0]] },
   // "Jefe/a de Estudios Adjunto/a": 203,49€/mes, importe fijo — confirmado por ANPE Asturias como
   // exclusivo de "Centros de Enseñanza Secundaria, FP y Asimilados" (grupo A1), no existe en CEIP.
   'Asturias': { A2:[[0,665.59,0,276.41,0,276.41],[0,603.93,0,262.76,0,262.76],[0,441.18,0,255.97,0,255.97],[0,330.12,0,0,0,188.85],[0,0,0,0,0,0],[0,0,0,0,0,0]],
                 A1:[[0,808.85,0,424.37,203.49,424.37],[0,698.77,0,417.52,203.49,417.52],[0,633.94,0,303.18,203.49,303.18],[0,0,0,0,203.49,0],[0,0,0,0,203.49,0],[0,0,0,0,203.49,0]] },
-  // "Cap d'Estudis Adjunt": 186,53€/mes uniforme (Secundària), según ANPE Balears 2026.
-  'Baleares (Islas)': { A2:[[0,0,0,0,0,0],[0,648.44,0,281.51,0,281.51],[0,477.4,0,262.54,0,262.54],[0,356.72,0,196.93,0,196.93],[0,218.35,0,0,0,145.88],[0,105.63,0,0,0,0]],
-                        A1:[[0,848.3,0,414.65,186.53,414.65],[0,740.95,0,408.06,186.53,408.06],[0,665.41,0,302.49,186.53,302.49],[0,595.9,0,256.83,186.53,256.83],[0,0,0,207.48,186.53,0],[0,0,0,0,186.53,0]] },
+  // Corregido 2026-10-01 (auditoría general de cargo directivo, a petición del usuario, contra
+  // "Retribucions càrrecs directius Centres Públics Any 2026", intranet.caib.es, actualitzat 25/05/2026):
+  // la estructura ya era correcta (sin Vicedirector, mismo patrón de ceros por tamaño) pero TODA la
+  // tabla estaba desactualizada un ~1,5% por debajo del documento vigente (ratio motor/doc = 0,9852 en
+  // absolutamente todas las celdas) — una tabla anterior al incremento de mayo 2026, nunca actualizada.
+  // "Cap d'Estudis Adjunt" (IES): 189,33€/mes uniforme (antes 186,53€).
+  'Baleares (Islas)': { A2:[[0,0,0,0,0,0],[0,658.17,0,285.74,0,285.74],[0,484.57,0,266.48,0,266.48],[0,362.08,0,199.89,0,199.89],[0,221.63,0,0,0,148.07],[0,107.22,0,0,0,0]],
+                        A1:[[0,861.03,0,420.87,189.33,420.87],[0,752.07,0,414.19,189.33,414.19],[0,675.40,0,307.03,189.33,307.03],[0,604.84,0,260.69,189.33,260.69],[0,0,0,210.60,189.33,0],[0,0,0,0,189.33,0]] },
   // Corrected 2026-09-19 against the official ANPE Cantabria retribuciones table (anpecantabria.es/
   // retribuciones, actualizado 24/07/2026): Dirección tipo B (A2) was 858.75, real figure is 856.75;
   // tipo D (A2) was 458.52, real figure is 458.42.
@@ -1284,10 +1307,14 @@ const CARGO_RAW = {
                 A1:[[0,1183.48,0,886.11,886.11,886.11],[0,1029.03,0,778.91,778.91,778.91],[0,881.31,0,671.76,671.76,671.76],[0,814.79,0,618.73,618.73,618.73],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
   // Updated 2026-09-20 from the official document (Junta de Extremadura, 2026): "Jefatura Estudios
   // Adjunta" 100,05€/mes (Otros centros) y 161,08€/mes (Secundaria) — sin cambios, ya coincidía.
-  // Dirección/Jefatura de Estudios/Secretaría por tipo de centro, actualizados; Vicedirección se
-  // sigue igualando a Jefatura de Estudios (el documento no la lista por separado).
+  // Dirección/Jefatura de Estudios/Secretaría por tipo de centro, actualizados.
+  // Corregido 2026-10-01 (auditoría general de cargo directivo, a petición del usuario, imagen de la
+  // tabla oficial de Profex): dos errores. (1) Vicedirección NO existe en Extremadura (ni en Secundaria
+  // ni en "Otros centros") — en Secundaria (A1) estaba duplicando el valor de Jefatura de Estudios en
+  // vez de estar a 0; corregido. (2) Secundaria tipo E: Secretario tenía 206,50€, pero esa celda está en
+  // blanco en el documento (solo Jefatura de Estudios tiene cifra en tipo E); puesto a 0.
   'Extremadura': { A2:[[0,631.48,0,219.75,100.05,219.75],[0,571.62,0,206.50,100.05,206.50],[0,413.70,0,199.88,100.05,199.88],[0,305.90,0,146.86,100.05,146.86],[0,186.59,0,0,100.05,114.51],[0,80.60,0,0,100.05,0]],
-                   A1:[[0,770.50,338.98,338.98,161.08,338.98],[0,663.67,332.41,332.41,161.08,332.41],[0,600.79,239.63,239.63,161.08,239.63],[0,543.85,206.50,206.50,161.08,206.50],[0,0,206.50,206.50,161.08,206.50],[0,0,0,0,161.08,0]] },
+                   A1:[[0,770.50,0,338.98,161.08,338.98],[0,663.67,0,332.41,161.08,332.41],[0,600.79,0,239.63,161.08,239.63],[0,543.85,0,206.50,161.08,206.50],[0,0,0,206.50,161.08,0],[0,0,0,0,161.08,0]] },
   'Galicia': { A2:[[0,711.93,0,287.57,0,287.57],[0,650.24,0,273.89,0,273.89],[0,487.48,0,267.07,0,267.07],[0,376.36,0,212.45,0,212.45],[0,0,0,0,0,0],[0,0,0,0,0,0]],
                A1:[[0,855.23,410.45,410.45,0,410.45],[0,745.13,403.68,403.68,0,403.68],[0,680.31,308.04,308.04,0,308.04],[0,621.66,273.89,273.89,0,273.89],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
   // Corregido 2026-09-29 contra el documento oficial "RETRIBUCIONES 2026 — Personal perteneciente a
@@ -1326,16 +1353,25 @@ const CARGO_RAW = {
   // (459,70/404,85/372,55/343,39€, tipos A-D — same, A1-only). Tipo F's stray Secretaría value
   // (240,24€) had no other role populated and doesn't correspond to anything in either source
   // (neither lists tipo E/F for Secundaria's cargo directivo at all) — zeroed out as a stale artifact.
+  // Corregido 2026-10-01 (auditoría general de cargo directivo, a petición del usuario, imagen del
+  // BORM núm. 291, pág. 33769): Secundaria tipo D, Jefatura de Estudios tenía 450,63€ — una cifra pegada
+  // directamente del documento sin aplicarle el +1,5% que SÍ se aplicó al resto de la fila D (Vicedirector
+  // y Secretario ya están en 457,39€, igual que Jefatura de Estudios en A/B/C) — corregido a 457,39€.
   'Murcia': { A2:[[0,913.32,0,520.74,0,520.74],[0,832.82,0,477.45,0,477.45],[0,646.54,0,377.27,0,377.27],[0,526.98,0,313.01,0,313.01],[0,395.02,0,242.09,0,242.09],[0,204.86,0,0,0,0]],
-              A1:[[0,1100.32,621.24,621.24,459.70,621.24],[0,956.65,544.01,544.01,404.85,544.01],[0,872.05,498.55,498.55,372.55,498.55],[0,795.56,457.39,450.63,343.39,457.39],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
+              A1:[[0,1100.32,621.24,621.24,459.70,621.24],[0,956.65,544.01,544.01,404.85,544.01],[0,872.05,498.55,498.55,372.55,498.55],[0,795.56,457.39,457.39,343.39,457.39],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
   // Corrected 2026-09-21 contra el DOGV oficial (Acuerdo de 27-02-2026, del Consell, DOGV núm. 10312,
   // "Taula 2 — Retribucions del personal docent"): los valores anteriores eran de una tabla desactualizada
   // (todos por debajo de los actuales, la mayoría ~11-14€, consistente con la subida del RD-ley 14/2025
   // de 2026 aún no aplicada) — confirmado cifra a cifra: Dirección/Jefatura de Estudios/Secretaría por
   // tipo de centro A-C (D-F no tienen columna A1 en el documento, solo A2; sin Jefatura de Estudios
   // Adjunta en ningún tipo, a diferencia de Murcia/La Rioja).
+  // Corregido 2026-10-01 (auditoría general de cargo directivo, a petición del usuario, imagen de la
+  // Taula 2 "Retribucions del personal docent", DOGV núm. 10312 bis, pág. 5): Secundaria tipo E tiene
+  // una fila real "VICEDIRECTOR/A CENTRE E" (códigos 1142/2242/5342) = 217,15€/mes, nunca modelada (el
+  // resto de cargos de tipo E — Director/Jefatura/Secretaría — sí están correctamente a 0, el documento
+  // no los contempla; solo falta esta celda puntual).
   'Valencia': { A2:[[0,788.00,0,512.22,0,512.22],[0,725.03,0,471.29,0,471.29],[0,558.89,0,363.33,0,363.33],[0,445.56,0,289.62,0,289.62],[0,196.23,0,0,0,0],[0,0,0,0,0,0]],
-                A1:[[0,934.23,607.28,607.28,0,607.28],[0,821.88,534.22,534.22,0,534.22],[0,755.74,491.25,491.25,0,491.25],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
+                A1:[[0,934.23,607.28,607.28,0,607.28],[0,821.88,534.22,534.22,0,534.22],[0,755.74,491.25,491.25,0,491.25],[0,0,0,0,0,0],[0,0,217.15,0,0,0],[0,0,0,0,0,0]] },
   // Corregido 2026-09-21 contra CSIF "Retribuciones docentes 2026" (Ceuta y Melilla) — segunda fuente,
   // cruzada contra la propia tabla de ANPE Melilla de 2022 (única con cifras de Ceuta/Melilla que ANPE
   // ha publicado: no tiene tabla 2026, solo pensiones): los 8 importes de cargo directivo de 2022
@@ -3807,15 +3843,15 @@ const GENERIC_META = { updated: '2026-09-21', fuentes: [
   {label:'Ley 31/2022, de 23 de diciembre, de Presupuestos Generales del Estado para 2023 (prorrogada) — arts. 123-124, cotización MUFACE/Derechos Pasivos', url:'https://www.boe.es/eli/es/l/2022/12/23/31/dof/spa/pdf'}
 ] };
 const META = {
-  'Canarias': { updated:'2026-09-20', notes:'Destino y específico propios (no el genérico) · Sexenio: tabla reducida en la paga extra · Inspección: específico propio, muy superior, sin complemento de cargo aparte · Residencia: trienios distintos isla capitalina/no capitalina · J. Estudios Adjunto varía por tamaño de centro.',
+  'Canarias': { updated:'2026-10-01', notes:'Destino y específico propios (no el genérico) · Sexenio: tabla reducida en la paga extra · Inspección: específico propio, muy superior, sin complemento de cargo aparte · Residencia: trienios distintos isla capitalina/no capitalina · J. Estudios Adjunto varía por tamaño de centro, solo existe en Secundaria tipos A-D (no hay tipos E/F ahí).',
     fuentes: [
       {label:'Gobierno de Canarias — Retribuciones 2026 personal docente (PDF)', url:'https://www.gobiernodecanarias.org/cmsgob1/export/sites/transparencia/temas/institucional-organizativa/retribuciones/retribuciones-personal/personal-funcionario/doc/retribuciones-2026-personal-docente.pdf'}
     ] },
-  'Andalucía': { updated:'2026-09-21', notes:'Autonómico: solo Catedráticos · Específico de Inspección: cifra única, no dos partidas sumadas · Adicional Maestro ESO se cobra también en la extra · No modelado: Coordinador de ciclo (CEIP), Itinerancia (CEIP), puestos singulares (CEP/orientación) · Catedráticos de Régimen Especial no cobran el autonómico de Secundaria (agrupados en una sola columna).',
+  'Andalucía': { updated:'2026-10-01', notes:'Autonómico: solo Catedráticos · Específico de Inspección: cifra única, no dos partidas sumadas · Adicional Maestro ESO se cobra también en la extra · No modelado: Coordinador de ciclo (CEIP), Itinerancia (CEIP) · Catedráticos de Régimen Especial no cobran el autonómico de Secundaria (agrupados en una sola columna) · Director de Equipo de Orientación: solo existe "Coordinador", usado como equivalente.',
     fuentes: [
       {label:'Junta de Andalucía — Plantillas docentes y retribuciones', url:'https://www.juntadeandalucia.es/organismos/desarrolloeducativoyformacionprofesional/consejeria/transparencia/empleo-publico/plantilla-docente-retribuciones.html'}
     ] },
-  'Aragón': { updated:'2026-09-21', notes:'Paga extra: específico y sexenio reducidos al 90% (parámetro editable) · Complemento de cargo de Inspector aparte, sin esa reducción · Tutoría: aún no se cobra, oculta de Datos particulares · Adicional Maestro ESO: NO se cobra en la extra (excepción, junto con La Rioja).',
+  'Aragón': { updated:'2026-10-01', notes:'Paga extra: específico y sexenio reducidos al 90% (parámetro editable) · Complemento de cargo de Inspector aparte, sin esa reducción · Tutoría: aún no se cobra, oculta de Datos particulares · Adicional Maestro ESO: NO se cobra en la extra (excepción, junto con La Rioja) · Jefatura de Estudios Adjunta solo existe en Secundaria/FP, no en CEIP.',
     fuentes: [
       {label:'Gobierno de Aragón — Personal funcionario docente (transparencia)', url:'https://www.aragon.es/transparencia/administracion-personal/personal-funcionario-docente'}
     ] },
@@ -3823,7 +3859,7 @@ const META = {
     fuentes: [
       {label:'BOPA — Resolución de retribuciones del personal docente 2026', url:'https://miprincipado.asturias.es/bopa/2026/07/10/2026-05918.pdf'}
     ] },
-  'Baleares (Islas)': { updated:'2026-09-20', notes:'Autonómico escalonado por antigüedad (interinos, importe fijo) · Residencia: base por isla/grupo + cobertura donde aplica (Menorca/Eivissa/Formentera) · Carrera profesional en tramos 1º/2º (distinto para Inspección) · Complemento de cargo de Inspector aparte · Adicional Maestro ESO en la extra · No modelado: ATD, Complement de penositat/perillositat/toxicitat.',
+  'Baleares (Islas)': { updated:'2026-10-01', notes:'Autonómico escalonado por antigüedad (interinos, importe fijo) · Residencia: base por isla/grupo + cobertura donde aplica (Menorca/Eivissa/Formentera) · Carrera profesional en tramos 1º/2º (distinto para Inspección) · Complemento de cargo de Inspector aparte · Adicional Maestro ESO en la extra · No modelado: ATD, Complement de penositat/perillositat/toxicitat · Cargo directivo actualizado al incremento vigente desde el 25/05/2026 (antes, tabla anterior sin actualizar).',
     fuentes: [
       {label:'Govern de les Illes Balears — Taules retributives 2026 (intranet CAIB)', url:'https://intranet.caib.es/sites/nominadelprofessorat/ca/l/taules_retributives_2026/?mcont=181557'}
     ] },
@@ -3844,7 +3880,7 @@ const META = {
     fuentes: [
       {label:'Departament d\'Educació i Formació Professional — Taules de retribució', url:'https://educacio.gencat.cat/ca/arees-actuacio/professors/retribucions/taules-retribucio/'}
     ] },
-  'Extremadura': { updated:'2026-09-22', notes:'Tutoría solo Secundaria y superiores (no Maestros ni Inspección), se cobra en la extra · Adicional Maestro ESO en la extra · CEA plano salvo Inspección (cifra propia, 434,85€) · Complemento de cargo de Inspector aparte del CEA.',
+  'Extremadura': { updated:'2026-10-01', notes:'Tutoría solo Secundaria y superiores (no Maestros ni Inspección), se cobra en la extra · Adicional Maestro ESO en la extra · CEA plano salvo Inspección (cifra propia, 434,85€) · Complemento de cargo de Inspector aparte del CEA · Sin Vicedirección (no existe ese cargo en Extremadura).',
     fuentes: [
       {label:'Profex (Junta de Extremadura) — Tablas retributivas del personal docente', url:'https://profex.educarex.es/web/personal-docente/regimen-retributivo/tablas-retributivas'}
     ] },
@@ -3863,12 +3899,12 @@ const META = {
     fuentes: [
       {label:'BOCM — Orden de retribuciones del personal docente 2026 (3 feb. 2026)', url:'https://www.bocm.es/boletin/CM_Orden_BOCM/2026/02/09/BOCM-20260209-6.PDF'}
     ] },
-  'Murcia': { updated:'2026-09-22', notes:'Específico general y singular separados; Inspección tiene su propio singular · Paga extra distinta: Productividad semestral + Paga adicional del específico (por sexenios, editable) · Carrera profesional: solo Tramo I, desde 6 años · Vicedirección/Jefatura de Estudios Adjunta solo en Secundaria · No modelado: Vicesecretaría, Educación Especial con Residencia, Adultos, Colegios Rurales Agrupados.',
+  'Murcia': { updated:'2026-10-01', notes:'Específico general y singular separados; Inspección tiene su propio singular · Paga extra distinta: Productividad semestral + Paga adicional del específico (por sexenios, editable) · Carrera profesional: solo Tramo I, desde 6 años · Vicedirección/Jefatura de Estudios Adjunta solo en Secundaria · No modelado: Vicesecretaría, Educación Especial con Residencia, Adultos, Colegios Rurales Agrupados.',
     fuentes: [
       {label:'BORM — Acuerdo de Consejo de Gobierno, incremento retributivo (18-12-2025)', url:'https://www.carm.es/web/descarga?ALIAS=ARCH&ARCHIVO=2025-6124.pdf&IDCONTENIDO=203579&RASTRO=c313%24m3501%2C3612%2C2711'},
       {label:'ANPE Murcia — Retribuciones (actualización noviembre 2025)', url:'https://documentos.anpemurcia.es/docs/Documentos/Retriuciones/Ret2025-nov.pdf'}
     ] },
-  'Valencia': { updated:'2026-09-21', notes:'Sin tutoría (no existe en Valencia) · Jefatura de Departamento: 84,76€ · Inspección tiene un componente singular aparte del específico general · Sin complemento autonómico ni carrera profesional/complemento de mejora · Cargo directivo: sin Jefatura de Estudios Adjunta; tipos D-F sin columna de Secundaria (A1).',
+  'Valencia': { updated:'2026-10-01', notes:'Sin tutoría (no existe en Valencia) · Jefatura de Departamento: 84,76€ · Inspección tiene un componente singular aparte del específico general · Sin complemento autonómico ni carrera profesional/complemento de mejora · Cargo directivo: sin Jefatura de Estudios Adjunta; tipos D-F sin columna de Secundaria (A1), salvo un Vicedirector suelto en tipo E.',
     fuentes: [
       {label:'DOGV núm. 10312 — Acuerdo de 27-02-2026, tablas retributivas de la Generalitat', url:'https://dogv.gva.es/datos/2026/02/27/pdf/2026_6352_es.pdf'}
     ] },
