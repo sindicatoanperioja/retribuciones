@@ -2302,10 +2302,18 @@ COMUNIDADES['Ceuta y Melilla'] = {
 // ladderMaestros/ladderPES coinciden exactos con la tabla directa de la guía ANPE. Cargo directivo
 // (CARGO_RAW['Navarra']) también se reproduce exacto aplicando los porcentajes del Decreto Foral
 // 71/2012 (Director/Vicedirector/Jefatura de Estudios/Secretario por tamaño de centro) sobre el mismo
-// sueldo inicial — confirmado para la inmensa mayoría de celdas. Específico de Inspección (1.087,51€,
-// idx8) sigue SIN confirmar: ninguno de los dos documentos da un porcentaje ni cifra propia para
-// Inspección Educativa (solo "Dedicación exclusiva" 55% y "Puesto de trabajo" 17,88%, que no reproducen
-// 1.087,51€ de forma clara combinados con la base de Catedráticos). Jefe de Departamento sigue en 0€
+// sueldo inicial — confirmado para la inmensa mayoría de celdas. Específico de Inspección CORREGIDO
+// 2026-10-01 (a petición del usuario, "los inspectores de Navarra cobran poco, investiga"): el viejo
+// valor (1.087,51€) no reproducía nada del documento y dejaba a Inspección cobrando solo 2.741€/año más
+// que Catedráticos — un hueco muy por debajo del de cualquier otra comunidad (9.000-18.000€/año). El
+// documento SÍ trae la cifra de Inspección, en su propia sección (no en la tabla "Complemento específico
+// docente" de los demás cuerpos), bajo una base legal distinta (Disp. Adic. Cuarta, DF 80/2008): dos
+// porcentajes sobre el mismo "sueldo inicial" de Secundaria/Catedráticos (2.258,75€) — "Dedicación
+// exclusiva" 55,00% (=1.242,31€) y "Puesto de trabajo" 17,88% (=403,86€). Modelados como dos conceptos
+// separados, igual que el resto de comunidades separan "específico general" de "complemento específico
+// singular de Inspector": especifico[8]=1.242,31€ (Dedicación exclusiva) + complementoCargoInspector[8]
+// =403,86€ (Puesto de trabajo) — total 1.646,18€, que deja el hueco Inspección-Catedráticos en línea con
+// el resto de comunidades. Jefe de Departamento sigue en 0€
 // pese a que el documento SÍ tiene un porcentaje real (3%/6%/9% del sueldo inicial según nº de
 // profesores del departamento, → 67,76€/135,53€/203,29€) — no modelado por falta de un selector de
 // tamaño de departamento; pendiente de decidir si añadirlo con un tramo representativo (mismo patrón
@@ -2320,7 +2328,11 @@ COMUNIDADES['Navarra'] = {
     sueldoBase: arr9(1900.21,1900.21,1900.21,2258.75,2258.75,2258.75,2258.75,2258.75,2258.75)
   },
   salaryData: {
-    especifico: arr9(723.41,858.32,858.32,756.23,756.23,756.23,756.23,891.75,1087.51),
+    especifico: arr9(723.41,858.32,858.32,756.23,756.23,756.23,756.23,891.75,1242.31),
+    // Complemento específico singular de Inspección ("Puesto de trabajo", 17,88% del sueldo inicial de
+    // Secundaria/Catedráticos) — ver nota de cabecera (2026-10-01). Mismo patrón que Aragón/Baleares/
+    // Cantabria/Castilla La Mancha/Castilla y León/Cataluña/Extremadura/Galicia/La Rioja/Madrid/Valencia.
+    complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,403.86),
     // Corrected 2026-09-19: the official Navarra 2026 table has a distinct, higher "Complemento
     // específico docente" for Maestros que imparten 1º/2º de la ESO (859,79€) vs. plain Maestros
     // (723,40/723,41€) — modeled the same way every other comunidad handles this flag: as an
@@ -2360,12 +2372,14 @@ COMUNIDADES['Navarra'] = {
     for (const t of sorted){ if (anios >= t) { antig = ladder[t]; break; } }
     const esoAdd = si(flags.maestroESO) ? d.adicionalESO[idx] : 0;
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
-    const base = (d.sueldoBase[idx]+d.especifico[idx]+esoAdd+antig+jefeDept)*12
-      + ((d.sueldoBase[idx]+d.especifico[idx]+esoAdd+antig+jefeDept)*2) // Extra Sueldo Base = Sueldo Base for Navarra (r631=+r630)
+    const cargoInspector = d.complementoCargoInspector ? d.complementoCargoInspector[idx] : 0;
+    const base = (d.sueldoBase[idx]+d.especifico[idx]+cargoInspector+esoAdd+antig+jefeDept)*12
+      + ((d.sueldoBase[idx]+d.especifico[idx]+cargoInspector+esoAdd+antig+jefeDept)*2) // Extra Sueldo Base = Sueldo Base for Navarra (r631=+r630)
       + cargoAmt*14;
     if (items){
       items.push({label:'Sueldo base', monthly: d.sueldoBase[idx]});
       items.push({label:'Complemento específico (general o básico)', monthly: d.especifico[idx]});
+      if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
       // Corrected 2026-09-22 (a petición del usuario, "el check de Maestro ESO no muestra el
       // concepto"): esoAdd used to be folded silently into the específico line above (same total,
       // but no visible "Adicional Maestro ESO" row and no obvious change when toggling the switch) —
