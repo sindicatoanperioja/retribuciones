@@ -420,11 +420,17 @@ COMUNIDADES['Canarias'] = {
     // Análisis); si la Administración la implementa en el futuro, añadir aquí con su fuente real.
     productividad: fill(0),
     jefeDepartamento: arr9(0,71.96,71.96,71.96,71.96,71.96,71.96,71.96,0), // ANPE Canarias: "J. Departamento" (Otros Cargos): 71,96€/mes
+    // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+    // usuario): el documento oficial no trae un cargo de "Director", solo "Coord. EOEP" (107,45€/mes,
+    // misma tabla "Otros Cargos" que Jefe de Departamento) — se usa como equivalente, a falta de un
+    // cargo de Director diferenciado.
+    directorEOEP: arr9(107.45,107.45,107.45,107.45,107.45,107.45,107.45,107.45,0),
   },
   rules: {},
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
     const b = trunc(anios/3), k6 = trunc(anios/6);
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const base = (d.sueldoBase[idx]+d.destino[idx]+d.especifico[idx])*12
       + d.trienios[idx]*b*12
       + (d.extraSueldoBase[idx]+d.destino[idx])*2
@@ -432,6 +438,7 @@ COMUNIDADES['Canarias'] = {
       + d.extraTrienio[idx]*b*2
       + cargoAmt*14
       + jefeDept*14
+      + eoepDir*14
       + (si(flags.islaNoCapitalina)
           ? d.residenciaNoCapitalina[idx]*12 + d.trieniosResidenciaNoCapitalina[idx]*b*12
           : d.residenciaCapitalina[idx]*12)
@@ -459,6 +466,7 @@ COMUNIDADES['Canarias'] = {
       items.push({label:'Complemento específico (general o básico)', monthly: d.especifico[idx]});
       items.push({label:'Cargo directivo', monthly: cargoAmt});
       if (d.jefeDepartamento && d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+      if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
       items.push({label: si(flags.islaNoCapitalina) ? 'Residencia (isla no capitalina)' : 'Residencia (isla capitalina)',
         monthly: si(flags.islaNoCapitalina) ? d.residenciaNoCapitalina[idx] + d.trieniosResidenciaNoCapitalina[idx]*b : d.residenciaCapitalina[idx]});
       if (d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: si(flags.maestroESO) ? d.adicionalESO[idx] : 0});
@@ -483,6 +491,7 @@ COMUNIDADES['Canarias'] = {
   pagaExtraItems(idx, anios, flags, d){
     const b = trunc(anios/3);
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     // Adicional Maestro ESO reducido al 78% en la extra (ver nota en calc() arriba) — sumado al mismo
     // específico reducido, no como línea aparte, porque en la fuente oficial también es una única
     // cifra de específico ("709,78€"), no dos conceptos separados.
@@ -496,6 +505,7 @@ COMUNIDADES['Canarias'] = {
       {label:'Productividad', monthly: d.productividad[idx]},
     ];
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     return items;
   }
 };
@@ -513,12 +523,20 @@ COMUNIDADES['Andalucía'] = {
     adicionalESO: onlyF(137.03),
     complementoMejora: fill(0), productividad: fill(0),
     jefeDepartamento: arr9(0,0,0,58.57,58.57,58.57,58.57,58.57,0), // ANPE Andalucía: "Jefe de Departamento" (IES): 58,57€/mes
+    // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+    // usuario): el documento oficial no trae un cargo de "Director", solo "Coordinador/a Equipo de
+    // Orientación Educativa" — se usa como equivalente. Fuente: ANPE Andalucía y UGT-SP Andalucía,
+    // "Retribuciones del profesorado andaluz 2026" (enero 2026), tabla "Puestos de carácter singular":
+    // 1.060,62€/mes (nivel 21, Maestros) / 1.081,92€/mes (nivel 24, PTFP/Maestros TAPD/Secundaria/EOI/
+    // Música/Artes Plásticas). Sin cifra propia para Catedráticos (nivel 26) ni Inspección en la fuente.
+    directorEOEP: arr9(1060.62,1081.92,1081.92,1081.92,1081.92,1081.92,1081.92,0,0),
   },
   rules: {},
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
     const b = trunc(anios/3);
     const s = d.sexenio;
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     // Corrected 2026-09-19, then RE-corrected 2026-09-19 at the user's request: the ORIGINAL Excel's
     // tier-4 branch (Retribuciones!F80, "SUM(F63:F66)" under the $C$3/6>=4 case) drops the 1er
     // sexenio (F62) — a genuine bug, verified by comparing to the tier-5 branch's "SUM(F62:F66)".
@@ -534,6 +552,7 @@ COMUNIDADES['Andalucía'] = {
       + d.extraTrienio[idx]*b*2
       + cargoAmt*14
       + jefeDept*14
+      + eoepDir*14
       + (si(flags.islaNoCapitalina) ? 0 : d.residenciaCapitalina[idx]*12)
       // Corrected 2026-09-19 at the user's request: Andalucía's source formula gated adicionalESO/
       // tutoria on $C$4="s" / $C$7="s" (a single-letter literal that never equals the real selector
@@ -561,6 +580,7 @@ COMUNIDADES['Andalucía'] = {
       if (d.especificoAutonomico[idx] !== 0) items.push({label:'Complemento específico autonómico', monthly: d.especificoAutonomico[idx]});
       items.push({label:'Cargo directivo', monthly: cargoAmt});
       if (d.jefeDepartamento && d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+      if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
       if (!si(flags.islaNoCapitalina) && d.residenciaCapitalina[idx] !== 0) items.push({label:'Residencia', monthly: d.residenciaCapitalina[idx]});
       if (d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: si(flags.maestroESO) ? d.adicionalESO[idx] : 0});
       if (d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: si(flags.tutor) ? d.tutoria[idx] : 0});
@@ -575,6 +595,7 @@ COMUNIDADES['Andalucía'] = {
     const b = trunc(anios/3);
     const escal = sexenioStandard(anios, d.sexenio);
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const items = [
       {label:'Sueldo base', monthly: d.extraSueldoBase[idx]},
       {label:'Trienios', monthly: d.extraTrienio[idx]*b},
@@ -584,6 +605,7 @@ COMUNIDADES['Andalucía'] = {
     if (d.especificoAutonomico[idx] !== 0) items.push({label:'Complemento específico autonómico', monthly: d.especificoAutonomico[idx]});
     items.push({label:'Sexenios', monthly: escal});
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
     return items;
   }
@@ -618,6 +640,12 @@ COMUNIDADES['Aragón'] = {
     adicionalESO: onlyF(139.7),
     complementoMejora: fill(0), productividad: fill(0),
     jefeDepartamento: fill(83.69), // ANPE Aragón: "Jefe de Departamento/Seminario/División, Coordinador de Especialidad": 83,69€/mes
+    // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+    // usuario): tabla oficial "Tablas_retribuciones_docentes_2026.xlsx", apdo. B.2 "Desempeño de puestos
+    // de trabajo docentes singulares" — "Maestro orientador/Director de Equipo..." (597-Maestros):
+    // 352,71€/mes; "Profesor de Enseñanza Secundaria o Profesores Técnicos de FP, Director de Equipo...":
+    // 111,95€/mes (resto de cuerpos salvo Inspección, sin cifra propia en la fuente).
+    directorEOEP: arr9(352.71,111.95,111.95,111.95,111.95,111.95,111.95,111.95,0),
   },
   // Corrected 2026-09-19 at the user's request: no hay complemento específico autonómico en Aragón,
   // ni una tabla de sexenios independiente para la paga extra. Lo que ocurre de verdad es que la paga
@@ -631,6 +659,7 @@ COMUNIDADES['Aragón'] = {
     const b = trunc(anios/3);
     const especificoExtra = d.especifico[idx]*rules.reduccionPagaExtra;
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const cargoInspector = d.complementoCargoInspector[idx];
     // Corregido 2026-09-19: la antigüedad sigue la escala estándar (sexenioStandard), sin ningún caso
     // especial de "sin sexenio" por cuerpo — ese importe es 0€ para todos los cuerpos en Aragón.
@@ -643,6 +672,7 @@ COMUNIDADES['Aragón'] = {
       + d.extraTrienio[idx]*b*2
       + cargoAmt*14
       + jefeDept*14
+      + eoepDir*14
       // Corrected 2026-09-19 at the user's request: Aragón's own formula gated adicionalESO/tutoría
       // on a column-F "s" literal (never equals the real selector value "SI"/"NO") — dead code, now
       // live like every other complement.
@@ -661,6 +691,7 @@ COMUNIDADES['Aragón'] = {
       // pagaExtraItems() más abajo, no como item extraOnly aquí (evita duplicarlo).
       items.push({label:'Cargo directivo', monthly: cargoAmt});
       if (d.jefeDepartamento && d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+      if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
       if (d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: si(flags.maestroESO) ? d.adicionalESO[idx] : 0});
       items.push({label:'Sexenios', monthly: normal});
       if (d.complementoMejora[idx] !== 0) items.push({label:'Complemento de mejora', monthly: si(flags.carreraGeneral) ? d.complementoMejora[idx] : 0});
@@ -684,6 +715,7 @@ COMUNIDADES['Aragón'] = {
     const especificoExtra = d.especifico[idx]*rules.reduccionPagaExtra;
     const cargoInspector = d.complementoCargoInspector[idx];
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const normal = sexenioStandard(anios, d.sexenio);
     const items = [
       {label:'Sueldo base', monthly: d.extraSueldoBase[idx]},
@@ -695,6 +727,7 @@ COMUNIDADES['Aragón'] = {
     ];
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     return items;
   },
   pagaExtraAdjust(idx, anios, flags, d, rules){
@@ -746,11 +779,17 @@ COMUNIDADES['Asturias'] = {
     // Secundaria, FP y Asimilados" specifically, so modeled as A1-group-only (idx3-8), matching how
     // "jefatura de departamento" doesn't structurally exist in Infantil/Primaria centres.
     jefeDepartamento: arr9(0,0,0,82.95,82.95,82.95,82.95,82.95,82.95),
+    // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+    // usuario): BOPA núm. 132 (10-07-2026), Acuerdo de 6-7-2026, Anexo V.3.2.b, bloque "Equipos del
+    // Servicio de Orientación Educativa y Psicopedagógica" — "Director": 276,48€/mes, cifra única (sin
+    // tramos por cuerpo ni por tamaño de equipo en la fuente). Sin cifra para Inspección.
+    directorEOEP: arr9(276.48,276.48,276.48,276.48,276.48,276.48,276.48,276.48,0),
   },
   rules: { tramoAminAnios: 5, tramoBminAnios: 10 },
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
     const b = trunc(anios/3);
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const k = trunc(anios/6);
     const escal = sexenioStandard(anios, d.sexenio);
     // "Evaluación Docente / Carrera Profesional": gated por el interruptor "Carrera profesional"
@@ -764,6 +803,7 @@ COMUNIDADES['Asturias'] = {
       + cargoAmt*14
       + d.extraTrienio[idx]*b*2
       + jefeDept*14
+      + eoepDir*14
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*12 : 0)
       // Adicional Maestro ESO EN LA EXTRA (2026-09-21, revisado a petición del usuario, "comunidad
       // por comunidad"): a diferencia de la mayoría, en Asturias esto SÍ se paga en la extra —
@@ -780,6 +820,7 @@ COMUNIDADES['Asturias'] = {
       items.push({label:'Complemento específico (general o básico)', monthly: d.especifico[idx]});
       items.push({label:'Cargo directivo', monthly: cargoAmt});
       if (d.jefeDepartamento && d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+      if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
       if (d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: si(flags.maestroESO) ? d.adicionalESO[idx] : 0});
       items.push({label: k===0 ? 'Complemento Personal Transitorio' : 'Sexenios', monthly: escal});
       // Known annual-vs-display divergence: the annual formula's own gate is anios>=tramo (5/10) —
@@ -803,6 +844,7 @@ COMUNIDADES['Asturias'] = {
     const k = trunc(anios/6);
     const escal = sexenioStandard(anios, d.sexenio);
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const items = [
       {label:'Sueldo base', monthly: d.extraSueldoBase[idx]},
       {label:'Trienios', monthly: d.extraTrienio[idx]*b},
@@ -811,6 +853,7 @@ COMUNIDADES['Asturias'] = {
       {label: k===0 ? 'Complemento Personal Transitorio' : 'Sexenios', monthly: escal},
     ];
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
     return items;
   }
@@ -839,6 +882,13 @@ COMUNIDADES['Baleares (Islas)'] = {
     carreraTramo1: arr9(53.32,53.32,53.32,53.32,53.32,53.32,53.32,53.32,78.42),
     carreraTramo2: arr9(81.20,81.20,81.20,81.20,81.20,81.20,81.20,81.20,114.19),
     jefeDepartamento: arr9(0,82.20,82.20,82.20,82.20,82.20,82.20,82.20,0), // ANPE Balears: "Cap de departament / CEP": 82,20€/mes
+    // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+    // usuario): "Retribucions càrrecs directius Centres Públics Any 2026" (actualització 25/05/2026),
+    // bloc "Altres llocs de treball" — "Professor de secundària Director d'Equip d'Orientació": 82,20€/
+    // mes. Nota: coincide exacto con Cap de Departament y Assessor CFP del mismo bloque — podría ser un
+    // importe genérico de cargo unipersonal menor más que uno diferenciado para EOEP; se usa igualmente
+    // a petición del usuario. Mismo patrón de cuerpos que Cap de Departament (sin 597-Maestros/Inspección).
+    directorEOEP: arr9(0,82.20,82.20,82.20,82.20,82.20,82.20,82.20,0),
   },
   rules: {
     // Complemento específico autonómico "carrera" seniority ladder (Carrera funcionarios only).
@@ -913,6 +963,7 @@ COMUNIDADES['Baleares (Islas)'] = {
                         : anios > rules.tramoUmbral1 ? d.carreraTramo1[idx]*12 : 0;
     const carreraProf = si(flags.carreraGeneral) ? carreraProfRaw : 0;
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const cargoInspector = d.complementoCargoInspector[idx];
     const base = (d.sueldoBase[idx]+d.destino[idx]+d.especifico[idx]+cargoInspector+cea)*12
       + d.trienios[idx]*b*12
@@ -920,6 +971,7 @@ COMUNIDADES['Baleares (Islas)'] = {
       + (d.especifico[idx]+cargoInspector+cea)*2
       + cargoAmt*14
       + jefeDept*14
+      + eoepDir*14
       + d.extraTrienio[idx]*b*2
       + residencia*12
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*12 : 0)
@@ -944,6 +996,7 @@ COMUNIDADES['Baleares (Islas)'] = {
       items.push({label:'Complemento específico autonómico (CEA)', monthly: cea});
       items.push({label:'Cargo directivo', monthly: cargoAmt});
       if (d.jefeDepartamento && d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+      if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
       if (residencia !== 0 || residenciaDisplay !== 0) items.push({label:'Residencia', monthly: residencia, displayMonthly: residenciaDisplay});
       if (d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: si(flags.maestroESO) ? d.adicionalESO[idx] : 0});
       if (d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: si(flags.tutor) ? d.tutoria[idx] : 0});
@@ -981,6 +1034,7 @@ COMUNIDADES['Baleares (Islas)'] = {
     else if (k6>3 && k6<5) sex2 = s.s1+s.s2+s.s3+s.s4;
     else if (k6>4) sex2 = s.s1+s.s2+s.s3+s.s4+s.s5;
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const cargoInspector = d.complementoCargoInspector[idx];
     const items = [
       {label:'Sueldo base', monthly: d.extraSueldoBase[idx]},
@@ -991,6 +1045,7 @@ COMUNIDADES['Baleares (Islas)'] = {
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
     items.push({label:'Complemento específico autonómico (CEA)', monthly: cea});
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     items.push({label:'Sexenios', monthly: sex2});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
     return items;
@@ -1047,6 +1102,10 @@ function makeStandard(sd, opts){
       // both roles. Paid across all 14 pagas like cargo directivo, per the community sources that
       // document it (Asturias/Cantabria/Galicia). 0€ for communities without a known figure yet.
       const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx]*14 : 0;
+      // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición
+      // del usuario): mismo patrón que Jefe de departamento — un complemento singular, pagado en las 14
+      // pagas, mutuamente excluyente con cargo directivo/Inspector/jefe de dpto (ver resolveSingulares).
+      const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx]*14 : 0;
       // "Carrera profesional" toggle (2026-09-19, corrected): gates the pre-existing "complemento de
       // mejora" field — not a separate new concept. Off by default; when on, pays whatever value that
       // comunidad already has stored there (0€ for most, a real figure for a few, e.g. Castilla y León).
@@ -1073,6 +1132,7 @@ function makeStandard(sd, opts){
         + tutorExtra
         + sexAnual*2
         + jefeDept
+        + eoepDir
         + carreraMejora
         + vallAran*12;
       if (opts.finalTerms) base += opts.finalTerms(idx, anios, flags, d);
@@ -1093,6 +1153,8 @@ function makeStandard(sd, opts){
         if (d.carreraProfesional && d.carreraProfesional[idx] !== 0) items.push({label:'Carrera profesional', monthly: d.carreraProfesional[idx]});
         if (d.jefeDepartamento && d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación',
           monthly: si(flags.jefeDepartamento) ? d.jefeDepartamento[idx] : 0});
+        if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)',
+          monthly: si(flags.directorEOEP) ? d.directorEOEP[idx] : 0});
         if (d.residenciaVallAran && d.residenciaVallAran[idx] !== 0) items.push({label:'Residencia (Vall d\'Aran)',
           monthly: si(flags.vallAran) ? d.residenciaVallAran[idx] : 0});
       }
@@ -1127,6 +1189,8 @@ function makeStandard(sd, opts){
       if (cea !== 0) items.push({label:'Complemento específico autonómico', monthly: cea});
       items.push({label:'Sexenios', monthly: sexAnual});
       if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+      const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
+      if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
       // opts.adicionalESOInExtra / opts.tutoriaInExtra (2026-09-21): see the matching comments in
       // calc() above — only true for comunidades whose own source confirms it (Extremadura both,
       // Valencia adicionalESO only).
@@ -1169,6 +1233,14 @@ COMUNIDADES['Cantabria'] = makeStandard({
   adicionalESO: onlyF(144.34),
   complementoMejora: fill(0), productividad: fill(0),
   jefeDepartamento: fill(86.5), // ANPE Cantabria, "Jefe/a de Departamento": 86,50€/mes
+  // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+  // usuario): BOC núm. 25 (06-02-2026), tabla "Equipos de Orientación Educativa y Psicopedagógica,
+  // Equipos de Atención Temprana y Aulas de Interculturalidad" — tres tramos por tamaño de equipo:
+  // <5 docentes 172,95€/mes · 5-14 docentes 216,17€/mes · ≥15 docentes 259,40€/mes (más un "Director de
+  // Equipo de Atención Temprana", 172,95€/mes, no modelado aparte). Sin selector de tamaño de equipo en
+  // esta app, se usa el tramo intermedio (5-14 docentes, 216,17€) como aproximación representativa, a
+  // petición del usuario — mismo criterio ya usado para Jefatura de Departamento en Madrid.
+  directorEOEP: fill(216.17),
 }, { overrides: { destino: arr9(623.22,767.49,767.49,767.49,767.49,767.49,767.49,919.32,919.32) },
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
   // adicionalESOInExtra (2026-09-21, a petición del usuario, "revisa comunidad por comunidad"):
@@ -1275,6 +1347,12 @@ COMUNIDADES['Castilla y León'] = {
     complementoMejora: arr9(25.27,25.27,25.27,27.04,27.04,27.04,27.04,27.04,27.04),
     productividad: fill(0),
     jefeDepartamento: arr9(0,83.08,83.08,83.08,83.08,83.08,83.08,83.08,0), // ANPE Castilla y León: "Jefe de Departamento (Secundaria, FP y Régimen Especial)": 83,08€/mes
+    // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+    // usuario): ORDEN PRE/1/2026 (BOCYL), apdo. "Segundo. Dos. Desempeño de puestos de trabajo docentes
+    // singulares", pág. 49 — "Director de Equipo de Orientación Educativa de carácter general o
+    // específico": 261,66€/mes, cifra única (sin tramos). También trae "Profesor orientador en Equipo de
+    // Orientación Educativa" = 178,67€/mes, un puesto distinto (sin dirección), no modelado aquí.
+    directorEOEP: arr9(261.66,261.66,261.66,261.66,261.66,261.66,261.66,261.66,0),
     // Tabla real "Carrera profesional" (categorías/tramos C1-C4), Acuerdo de 25/08/2021 (BOCYL
     // 02/09/2021): importes mensuales por categoría, acumulativos según años de servicio.
     // Categoría 3 (A1) corregida 2026-09-20 contra el UGT/BOCyL: 523,62€, no 523,60€ (su propio
@@ -1291,6 +1369,7 @@ COMUNIDADES['Castilla y León'] = {
     const cea = d.especificoAutonomico[idx];
     const cargoInspector = d.complementoCargoInspector[idx];
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx]*14 : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx]*14 : 0;
     const carreraMejora = d.complementoMejora[idx]*12; // "Consolidación punto 4º", always on
     const carreraOn = si(flags.carreraGeneral);
     let carreraTotal = 0;
@@ -1319,6 +1398,7 @@ COMUNIDADES['Castilla y León'] = {
       + (si(flags.tutor) ? d.tutoria[idx]*12 : 0)
       + sexPagado*2
       + jefeDept
+      + eoepDir
       + carreraMejora
       + carreraPagado*12
       + carreraPagado*2
@@ -1337,6 +1417,7 @@ COMUNIDADES['Castilla y León'] = {
       if (d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: si(flags.tutor) ? d.tutoria[idx] : 0});
       if (d.complementoMejora[idx] !== 0) items.push({label:'Consolidación punto 4º', monthly: d.complementoMejora[idx]});
       if (d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: si(flags.jefeDepartamento) ? d.jefeDepartamento[idx] : 0});
+      if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: si(flags.directorEOEP) ? d.directorEOEP[idx] : 0});
     }
     return base;
   },
@@ -1353,6 +1434,7 @@ COMUNIDADES['Castilla y León'] = {
     const cea = d.especificoAutonomico[idx];
     const cargoInspector = d.complementoCargoInspector[idx];
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const carreraOn = si(flags.carreraGeneral);
     let carreraTotal = 0;
     if (carreraOn){
@@ -1372,6 +1454,7 @@ COMUNIDADES['Castilla y León'] = {
     if (cea !== 0) items.push({label:'Complemento específico autonómico', monthly: cea});
     items.push(useCarrera ? {label:'Carrera profesional', monthly: carreraTotal} : {label:'Sexenios', monthly: sexAnual});
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
     return items;
   }
@@ -1454,6 +1537,14 @@ COMUNIDADES['Extremadura'] = makeStandard({
   adicionalESO: onlyF(137.03),
   complementoMejora: fill(0), productividad: fill(0),
   jefeDepartamento: arr9(80.6,80.6,80.6,80.6,80.6,80.6,80.6,80.6,0), // ANPE Extremadura: "Jefatura Departamento" (Secundaria y otros centros): 80,60€/mes
+  // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+  // usuario): tabla oficial de Profex (Retribuciones del Personal Docente, bloque "Complemento específico
+  // singular" > "Otros cargos") — "Dirección EOEP (Maestros)": 250,12€/mes (597-Maestros); "Dirección
+  // EOEP (Profesores/Prof. Técnicos)": 79,40€/mes (resto de cuerpos salvo Inspección). Tabla fechada
+  // 2025 (+2,5%); el acuerdo de Consejo de Gobierno de 13-01-2026 añade +80€/mes brutos desde 2026 a las
+  // retribuciones docentes en general, sin confirmar si afecta a este complemento singular en concreto
+  // — revisar cuando se publique una tabla 2026 específica.
+  directorEOEP: arr9(250.12,79.40,79.40,79.40,79.40,79.40,79.40,79.40,0),
 }, {
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
   // Revisado 2026-09-21 a petición del usuario ("revisa maestro de ESO comunidad por comunidad"): la
@@ -1502,6 +1593,12 @@ COMUNIDADES['Galicia'] = {
     complementoProfesorFP: arr9(0,158.16,0,0,0,0,0,0,0),
     // ANPE Galicia, "Xefatura de departamento, Coordinacións, ENDL": 83€/mes — no aplica a Inspección.
     jefeDepartamento: arr9(83,83,83,83,83,83,83,83,0),
+    // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+    // usuario): DOG, Orde do 23 de xaneiro de 2026, Anexo V, apdo. "Dous: Desempeño de postos de traballo
+    // docentes singulares" (confirmado contra ANPE Galicia) — "Membros/as dos equipos de orientación
+    // específicos": 410,45€/mes. OJO: es una tarifa PLANA para todo el equipo (no hay una cifra distinta
+    // para quien lo dirige) — se usa igualmente a petición del usuario, como lo que cobra quien lo dirige.
+    directorEOEP: arr9(410.45,410.45,410.45,410.45,410.45,410.45,410.45,410.45,0),
   },
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
     const b = trunc(anios/3);
@@ -1509,6 +1606,7 @@ COMUNIDADES['Galicia'] = {
     const tutorTerm = si(flags.tutor) ? d.tutoria[idx]*12 : 0;
     const adic = si(flags.maestroESO) ? d.adicionalESO[idx] : 0;
     const jefeDept = (d.jefeDepartamento[idx] && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx]*14 : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx]*14 : 0;
     const carreraMejora = (d.complementoMejora && si(flags.carreraGeneral)) ? d.complementoMejora[idx]*12 : 0;
     // Exception (2026-09-20, at the user's request): this complement is for 591-PTFP only — 598
     // shares 591's data slot (idx1) everywhere else in the engine, but NOT for this one concept.
@@ -1530,6 +1628,7 @@ COMUNIDADES['Galicia'] = {
       + tutorTerm
       + sexAnual*2
       + jefeDept
+      + eoepDir
       + carreraMejora;
     if (items){
       items.push({label:'Sueldo base', monthly: d.sueldoBase[idx]});
@@ -1545,6 +1644,8 @@ COMUNIDADES['Galicia'] = {
       if (d.complementoMejora && d.complementoMejora[idx] !== 0) items.push({label:'Complemento de mejora', monthly: si(flags.carreraGeneral) ? d.complementoMejora[idx] : 0});
       if (d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación',
         monthly: si(flags.jefeDepartamento) ? d.jefeDepartamento[idx] : 0});
+      if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)',
+        monthly: si(flags.directorEOEP) ? d.directorEOEP[idx] : 0});
     }
     return base;
   },
@@ -1556,6 +1657,7 @@ COMUNIDADES['Galicia'] = {
     const profesorFP = flags.is598 ? 0 : d.complementoProfesorFP[idx];
     const cargoInspector = d.complementoCargoInspector[idx];
     const jefeDept = (d.jefeDepartamento[idx] && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const items = [
       {label:'Sueldo base', monthly: d.extraSueldoBase[idx]},
       {label:'Trienios', monthly: d.extraTrienio[idx]*b},
@@ -1566,6 +1668,7 @@ COMUNIDADES['Galicia'] = {
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
     items.push({label:'Sexenios', monthly: sexAnual});
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
     return items;
   }
@@ -1603,6 +1706,12 @@ COMUNIDADES['Madrid'] = makeStandard({
   adicionalESO: onlyF(133.97),
   complementoMejora: fill(0), productividad: fill(0),
   jefeDepartamento: fill(100.09), // aproximación al tramo "3-6 miembros" del documento, ver nota arriba
+  // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+  // usuario): BOCM núm. 33 (09-02-2026), Orden de 3 de febrero de 2026, Anexo II, apdo. "Dos", tabla de
+  // puestos de trabajo docentes singulares — dos tramos por tamaño de equipo: <12 profesionales
+  // 143,86€/mes · ≥12 profesionales 187,65€/mes. Sin selector de tamaño de equipo en esta app, se usa el
+  // tramo inferior (<12) como aproximación representativa, a petición del usuario.
+  directorEOEP: fill(143.86),
 }, {
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
   // Alumnado asumido por tipo de centro (2026-09-21, a petición del usuario) — editable en Datos CCAA
@@ -1689,6 +1798,11 @@ COMUNIDADES['Valencia'] = makeStandard({
   // docente valenciano — no son "0€ sin verificar", son conceptos que Valencia no tiene.
   productividad: fill(0),
   jefeDepartamento: fill(84.76), // ANPE Comunitat Valenciana, "Jefatura de Departamento": 84,76€/mes
+  // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+  // usuario): DOGV núm. 10312 bis (27-02-2026), Tabla 2 "Retribucions del personal docent" — "Director/a
+  // de S.P.E." (Servicio Psicopedagógico Escolar, equivalente valenciano del EOEP de sector): 556,35€/mes,
+  // mismo importe para los cuatro cuerpos de la tabla (Catedráticos/Secundaria/PTFP/Maestros).
+  directorEOEP: fill(556.35),
 }, {
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
   // adicionalESOInExtra (2026-09-21, a petición del usuario, "revisa comunidad por comunidad"): la
@@ -1780,6 +1894,10 @@ COMUNIDADES['La Rioja'] = {
     // 159,91€ para "Maestro ESO (CPT) (12 mensualidades)" — antes 153,71€ (fuente ANPE, desactualizada).
     adicionalESO: onlyF(159.91),
     jefeDepartamento: fill(87.93), // ANPE La Rioja, "Jefe de Departamento": 87,93€/mes
+    // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+    // usuario): "RETRIBUCIONES 2026" (larioja.org, idMmedia=1698473), apdo. 1.4.4 "Otros puestos
+    // singulares" — "Equipos de orientación educativa y atención temprana, Director": 87,93€/mes.
+    directorEOEP: fill(87.93),
     // "Carrera profesional" (Grado I / Grado II): importe mensual, distinto según el cuerpo sea A2
     // (597/591/596) o A1 (resto) — como en Asturias, gestionado por el interruptor "Carrera
     // profesional" y por años de antigüedad (Grado I ≥5 años, Grado II ≥11 años). Pagado en las 14
@@ -1795,6 +1913,7 @@ COMUNIDADES['La Rioja'] = {
       : anios > rules.carreraUmbral1 ? d.carreraGradoI[idx] : 0;
     const sexAnual = sexenioStandard(anios, d.sexenio);
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const cargoInspector = d.complementoCargoInspector[idx];
     const base = (d.sueldoBase[idx]+d.destino[idx]+d.especifico[idx]+cargoInspector)*12
       + d.trienios[idx]*b*12
@@ -1802,6 +1921,7 @@ COMUNIDADES['La Rioja'] = {
       + (d.especifico[idx]+cargoInspector)*2
       + cargoAmt*14
       + jefeDept*14
+      + eoepDir*14
       + d.extraTrienio[idx]*b*2
       // Corrected 2026-09-19 at the user's request: La Rioja's own formula gated adicionalESO on
       // $C$4="s" (never equals the real "SI"/"NO" selector value) — dead code, now live.
@@ -1818,6 +1938,7 @@ COMUNIDADES['La Rioja'] = {
       if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
       items.push({label:'Cargo directivo', monthly: cargoAmt});
       if (d.jefeDepartamento && d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+      if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
       if (d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: si(flags.maestroESO) ? d.adicionalESO[idx] : 0});
       items.push({label:'Sexenios', monthly: sexAnual});
       if (d.carreraGradoI[idx] !== 0 || d.carreraGradoII[idx] !== 0) items.push({label:'Carrera profesional (Grado I/II)', monthly: carrera});
@@ -1836,6 +1957,7 @@ COMUNIDADES['La Rioja'] = {
       : anios > rules.carreraUmbral1 ? d.carreraGradoI[idx] : 0;
     const sexAnual = sexenioStandard(anios, d.sexenio);
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const cargoInspector = d.complementoCargoInspector[idx];
     const items = [
       {label:'Sueldo base', monthly: d.extraSueldoBase[idx]},
@@ -1845,6 +1967,7 @@ COMUNIDADES['La Rioja'] = {
     ];
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     items.push({label:'Sexenios', monthly: sexAnual});
     if (d.carreraGradoI[idx] !== 0 || d.carreraGradoII[idx] !== 0) items.push({label:'Carrera profesional (Grado I/II)', monthly: carrera});
     return items;
@@ -1896,6 +2019,13 @@ COMUNIDADES['Murcia'] = {
     shiftDestino: arr9(240.24,295.87,295.87,295.87,295.87,295.87,295.87,354.36,354.36),
     shiftProdFija: arr9(524.07,524.07,524.07,524.07,524.07,524.07,524.07,586.77,621.89),
     jefeDepartamento: fill(147.50),
+    // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
+    // usuario): BORM núm. 291 (18-12-2025), Anexo XI, apdo. 2.2 "Desempeño de puestos de trabajo
+    // docentes singulares" — "Directores de Equipo del Servicio de Orientación Educativa y
+    // Psicopedagógica": Tipo A 446,74€/mes · Tipo B 345,21€/mes (la fuente no define el criterio de
+    // clasificación entre tipos). Sin selector en esta app, se usa el Tipo B (más conservador) como
+    // tramo representativo, a petición del usuario.
+    directorEOEP: fill(345.21),
     // "Paga adicional del complemento específico" (2026-09-21, previously undocumented/unmodeled):
     // official CARM figures, graduated by nº de sexenios (0-5), ANEXO XI.4º of the Acuerdo de
     // Consejo de Gobierno de 11-12-2025 (BORM núm. 291, 18-12-2025), ×1.015 for the 2026 RD-ley
@@ -1916,6 +2046,7 @@ COMUNIDADES['Murcia'] = {
     const s = d.sexenio;
     const sexNormal = sexenioStandard(anios, s);
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     // Carrera profesional (2026-09-19, umbral real añadido 2026-09-21): gated by the "Carrera
     // profesional" toggle AND a real eligibility threshold — confirmed (STERM/intersindicalrm.org,
     // resoluciones de encuadramiento CARM) that Tramo I requires "1 sexenio completo" (6 años de
@@ -1944,6 +2075,7 @@ COMUNIDADES['Murcia'] = {
       + (d.extraSueldoBase[idx]+d.destino[idx])*2
       + cargoAmt*14
       + jefeDept*14
+      + eoepDir*14
       + d.extraTrienio[idx]*b*2
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*12 : 0)   // Murcia's own gate uses "si" (real)
       + sexNormal*12
@@ -1961,6 +2093,7 @@ COMUNIDADES['Murcia'] = {
       items.push({label:'Productividad fija mensual', monthly: d.productividadFijaMensual[idx]});
       items.push({label:'Cargo directivo', monthly: cargoAmt});
       if (d.jefeDepartamento && d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+      if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
       if (d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: si(flags.maestroESO) ? d.adicionalESO[idx] : 0});
       items.push({label:'Sexenios', monthly: sexNormal});
       // Source label is "Carrera profesional (a partir de 6 años antigüedad)". Gated by the "Carrera
@@ -1995,8 +2128,9 @@ COMUNIDADES['Murcia'] = {
     // "Ajuste" que lo compensara (este override sustituye el total entero, no pasa por esa mecánica),
     // el bruto de junio/diciembre se quedaba corto en su importe cuando el interruptor estaba activo.
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     return d.extraSueldoBase[idx] + d.extraTrienio[idx]*b + d.destino[idx]
-      + d.shiftDestino[idx] + d.shiftProdFija[idx] + pagaAdicTable[nSex] + jefeDept;
+      + d.shiftDestino[idx] + d.shiftProdFija[idx] + pagaAdicTable[nSex] + jefeDept + eoepDir;
   },
   // Itemized version of pagaExtraOverride (2026-09-21, a petición del usuario), for the "Su nómina"
   // payslip display: replaces the app's generic fallback (repeat every monthly concept at its
@@ -2014,6 +2148,7 @@ COMUNIDADES['Murcia'] = {
       : idx === 7 ? d.pagaAdicionalEspecifico.catedraticos
       : d.pagaAdicionalEspecifico.general;
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const items = [
       {label:'Sueldo base', monthly: d.extraSueldoBase[idx]},
       {label:'Trienios', monthly: d.extraTrienio[idx]*b},
@@ -2023,6 +2158,7 @@ COMUNIDADES['Murcia'] = {
       {label:'Paga adicional del complemento específico', monthly: pagaAdicTable[nSex]},
     ];
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     return items;
   }
 };
@@ -2342,24 +2478,29 @@ function setCargoTable(community, groupAG, tipoCentro, cargo, value){
 }
 
 // Complementos singulares por cargo — regla común a TODAS las comunidades (2026-09-22, indicada por el
-// usuario): el Complemento de cargo de Inspector, el Cargo directivo (Dirección/Jefatura/Secretaría...) y
-// el Jefe de departamento/coordinación NO se solapan; solo se cobra el de mayor importe. Se aplica aquí,
-// de forma central, en vez de en cada calc(): devuelve el cargoAmt efectivo, la bandera de jefe de
-// departamento a usar y una copia de salaryData con el complemento de Inspector a 0 si pierde. En caso de
-// empate se conserva primero el cargo directivo, luego el de Inspector y por último el jefe de dpto.
-// (no cambia el total, solo cuál se muestra). No cubre los "singulares" con otro nombre de campo
-// (p. ej. Murcia `especificoSingular`, que forma parte de su específico y no es un complemento de cargo).
-function resolveSingulares(def, idx, jefeFlag, cargoAmt){
+// usuario): el Complemento de cargo de Inspector, el Cargo directivo (Dirección/Jefatura/Secretaría...), el
+// Jefe de departamento/coordinación y (2026-10-01, misma regla aplicada al nuevo complemento) la Dirección
+// de Equipo de Orientación Educativa y Psicopedagógica (EOEP) NO se solapan; solo se cobra el de mayor
+// importe — nadie dirige un centro, un departamento Y un EOEP de zona a la vez. Se aplica aquí, de forma
+// central, en vez de en cada calc(): devuelve el cargoAmt efectivo, las banderas de jefe de departamento y
+// de director de EOEP a usar, y una copia de salaryData con el complemento de Inspector a 0 si pierde. En
+// caso de empate se conserva primero el cargo directivo, luego el de Inspector, luego el jefe de dpto. y
+// por último el director de EOEP (no cambia el total, solo cuál se muestra). No cubre los "singulares" con
+// otro nombre de campo (p. ej. Murcia `especificoSingular`, que forma parte de su específico y no es un
+// complemento de cargo).
+function resolveSingulares(def, idx, jefeFlag, cargoAmt, eoepFlag){
   const d = def.salaryData;
   const jefeAmt = (d.jefeDepartamento && si(jefeFlag)) ? (d.jefeDepartamento[idx] || 0) : 0;
   const inspAmt = d.complementoCargoInspector ? (d.complementoCargoInspector[idx] || 0) : 0;
+  const eoepAmt = (d.directorEOEP && si(eoepFlag)) ? (d.directorEOEP[idx] || 0) : 0;
   const cargo = cargoAmt || 0;
-  const max = Math.max(cargo, jefeAmt, inspAmt);
-  const keep = cargo >= max ? 'cargo' : (inspAmt >= max ? 'inspector' : 'jefe');
+  const max = Math.max(cargo, jefeAmt, inspAmt, eoepAmt);
+  const keep = cargo >= max ? 'cargo' : (inspAmt >= max ? 'inspector' : (jefeAmt >= max ? 'jefe' : 'eoep'));
   const dropInsp = inspAmt > 0 && keep !== 'inspector';
   return {
     cargoAmt: keep === 'cargo' ? cargoAmt : 0,
     jefeFlag: (jefeAmt > 0 && keep !== 'jefe') ? 'NO' : jefeFlag,
+    eoepFlag: (eoepAmt > 0 && keep !== 'eoep') ? 'NO' : eoepFlag,
     sd: dropInsp ? Object.assign({}, d, { complementoCargoInspector: d.complementoCargoInspector.map(() => 0) }) : d,
     keep
   };
@@ -2372,7 +2513,7 @@ function resolveSingularesFor(community, profile){
   const grp = resolveCargoGroup(community, idx, profile.tablaCargo);
   const raw = getCargoAmount(community, grp, profile.tipoCentro, profile.cargoDirectivo);
   const cargoAmt = (idx === 8 || raw === CARGO_ERROR) ? 0 : raw;
-  return resolveSingulares(def, idx, profile.jefeDepartamento, cargoAmt);
+  return resolveSingulares(def, idx, profile.jefeDepartamento, cargoAmt, profile.directorEOEP);
 }
 
 // Compute one community's full breakdown for a given profile.
@@ -2407,14 +2548,15 @@ function computeCommunity(community, profile, today, wantItems){
     maestroESO: profile.maestroESO, tutor: profile.tutor,
     islaNoCapitalina: profile.islaNoCapitalina, funcionario: situFlag === 'interino' ? 'interino' : 'carrera',
     islaBaleares: profile.islaBaleares, vallAran: profile.vallAran, jefeDepartamento: profile.jefeDepartamento,
-    carreraGeneral: profile.carreraGeneral,
+    carreraGeneral: profile.carreraGeneral, directorEOEP: profile.directorEOEP,
     // 598-PESSFP is normally a pure alias onto idx1 (591/596's data slot, see CUERPO_ALIASES above),
     // but Galicia's "Complemento de profesor de FP" is a genuine exception: it applies to 591 only,
     // not to 598 despite sharing the same idx — see Galicia's calc().
     is598: profile.cuerpo === CUERPO_598_LABEL
   };
-  const sing = resolveSingulares(def, idx, flags.jefeDepartamento, cargoAmt);
+  const sing = resolveSingulares(def, idx, flags.jefeDepartamento, cargoAmt, flags.directorEOEP);
   flags.jefeDepartamento = sing.jefeFlag;
+  flags.directorEOEP = sing.eoepFlag;
   const dEff = sing.sd;
   const items = wantItems ? [] : undefined;
   const annual = def.calc(idx, profile.anios, flags, sing.cargoAmt, dEff, def.rules, today, items);
