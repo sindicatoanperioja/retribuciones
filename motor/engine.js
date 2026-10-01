@@ -303,7 +303,19 @@ const CARGO_RAW = {
   // común resolveSingulares() (ver computeCommunity), igual para todas las comunidades.
   'País Vasco': { A2:[[0,743.78,0,348.16,262.5,348.16],[0,699.14,0,337.46,262.5,337.46],[0,553.35,0,337.46,262.5,337.46],[0,455.45,0,262.5,262.5,262.5],[0,365.69,0,68.23,262.5,68.23],[0,253.57,0,68.23,262.5,68.23]],
                   A1:[[0,871.06,0,503.44,366.57,503.44],[0,783.42,0,492.85,366.57,492.85],[0,735.86,0,386.89,366.57,386.89],[0,691.7,0,366.57,366.57,366.57],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
-  'Navarra': { A2:[[0,665.07,323.04,323.04,0,323.04],[0,608.07,323.04,323.04,0,323.04],[0,551.08,285.03,285.03,0,285.03],[0,456.05,285.03,285.03,0,247.03],[0,361.04,285.03,285.03,0,0],[0,228.03,285.03,0,0,0]],
+  // Corregido 2026-10-01 (a petición del usuario, "revisa Navarra los directores de centro por si pasa
+  // lo mismo"): los Directores en sí ya coincidían exactos con el DECRETO FORAL 71/2012 (verificado de
+  // nuevo célula a célula), pero la tabla A2 (CEIP) tenía tres errores reales al leerla visualmente
+  // contra el documento (apdo. B — "Colegios públicos de educación infantil y primaria"): (1) CEIP no
+  // tiene Vicedirección en absoluto (ese cargo solo existe en IES/EOI) — la columna estaba rellena con
+  // los mismos importes de Jefatura de Estudios, un desplazamiento de columna; puesta a 0. (2) Jefatura
+  // de Estudios solo existe en los 3 tramos más grandes (9-18/19-27/>27 unidades, 15%/17%/17%) — estaba
+  // extendida también a los tramos D y E (5-8 y 3-4 unidades), que el documento no contempla; puesta a 0
+  // ahí. (3) Jefatura de Estudios Adjunta SÍ existe en CEIP (mismos 3 tramos y mismo 15%/17%/17% que
+  // Jefatura de Estudios) pero nunca se había modelado (0€ en los seis tramos); añadida. Secretaría y
+  // Dirección ya estaban exactas, sin cambios. A1 (IES) ya coincidía exacta en las cuatro columnas
+  // (Vicedirección sí existe en IES, a diferencia de CEIP) — sin cambios.
+  'Navarra': { A2:[[0,665.07,0,323.04,323.04,323.04],[0,608.07,0,323.04,323.04,323.04],[0,551.08,0,285.03,285.03,285.03],[0,456.05,0,0,0,247.03],[0,361.04,0,0,0,0],[0,228.03,0,0,0,0]],
                A1:[[0,790.56,383.99,383.99,0,383.99],[0,722.8,383.99,383.99,0,383.99],[0,655.04,338.81,338.81,0,338.81],[0,655.04,338.81,338.81,0,338.81],[0,0,0,0,0,0],[0,0,0,0,0,0]] }
 };
 // Corrected 2026-09-19: this app used to force a CARGO_ERROR for Cantabria's grupo A2 whenever tipo

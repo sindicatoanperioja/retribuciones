@@ -775,7 +775,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
         <h1>Retribuciones docentes por CCAA</h1>
       </div>
     </div>
-    <span class="badge" id="parityBadge" title="36/198 coinciden al céntimo con el Excel original (comparativa.xlsx). Los 162 restantes son correcciones deliberadas, verificadas contra las tablas oficiales de retribuciones 2026 de cada comunidad (ANPE, BOCyL y fuentes equivalentes) — no errores de esta aplicación. Motivos típicos: complementos actualizados a la subida salarial de 2026 que el Excel original no reflejaba, condiciones (Maestro ESO/Tutor/Carrera profesional) que nunca se activaban por errores de fórmula, estructuras propias de cada comunidad (CEA, consolidación, carrera profesional, cargo de Inspector) corregidas o completadas, un tamaño de centro sin datos (p. ej. Baleares sin CEIP de tamaño A) que ahora usa el sueldo del tamaño real más cercano en vez de devolver 0€, y — desde el 01/10/2026 — Inspección en Navarra, que cobraba un complemento específico muy por debajo de su cifra oficial real. Esta cifra crece con cada comunidad que se revisa a fondo — no es un indicio de que la app sea menos fiable, es que cada revisión encuentra otra cifra que el Excel tenía desfasada. Ver las 'Observaciones' de cada comunidad en la pestaña Datos CCAA para el detalle.">Motor validado: 36/198 casos de control — 162 correcciones deliberadas frente al Excel original</span>
+    <span class="badge" id="parityBadge" title="34/198 coinciden al céntimo con el Excel original (comparativa.xlsx). Los 164 restantes son correcciones deliberadas, verificadas contra las tablas oficiales de retribuciones 2026 de cada comunidad (ANPE, BOCyL y fuentes equivalentes) — no errores de esta aplicación. Motivos típicos: complementos actualizados a la subida salarial de 2026 que el Excel original no reflejaba, condiciones (Maestro ESO/Tutor/Carrera profesional) que nunca se activaban por errores de fórmula, estructuras propias de cada comunidad (CEA, consolidación, carrera profesional, cargo de Inspector) corregidas o completadas, un tamaño de centro sin datos (p. ej. Baleares sin CEIP de tamaño A) que ahora usa el sueldo del tamaño real más cercano en vez de devolver 0€, y — desde el 01/10/2026 — Inspección y cargo directivo en Navarra, que tenían errores reales de lectura del documento oficial (un complemento de Inspección muy por debajo de su cifra real, y un desplazamiento de columna en la tabla de cargos de colegios). Esta cifra crece con cada comunidad que se revisa a fondo — no es un indicio de que la app sea menos fiable, es que cada revisión encuentra otra cifra que el Excel tenía desfasada. Ver las 'Observaciones' de cada comunidad en la pestaña Datos CCAA para el detalle.">Motor validado: 34/198 casos de control — 164 correcciones deliberadas frente al Excel original</span>
   </header>
 
   <!-- Compact profile selector: sits above "Su nómina" and "Comparativa" (both read the same
@@ -1001,6 +1001,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
    ============================================================================ */
 </script>
 <script>
+// ============================================================================
 // ============================================================================
 // ============================================================================
 // ============================================================================
@@ -1360,7 +1361,19 @@ const CARGO_RAW = {
   // común resolveSingulares() (ver computeCommunity), igual para todas las comunidades.
   'País Vasco': { A2:[[0,743.78,0,348.16,262.5,348.16],[0,699.14,0,337.46,262.5,337.46],[0,553.35,0,337.46,262.5,337.46],[0,455.45,0,262.5,262.5,262.5],[0,365.69,0,68.23,262.5,68.23],[0,253.57,0,68.23,262.5,68.23]],
                   A1:[[0,871.06,0,503.44,366.57,503.44],[0,783.42,0,492.85,366.57,492.85],[0,735.86,0,386.89,366.57,386.89],[0,691.7,0,366.57,366.57,366.57],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
-  'Navarra': { A2:[[0,665.07,323.04,323.04,0,323.04],[0,608.07,323.04,323.04,0,323.04],[0,551.08,285.03,285.03,0,285.03],[0,456.05,285.03,285.03,0,247.03],[0,361.04,285.03,285.03,0,0],[0,228.03,285.03,0,0,0]],
+  // Corregido 2026-10-01 (a petición del usuario, "revisa Navarra los directores de centro por si pasa
+  // lo mismo"): los Directores en sí ya coincidían exactos con el DECRETO FORAL 71/2012 (verificado de
+  // nuevo célula a célula), pero la tabla A2 (CEIP) tenía tres errores reales al leerla visualmente
+  // contra el documento (apdo. B — "Colegios públicos de educación infantil y primaria"): (1) CEIP no
+  // tiene Vicedirección en absoluto (ese cargo solo existe en IES/EOI) — la columna estaba rellena con
+  // los mismos importes de Jefatura de Estudios, un desplazamiento de columna; puesta a 0. (2) Jefatura
+  // de Estudios solo existe en los 3 tramos más grandes (9-18/19-27/>27 unidades, 15%/17%/17%) — estaba
+  // extendida también a los tramos D y E (5-8 y 3-4 unidades), que el documento no contempla; puesta a 0
+  // ahí. (3) Jefatura de Estudios Adjunta SÍ existe en CEIP (mismos 3 tramos y mismo 15%/17%/17% que
+  // Jefatura de Estudios) pero nunca se había modelado (0€ en los seis tramos); añadida. Secretaría y
+  // Dirección ya estaban exactas, sin cambios. A1 (IES) ya coincidía exacta en las cuatro columnas
+  // (Vicedirección sí existe en IES, a diferencia de CEIP) — sin cambios.
+  'Navarra': { A2:[[0,665.07,0,323.04,323.04,323.04],[0,608.07,0,323.04,323.04,323.04],[0,551.08,0,285.03,285.03,285.03],[0,456.05,0,0,0,247.03],[0,361.04,0,0,0,0],[0,228.03,0,0,0,0]],
                A1:[[0,790.56,383.99,383.99,0,383.99],[0,722.8,383.99,383.99,0,383.99],[0,655.04,338.81,338.81,0,338.81],[0,655.04,338.81,338.81,0,338.81],[0,0,0,0,0,0],[0,0,0,0,0,0]] }
 };
 // Corrected 2026-09-19: this app used to force a CARGO_ERROR for Cantabria's grupo A2 whenever tipo
@@ -3869,7 +3882,7 @@ const META = {
       {label:'Gobierno Vasco — Régimen económico del personal docente', url:'https://www.euskadi.eus/gobierno-vasco/-/regimen-economico/'},
       {label:'Instrucción sobre retribuciones del personal docente (24-02-2026)', url:'https://www.euskadi.eus/contenidos/informacion/langile_nominas_servicio/es_def/adjuntos/Instruccion_retribuciones_24_02_26-.pdf'}
     ] },
-  'Navarra': { updated:'2026-10-01', notes:'Antigüedad por escala de grados y quinquenios (no trienios/sexenios); sin complemento de destino — sueldo base más alto para compensar · Maestro ESO: específico 859,79€ (+136,38€), en las 14 pagas · Jefe de Departamento aproximado al tramo intermedio (documento gradúa 3%/6%/9% por nº de profesores); solo Secundaria y superiores · Inspección: específico y complemento singular propios ("Dedicación exclusiva" + "Puesto de trabajo"), base legal distinta al resto de cuerpos.',
+  'Navarra': { updated:'2026-10-01', notes:'Antigüedad por escala de grados y quinquenios (no trienios/sexenios); sin complemento de destino — sueldo base más alto para compensar · Maestro ESO: específico 859,79€ (+136,38€), en las 14 pagas · Jefe de Departamento aproximado al tramo intermedio (documento gradúa 3%/6%/9% por nº de profesores); solo Secundaria y superiores · Inspección: específico y complemento singular propios ("Dedicación exclusiva" + "Puesto de trabajo"), base legal distinta al resto de cuerpos · Cargo directivo en colegios (CEIP): sin Vicedirección (no existe ese cargo ahí); Jefatura de Estudios y su Adjunta solo en los 3 tamaños más grandes.',
     fuentes: [
       {label:'Gobierno de Navarra — Retribuciones (Departamento de Educación)', url:'https://www.educacion.navarra.es/en/web/dpto/informacion-laboral-rrhh/retribuciones'},
       {label:'Gobierno de Navarra — Retribuciones 2026 (documento oficial concreto, porcentajes)', url:'https://www.educacion.navarra.es/documents/27590/43394/Retribuciones+2026.pdf/61881ef7-50fd-b23a-dd27-d1f62331b424'},
