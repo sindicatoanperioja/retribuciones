@@ -922,8 +922,8 @@ COMUNIDADES['Baleares (Islas)'] = {
   },
   rules: {
     // Complemento específico autonómico "carrera" seniority ladder (Carrera funcionarios only).
-    // Interinos/prácticas get the flat ceaInterinoFlat regardless of años; Carrera has no separate
-    // bracket below 1 año either, so anios<1 falls into ceaGe1 in calc() below.
+    // Quien no lleva ningún año como funcionario de carrera (interinos, en prácticas, carrera con <1 año)
+    // cobra el importe fijo ceaInterinoFlat; la escala empieza al cumplir 1 año de carrera.
     ceaInterinoFlat: 418.54,
     ceaGe1: 436.02, ceaGe6: 498.81, ceaGe12: 543.77,
     ceaGe18: 560.14, ceaGe24: 534.26, ceaGe30: 619.04,
@@ -946,13 +946,13 @@ COMUNIDADES['Baleares (Islas)'] = {
     const grp = groupOf(idx);
     const carrera = String(flags.funcionario||'').trim().toLowerCase()==='carrera';
     let cea;
-    if (!carrera) cea = rules.ceaInterinoFlat;
+    if (!carrera || anios<1) cea = rules.ceaInterinoFlat; // la escala cuenta años como funcionario de carrera
     else if (anios>=30) cea = rules.ceaGe30;
     else if (anios>=24) cea = rules.ceaGe24;
     else if (anios>=18) cea = rules.ceaGe18;
     else if (anios>=12) cea = rules.ceaGe12;
     else if (anios>=6) cea = rules.ceaGe6;
-    else cea = rules.ceaGe1; // ≥1 año, and also <1 año — Carrera has no separate bracket for that
+    else cea = rules.ceaGe1;
     const island = flags.islaBaleares || 'Mallorca';
     let residencia;
     if (si(flags.islaNoCapitalina)) {
@@ -1048,7 +1048,7 @@ COMUNIDADES['Baleares (Islas)'] = {
     const b = trunc(anios/3);
     const carrera = String(flags.funcionario||'').trim().toLowerCase()==='carrera';
     let cea;
-    if (!carrera) cea = rules.ceaInterinoFlat;
+    if (!carrera || anios<1) cea = rules.ceaInterinoFlat; // la escala cuenta años como funcionario de carrera
     else if (anios>=30) cea = rules.ceaGe30;
     else if (anios>=24) cea = rules.ceaGe24;
     else if (anios>=18) cea = rules.ceaGe18;

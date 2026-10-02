@@ -1083,6 +1083,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 // ============================================================================
 // ============================================================================
 // ============================================================================
+// ============================================================================
 // ANPE Comparativa de Retribuciones Docentes — calculation engine
 // Ported cell-by-cell from comparativa.xlsx (sheets Retribuciones + Nómina mensual)
 // Column order for cuerpo docente arrays (index 0..8) = F..N in Retribuciones:
@@ -2006,8 +2007,8 @@ COMUNIDADES['Baleares (Islas)'] = {
   },
   rules: {
     // Complemento específico autonómico "carrera" seniority ladder (Carrera funcionarios only).
-    // Interinos/prácticas get the flat ceaInterinoFlat regardless of años; Carrera has no separate
-    // bracket below 1 año either, so anios<1 falls into ceaGe1 in calc() below.
+    // Quien no lleva ningún año como funcionario de carrera (interinos, en prácticas, carrera con <1 año)
+    // cobra el importe fijo ceaInterinoFlat; la escala empieza al cumplir 1 año de carrera.
     ceaInterinoFlat: 418.54,
     ceaGe1: 436.02, ceaGe6: 498.81, ceaGe12: 543.77,
     ceaGe18: 560.14, ceaGe24: 534.26, ceaGe30: 619.04,
@@ -2030,13 +2031,13 @@ COMUNIDADES['Baleares (Islas)'] = {
     const grp = groupOf(idx);
     const carrera = String(flags.funcionario||'').trim().toLowerCase()==='carrera';
     let cea;
-    if (!carrera) cea = rules.ceaInterinoFlat;
+    if (!carrera || anios<1) cea = rules.ceaInterinoFlat; // la escala cuenta años como funcionario de carrera
     else if (anios>=30) cea = rules.ceaGe30;
     else if (anios>=24) cea = rules.ceaGe24;
     else if (anios>=18) cea = rules.ceaGe18;
     else if (anios>=12) cea = rules.ceaGe12;
     else if (anios>=6) cea = rules.ceaGe6;
-    else cea = rules.ceaGe1; // ≥1 año, and also <1 año — Carrera has no separate bracket for that
+    else cea = rules.ceaGe1;
     const island = flags.islaBaleares || 'Mallorca';
     let residencia;
     if (si(flags.islaNoCapitalina)) {
@@ -2132,7 +2133,7 @@ COMUNIDADES['Baleares (Islas)'] = {
     const b = trunc(anios/3);
     const carrera = String(flags.funcionario||'').trim().toLowerCase()==='carrera';
     let cea;
-    if (!carrera) cea = rules.ceaInterinoFlat;
+    if (!carrera || anios<1) cea = rules.ceaInterinoFlat; // la escala cuenta años como funcionario de carrera
     else if (anios>=30) cea = rules.ceaGe30;
     else if (anios>=24) cea = rules.ceaGe24;
     else if (anios>=18) cea = rules.ceaGe18;
@@ -3928,7 +3929,7 @@ const META = {
     fuentes: [
       {label:'BOPA — Resolución de retribuciones del personal docente 2026', url:'https://miprincipado.asturias.es/bopa/2026/07/10/2026-05918.pdf'}
     ] },
-  'Baleares (Islas)': { updated:'2026-10-01', notes:'Autonómico escalonado por antigüedad (interinos, importe fijo) · Residencia: base por isla/grupo + cobertura donde aplica (Menorca/Eivissa/Formentera) · Carrera profesional en tramos 1º/2º (distinto para Inspección) · Complemento de cargo de Inspector aparte · Adicional Maestro ESO en la extra · No modelado: ATD, Complement de penositat/perillositat/toxicitat · Cargo directivo actualizado al incremento vigente desde el 25/05/2026 (antes, tabla anterior sin actualizar).',
+  'Baleares (Islas)': { updated:'2026-10-01', notes:'Autonómico escalonado por años como funcionario (sin ningún año, importe fijo) · Residencia: base por isla/grupo + cobertura donde aplica (Menorca/Eivissa/Formentera) · Carrera profesional en tramos 1º/2º (distinto para Inspección) · Complemento de cargo de Inspector aparte · Adicional Maestro ESO en la extra · No modelado: ATD, Complement de penositat/perillositat/toxicitat · Cargo directivo actualizado al incremento vigente desde el 25/05/2026 (antes, tabla anterior sin actualizar).',
     fuentes: [
       {label:'Govern de les Illes Balears — Taules retributives 2026 (intranet CAIB)', url:'https://intranet.caib.es/sites/nominadelprofessorat/ca/l/taules_retributives_2026/?mcont=181557'}
     ] },
@@ -4249,7 +4250,7 @@ function conceptLabel(community, concept){
 const RULE_LABELS = {
   switchDate:'Fecha de cambio "sin sexenio"', sinSexenioAntes:'Importe "sin sexenio" (antes)', sinSexenioDespues:'Importe "sin sexenio" (después)',
   tramoAminAnios:'Años mínimos tramo A', tramoBminAnios:'Años mínimos tramo B',
-  ceaInterinoFlat:'Complemento autonómico interinos (fijo)', ceaGe1:'Complemento ≥1 año',
+  ceaInterinoFlat:'Complemento autonómico sin años de funcionario (fijo)', ceaGe1:'Complemento ≥1 año',
   ceaGe6:'Complemento ≥6 años', ceaGe12:'Complemento ≥12 años', ceaGe18:'Complemento ≥18 años', ceaGe24:'Complemento ≥24 años',
   ceaGe30:'Complemento ≥30 años',
   tramoUmbral1:'Umbral años carrera tramo 1', tramoUmbral2:'Umbral años carrera tramo 2',
@@ -6097,30 +6098,25 @@ function refreshDateIndicators(name, updated){
 const PENDIENTES_AYUDA = 'Lo que más ayuda es una nómina real (PDF) de un mes con paga extra, con y sin cargo directivo, o la tabla oficial de este año donde aparezca el concepto.';
 const PENDIENTES = {
   'Andalucía': [
-    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. La tabla oficial solo la recoge en institutos. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Existe una figura de Director de equipo de orientación con importe propio?', 'La tabla solo recoge el Coordinador/a de equipo de orientación educativa (1.081,92 € nivel 24, 1.060,62 € nivel 21) y se usa como equivalente.'],
     ['¿Hay tabla oficial de la Junta para 2026?', 'Las cifras salen de ANPE Andalucía y UGT-SP Andalucía (enero 2026); la tabla oficial publicada por la Junta es de 2024. Conviene cotejarlas si existe una más reciente.'],
     ['Maestros que dan clase en 1.º ciclo de ESO', 'La web suma 137,03 €. La tabla de UGT-SP agrupa a PTFP, Maestros de Taller y Maestros de ESO con 24,16 € más de específico (161,19 € en total, la misma cifra que el complemento compensatorio de BOJA 21 de 02-02-2026). ¿Es 137,03 € o 161,19 €?'],
     ['Jefe de departamento en Maestros y PTFP', 'La web lo paga a 0. La tabla no lo restringe por cuerpo. ¿Pueden cobrarlo?'],
   ],
   'Aragón': [
-    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. El Excel oficial la sitúa solo en Secundaria y FP. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['Tutoría', 'Se modela a 0 € a la espera de que aparezca con importe en la tabla oficial.'],
     ['Complemento fondos adicionales', 'El Excel oficial trae 168,36 € al año, de devengo mensual y abonado con las pagas extra. La web no lo incluye. ¿Lo cobra todo el personal docente y cómo se reparte?'],
   ],
   'Asturias': [
-    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. ANPE Asturias indica que existe solo en Secundaria. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['Jefe de departamento en PTFP y Maestros de Taller', 'La web lo paga a 0. El BOPA lo recoge en Secundaria, FP y asimilados sin restringir por cuerpo. ¿Pueden cobrarlo?'],
   ],
   'Baleares (Islas)': [
-    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. La tabla oficial solo la recoge en institutos. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿El cargo directivo se cobra íntegro en las pagas extra?', 'Se da por cobrado en las 14 pagas; la tabla oficial de cargos solo trae el importe mensual. Una nómina de junio con cargo lo confirmaría.'],
     ['¿El Director de equipo de orientación tiene importe propio?', 'La tabla da 82,20 €, igual que el Cap de departament, y se usa ese. No sabemos si es un importe propio o el genérico de cargo unipersonal.'],
     ['Complemento de difícil cobertura en Menorca e Ibiza', 'La web suma 200 € (Menorca) y 300 € (Ibiza) a todos. Según el CAIB solo lo cobran las plazas o especialidades declaradas de difícil cobertura cada curso. En Formentera sí son todas. ¿Se aplica a todo el profesorado de esas islas?'],
     ['Jefe de departamento en Maestros y Maestros de Taller', 'La web lo paga a 0. La tabla de 82,20 € no lo restringe por cuerpo. ¿Pueden cobrarlo?'],
   ],
   'Canarias': [
-    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. La tabla oficial solo la recoge en Secundaria. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿El cargo directivo se reduce al 78% en la paga adicional?', 'La ley aplica el 78% al específico y a la formación permanente, y el cargo es un complemento específico, pero ningún documento lo dice. Hoy se paga íntegro.'],
     ['¿Jefe de departamento, tutoría y complemento de Inspector en la paga adicional?', 'La tabla oficial de pagas extras no los recoge. Se pagan íntegros.'],
     ['¿Hay Director de equipo de orientación?', 'Solo figura el Coord. EOEP (107,45 €), que se usa como equivalente.'],
@@ -6137,7 +6133,6 @@ const PENDIENTES = {
     ['¿La tutoría de 20 € se cobra en las pagas extra y cómo sube en 2027?', 'Se paga solo en 12 mensualidades, con el importe del primer curso.'],
   ],
   'Cataluña': [
-    ['¿Existe la Jefatura de estudios adjunta en escuelas?', 'No tiene importe en la web. Ni el Excel oficial ni las tablas de CCOO la recogen en escuelas. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Existe el Director de equipo de orientación?', 'Las tablas solo recogen un coordinador de servicios educativos (1.002,85 €), que no se ha usado por no ser claramente el mismo cargo. Si existe, ¿con qué importe?'],
     ['¿La Jefatura de estudios adjunta se cobra en institutos que no son tipo A?', 'El Excel oficial solo da importe en el tipo A (886,11 €). En los tipos B, C y D no hay mención ni importe, así que se deja a 0 €.'],
     ['Inspección: específico general y nivel de destino', 'El Excel oficial solo trae el complemento singular de Inspector (1.476,25 €). Se usa 720,83 € de específico y nivel 26 de destino sin documento que lo confirme.'],
@@ -6150,30 +6145,26 @@ const PENDIENTES = {
     ['Complementos que no se modelan', 'Secciones bilingües (37,28 €), profesor de CRA (80,59 €), coordinación AFC (57,27 a 113,46 €), asesorías docentes, jefatura de residencia y, en Inspección, jefatura provincial (965,98 €) y adjunta (683,09 €).'],
   ],
   'Galicia': [
-    ['¿Existe la Jefatura de estudios adjunta en colegios ni en institutos?', 'No tiene importe en la web. No figura en ninguna tabla y ANPE Galicia indica que no existe. Si existe, ¿con qué importe y en qué tamaños de centro?'],
+    ['¿Existe la Jefatura de estudios adjunta en institutos?', 'No tiene importe en la web. No figura en ninguna tabla y ANPE Galicia indica que no existe. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Quien dirige un equipo de orientación cobra algo más que el resto del equipo?', 'La tabla da 410,45 € a todos los miembros, sin plus de dirección. Se usa esa cifra.'],
     ['¿El jefe de departamento entra en la paga extra?', 'La guía de ANPE dice que el resto de conceptos van completos sin nombrarlos. Se da por íntegro.'],
     ['Maestros en 1.º ciclo de ESO: 118,25 € o 137,03 €', 'ANPE Galicia da 118,25 € y la nómina 2026 del STEG da 137,03 € (la diferencia entre destino 24 y 21). La Orde de 23-01-2026 no trae cifra. Se usa 118,25 €.'],
     ['Complemento de PTFP de 158,16 €', 'Sale de ANPE Galicia. No aparece en el Anexo V de la Orde ni en la tabla del STEG. ¿Sigue vigente y con ese importe?'],
-    ['Interinos y sexenios', 'La Orde da a los interinos las complementarias del puesto, pero el complemento de formación permanente figura solo para funcionarios de carrera. No hay norma que extienda los sexenios a los interinos y la app se los calcula igual.'],
   ],
   'La Rioja': [
     ['¿La carrera profesional se cobra en las pagas extra?', 'ANPE 2023 la anota como 12 meses sin extras y el ejemplo de ANPE 2026 la suma en la extra. Se modela en las 14 pagas.'],
     ['Específico de Secundaria, EOI, Música y Artes: 837,85 € o 825,47 €', 'Se usa 837,85 € porque coincide con una nómina real; el documento oficial trae 825,47 €.'],
     ['¿El cargo directivo se cobra en las pagas extra?', 'Se asume íntegro porque STE indica que los complementos singulares se mantienen como en una mensualidad normal.'],
     ['Carrera profesional: ¿ya se paga el importe del acuerdo de julio de 2026?', 'El acuerdo del 13-07-2026, con efectos desde el 01-08-2026, fija el Grado I en 1.759 €/año (A1) y 1.352 €/año (A2), y el Grado II al doble. La web tiene 104,73 € y 80,52 € al mes (1.466 y 1.127 € al año) y un Grado II de 141 € y 109 €. Falta la tabla oficial que lo confirme.'],
-    ['¿Los interinos cobran carrera profesional?', 'La Resolución 2/2026 convoca solo a funcionarios de cuerpos docentes. Se les calcula igual que a un funcionario.'],
   ],
   'Madrid': [
     ['¿El cargo directivo se cobra en las pagas extra?', 'Se asume que entra en la mensualidad de específico de las extras. El BOCM no lo dice expresamente.'],
     ['Alumnado real por tipo de centro', 'El importe de dirección depende del número de alumnos. Se usan valores supuestos (editables en Reglas); con los reales saldría la cifra exacta.'],
     ['Tope de 1.923,22 € al mes', 'El BOCM fija un límite máximo en el nuevo sistema retributivo, sin aclarar a qué cargos aplica. No está aplicado; solo afectaría a centros de más de unos 2.000 alumnos.'],
     ['Jefatura de departamento', 'El importe depende del número de miembros. Se usa el tramo de 3 a 6 (100,09 €).'],
-    ['Interinos y sexenios', 'El BOCM da a los interinos sueldo, trienios y el 100 % de las complementarias del puesto. No hemos encontrado que los sexenios se paguen de oficio: se cobran por solicitud o sentencia. Se les calcula igual que a un funcionario.'],
     ['Productividades y coordinaciones', 'No se modelan: bilingüe, inglés avanzado, FP dual, coordinador TIC, coordinador de especialidad (80,30 €) y vicesecretario (47,30 €).'],
   ],
   'Murcia': [
-    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. El BORM solo la recoge en Secundaria. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿El cargo directivo, el jefe de departamento y el director de EOEP se cobran solo en 12 mensualidades?', 'Se pagan en 12 porque la paga extra son tres bloques enumerados en el BORM y estos conceptos no aparecen en ninguno. Sin frase literal; una nómina de junio con cargo lo confirmaría.'],
     ['Director de EOEP: tipo A o tipo B', 'Hay dos importes (446,74 € y 345,21 €) sin criterio publicado para elegir. Se usa el tipo B.'],
     ['Quinto sexenio: 47,77 €', 'El BORM de 2025 da 47,06 € y la guía de CCOO de enero de 2026 da 47,77 €. Se usa 47,77 €; el importe de 2026 no está publicado aparte.'],
@@ -6193,13 +6184,12 @@ const PENDIENTES = {
     ['Cargo directivo de PTFP, Maestros de Taller y Catedráticos', 'Usan las tablas de otros cuerpos. El Anexo trae tablas propias (EG04 y EG02) que no se pueden modelar con la estructura actual.'],
   ],
   'Valencia': [
-    ['¿Existe la Jefatura de estudios adjunta en colegios ni en institutos?', 'No tiene importe en la web. La tabla oficial no tiene ninguna fila de jefe de estudios adjunto. Si existe, ¿con qué importe y en qué tamaños de centro?'],
+    ['¿Existe la Jefatura de estudios adjunta en institutos?', 'No tiene importe en la web. La tabla oficial no tiene ninguna fila de jefe de estudios adjunto. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Específico y cargo directivo en las pagas extra?', 'La tabla oficial solo trae importes mensuales, sin columna de paga extra. Se asumen íntegros en las 14 pagas.'],
     ['Vicedirector en Secundaria tipo E', 'La tabla da 217,15 € solo para ese tamaño. Es la única celda de ese tipo con importe.'],
     ['Inspección: nivel 28 y cargos', 'La tabla oficial tiene un bloque "Inspectores A1-28" (1.041,22 €) tras el Decreto 10/2026. Se aplica a toda la Inspección. ¿Alcanza a todos los inspectores o solo a los de cargo? Los cargos (Inspector general 682,09 €, jefe territorial 511,54 €, adjunto, secretario y coordinador 403,54 €) no se suman.'],
   ],
   'Ceuta y Melilla': [
-    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. La resolución oficial de 2009 solo la recoge en institutos. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Existe el Director de equipo de orientación?', 'No aparece en la resolución oficial de 2009 ni en la tabla de CSIF. Si existe, ¿con qué importe?'],
     ['Específico de Maestros, PTFP y Secundaria', 'Se usa 438,33 / 436,57 / 433,91 € (cifra orientativa de CSIF). La resolución oficial de 2009 puesta al día, UGT 2024 y ANPE Melilla 2022 dan unos 467 €, y UGT dice que baja con la antigüedad. Falta saber el importe inicial y cómo se reduce.'],
     ['Específico y singular de Inspección', 'Se usan 519,94 € y 610 €. Las fuentes oficiales puestas al día dan unos 560 € y 622 €.'],
