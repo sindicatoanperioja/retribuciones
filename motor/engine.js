@@ -1240,13 +1240,23 @@ function makeStandard(sd, opts){
 // "especificoAutonomico" exclusivo de Inspección era en realidad el específico básico mal etiquetado
 // (Cantabria no tiene CEA real). Además hay un "complemento de puesto" distinto, 1.062,50€, separado
 // como complementoCargoInspector (mismo patrón que Baleares/Extremadura/Galicia/La Rioja).
+// Actualizado 2026-10-02 (a petición del usuario) con el "Acuerdo para la Mejora de la Educación de Cantabria"
+// (Mesa Sectorial 19-03-2026; BOC núm. 96, 21-05-2026, CVE-2026-4155): (1) +60,23€/mes en el componente general
+// del específico desde 01-09-2025 (abonado desde 01-07-2026) — ya estaba incluido (875,10→935,33); (2) +30€/mes
+// más desde 01-09-2026 en ese mismo componente general (de ahí 965,33 / 1.030,50 con Catedráticos) — el acuerdo
+// prevé otros +30€ en 09-2027, 09-2028 y 01-2029 y los revaloriza con el IPC autonómico, aún no aplicados. NO se
+// ha sumado a Inspección (idx8, 1.140,46€): su específico sale de la tabla propia del Servicio de Inspección, no
+// del "componente general" de la función pública docente; el acuerdo no dice que le alcance. (3) Nuevos sexenios
+// (130h de formación): desde 01-09-2026 el 1º sube a 150€ (los demás tramos suben en 2027-2029: 2º 135€, 3º 135€,
+// 4º 170€, 5º 110€ — aún con los importes anteriores) y el "complemento de fomento a la formación" (sin sexenio)
+// sube de 35,77€ a 55€. Los sexenios ya reconocidos mejoran de oficio.
 COMUNIDADES['Cantabria'] = makeStandard({
   destino: arr9(623.22,767.49,767.49,767.49,767.49,767.49,767.49,919.32,919.32),
-  especifico: arr9(935.33,935.33,935.33,935.33,935.33,935.33,935.33,1000.5,1140.46),
+  especifico: arr9(965.33,965.33,965.33,965.33,965.33,965.33,965.33,1030.5,1140.46),
   complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,1062.50),
   // "sin" (ANPE Cantabria, "Componente de fomento a la formación"): 35,77€/mes, en vez del importe
   // habitual "sin sexenio".
-  sexenio: {sin:35.77, s1:108.86, s2:92.21, s3:122.88, s4:168.17, s5:49.51},
+  sexenio: {sin:55, s1:150, s2:92.21, s3:122.88, s4:168.17, s5:49.51},
   tutoria: fill(0),
   adicionalESO: onlyF(144.34),
   complementoMejora: fill(0), productividad: fill(0),

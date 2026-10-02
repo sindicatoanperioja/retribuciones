@@ -1060,6 +1060,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 // ============================================================================
 // ============================================================================
 // ============================================================================
+// ============================================================================
 // ANPE Comparativa de Retribuciones Docentes — calculation engine
 // Ported cell-by-cell from comparativa.xlsx (sheets Retribuciones + Nómina mensual)
 // Column order for cuerpo docente arrays (index 0..8) = F..N in Retribuciones:
@@ -2301,13 +2302,23 @@ function makeStandard(sd, opts){
 // "especificoAutonomico" exclusivo de Inspección era en realidad el específico básico mal etiquetado
 // (Cantabria no tiene CEA real). Además hay un "complemento de puesto" distinto, 1.062,50€, separado
 // como complementoCargoInspector (mismo patrón que Baleares/Extremadura/Galicia/La Rioja).
+// Actualizado 2026-10-02 (a petición del usuario) con el "Acuerdo para la Mejora de la Educación de Cantabria"
+// (Mesa Sectorial 19-03-2026; BOC núm. 96, 21-05-2026, CVE-2026-4155): (1) +60,23€/mes en el componente general
+// del específico desde 01-09-2025 (abonado desde 01-07-2026) — ya estaba incluido (875,10→935,33); (2) +30€/mes
+// más desde 01-09-2026 en ese mismo componente general (de ahí 965,33 / 1.030,50 con Catedráticos) — el acuerdo
+// prevé otros +30€ en 09-2027, 09-2028 y 01-2029 y los revaloriza con el IPC autonómico, aún no aplicados. NO se
+// ha sumado a Inspección (idx8, 1.140,46€): su específico sale de la tabla propia del Servicio de Inspección, no
+// del "componente general" de la función pública docente; el acuerdo no dice que le alcance. (3) Nuevos sexenios
+// (130h de formación): desde 01-09-2026 el 1º sube a 150€ (los demás tramos suben en 2027-2029: 2º 135€, 3º 135€,
+// 4º 170€, 5º 110€ — aún con los importes anteriores) y el "complemento de fomento a la formación" (sin sexenio)
+// sube de 35,77€ a 55€. Los sexenios ya reconocidos mejoran de oficio.
 COMUNIDADES['Cantabria'] = makeStandard({
   destino: arr9(623.22,767.49,767.49,767.49,767.49,767.49,767.49,919.32,919.32),
-  especifico: arr9(935.33,935.33,935.33,935.33,935.33,935.33,935.33,1000.5,1140.46),
+  especifico: arr9(965.33,965.33,965.33,965.33,965.33,965.33,965.33,1030.5,1140.46),
   complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,1062.50),
   // "sin" (ANPE Cantabria, "Componente de fomento a la formación"): 35,77€/mes, en vez del importe
   // habitual "sin sexenio".
-  sexenio: {sin:35.77, s1:108.86, s2:92.21, s3:122.88, s4:168.17, s5:49.51},
+  sexenio: {sin:55, s1:150, s2:92.21, s3:122.88, s4:168.17, s5:49.51},
   tutoria: fill(0),
   adicionalESO: onlyF(144.34),
   complementoMejora: fill(0), productividad: fill(0),
@@ -3873,9 +3884,11 @@ const META = {
     fuentes: [
       {label:'Govern de les Illes Balears — Taules retributives 2026 (intranet CAIB)', url:'https://intranet.caib.es/sites/nominadelprofessorat/ca/l/taules_retributives_2026/?mcont=181557'}
     ] },
-  'Cantabria': { updated:'2026-09-20', notes:'Destino propio · "Sin sexenio" = Componente de fomento a la formación (35,77€) · Complemento de cargo de Inspector aparte (no hay CEA real) · Adicional Maestro ESO en la extra.',
+  'Cantabria': { updated:'2026-10-02', notes:'Destino propio · "Sin sexenio" = Componente de fomento a la formación (55€ desde 09/2026) · Acuerdo de mejora (BOC 21-05-2026): +30€/mes en el específico general desde 09/2026 (no a Inspección) y 1º sexenio a 150€; los tramos de 2027-2029 y la revalorización por IPC no están aplicados · Complemento de cargo de Inspector aparte (no hay CEA real) · Adicional Maestro ESO en la extra.',
     fuentes: [
       {label:'BOC — Anuncio de retribuciones del personal docente', url:'https://boc.cantabria.es/boces/verAnuncioAction.do?idAnuBlob=430558'}
+    ,
+      {label:'BOC núm. 96, 21-05-2026 — Acuerdo para la Mejora de la Educación de Cantabria (mejora retributiva 2025-2029)', url:'https://boc.cantabria.es/boces/verAnuncioAction.do?idAnuBlob=435766'}
     ] },
   'Castilla La Mancha': { updated:'2026-09-21', notes:'Autonómico (JCCM): mismo importe para todos · Complemento de cargo de Inspector aparte · "Maestro/a en IES" (Adicional ESO) se cobra también en la extra.',
     fuentes: [
@@ -4017,7 +4030,7 @@ const PROVENANCE = {
     directorEOEP:2
   },
   'Cantabria': {
-    destino:4, especifico:[2,2,2,2,2,2,2,2,1], complementoCargoInspector:1, sexenio:1, adicionalESO:1,
+    destino:4, especifico:1, complementoCargoInspector:1, sexenio:1, adicionalESO:1,
     jefeDepartamento:1, cargoDirectivo:1,
     // directorEOEP (2026-10-01): BOC núm. 25 (06-02-2026) — tramo intermedio de 3, sin selector de
     // tamaño de equipo en esta app.
