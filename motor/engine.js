@@ -1950,7 +1950,10 @@ COMUNIDADES['La Rioja'] = {
     // profesional" y por años de antigüedad (Grado I ≥5 años, Grado II ≥11 años). Pagado en las 14
     // pagas (no solo 12), a diferencia de Asturias.
     carreraGradoI: arr9(80.52,80.52,80.52,104.73,104.73,104.73,104.73,104.73,104.73),
-    carreraGradoII: arr9(109,109,109,141,141,141,141,141,141),
+    // Grado II: importes vigentes a 1-01-2026 (BOR nº 177, 15-09-2026, Resolución 1437/2026): 1.759,73 €/año (A1) y
+    // 1.352,90 €/año (A2) en 14 pagas. El acuerdo del 13-07-2026 los sube un 12,5 % con efectos desde el 1-08-2026
+    // (141,41 y 108,72 €/mes) y todavía no se cobra.
+    carreraGradoII: arr9(96.64,96.64,96.64,125.70,125.70,125.70,125.70,125.70,125.70),
   },
   rules: { carreraUmbral1: 5, carreraUmbral2: 11 },
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){

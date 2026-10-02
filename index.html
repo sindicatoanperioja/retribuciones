@@ -1084,6 +1084,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 // ============================================================================
 // ============================================================================
 // ============================================================================
+// ============================================================================
 // ANPE Comparativa de Retribuciones Docentes — calculation engine
 // Ported cell-by-cell from comparativa.xlsx (sheets Retribuciones + Nómina mensual)
 // Column order for cuerpo docente arrays (index 0..8) = F..N in Retribuciones:
@@ -3035,7 +3036,10 @@ COMUNIDADES['La Rioja'] = {
     // profesional" y por años de antigüedad (Grado I ≥5 años, Grado II ≥11 años). Pagado en las 14
     // pagas (no solo 12), a diferencia de Asturias.
     carreraGradoI: arr9(80.52,80.52,80.52,104.73,104.73,104.73,104.73,104.73,104.73),
-    carreraGradoII: arr9(109,109,109,141,141,141,141,141,141),
+    // Grado II: importes vigentes a 1-01-2026 (BOR nº 177, 15-09-2026, Resolución 1437/2026): 1.759,73 €/año (A1) y
+    // 1.352,90 €/año (A2) en 14 pagas. El acuerdo del 13-07-2026 los sube un 12,5 % con efectos desde el 1-08-2026
+    // (141,41 y 108,72 €/mes) y todavía no se cobra.
+    carreraGradoII: arr9(96.64,96.64,96.64,125.70,125.70,125.70,125.70,125.70,125.70),
   },
   rules: { carreraUmbral1: 5, carreraUmbral2: 11 },
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
@@ -6100,7 +6104,7 @@ const PENDIENTES = {
   'Andalucía': [
     ['¿Existe una figura de Director de equipo de orientación con importe propio?', 'La tabla solo recoge el Coordinador/a de equipo de orientación educativa (1.081,92 € nivel 24, 1.060,62 € nivel 21) y se usa como equivalente.'],
     ['¿Hay tabla oficial de la Junta para 2026?', 'Las cifras salen de ANPE Andalucía y UGT-SP Andalucía (enero 2026); la tabla oficial publicada por la Junta es de 2024. Conviene cotejarlas si existe una más reciente.'],
-    ['Maestros que dan clase en 1.º ciclo de ESO', 'La web suma 137,03 €. La tabla de UGT-SP agrupa a PTFP, Maestros de Taller y Maestros de ESO con 24,16 € más de específico (161,19 € en total, la misma cifra que el complemento compensatorio de BOJA 21 de 02-02-2026). ¿Es 137,03 € o 161,19 €?'],
+    ['Maestros que dan clase en 1.º ciclo de ESO', 'La web suma 137,03 €. La tabla de ANPE Andalucía suma 24,16 € más de específico (161,19 €), la misma cifra que el complemento compensatorio de BOJA 21 de 2026 para la concertada. La tabla oficial de la Junta de 2024 solo muestra 15,20 € de más en el específico. ¿Es 137,03 € o 161,19 €?'],
     ['Jefe de departamento en Maestros y PTFP', 'La web lo paga a 0. La tabla no lo restringe por cuerpo. ¿Pueden cobrarlo?'],
   ],
   'Aragón': [
@@ -6123,7 +6127,7 @@ const PENDIENTES = {
   ],
   'Cantabria': [
     ['¿El cargo directivo se cobra en las dos pagas extra?', 'Se asume íntegro en 14 pagas; no hay frase oficial que cite el componente singular. Una nómina de junio con cargo lo cerraría.'],
-    ['¿Los +60,23 € y +30 € del acuerdo de mejora alcanzan a Inspección?', 'Se aplican al componente general de la función pública docente y no a Inspección, que tiene su propia tabla de específico.'],
+    ['¿Los +60,23 € y +30 € del acuerdo de mejora alcanzan a Inspección?', 'El acuerdo habla de todos los cuerpos docentes, pero la instrucción da a Inspección su propia cifra de 1.140,46 € sin citarlos. No se aplican a Inspección.'],
     ['Revalorización por IPC y tramos de 2027 a 2029', 'El acuerdo los prevé, pero sin importes todavía. No están aplicados.'],
   ],
   'Castilla La Mancha': [
@@ -6137,8 +6141,8 @@ const PENDIENTES = {
     ['¿La Jefatura de estudios adjunta se cobra en institutos que no son tipo A?', 'El Excel oficial solo da importe en el tipo A (886,11 €). En los tipos B, C y D no hay mención ni importe, así que se deja a 0 €.'],
     ['Inspección: específico general y nivel de destino', 'El Excel oficial solo trae el complemento singular de Inspector (1.476,25 €). Se usa 720,83 € de específico y nivel 26 de destino sin documento que lo confirme.'],
     ['¿El cargo directivo se cobra en las pagas extra?', 'Sin prueba directa en el documento oficial. Se asume íntegro.'],
-    ['Subida del específico en 2026', 'El acuerdo de marzo de 2026 fija un +8,5 % del complemento específico en 2026 (unos 59,92 € en Primaria y 61,27 € en Secundaria al mes). No está aplicado. ¿Desde cuándo se cobra y para qué cuerpos?'],
-    ['Complemento de mejora de 50 €', 'El preacuerdo de mayo de 2026, aprobado por el Govern el 28-07-2026, crea un complemento de 50 € al mes, universal, consolidable, con efectos desde el 01-01-2026 y también en las pagas extra. No está aplicado. ¿Desde qué nómina se paga?'],
+    ['Subida del específico de 2026 (+8,5 %)', 'El Acord GOV/88/2026 la abona en un pago único en la nómina de mayo de 2026 (839,02 € Maestros y 857,92 € Secundaria al año). Se asume que no cambia la nómina mensual. Para Catedráticos e Inspección no hay cifra.'],
+    ['Complemento de mejora del Servicio de Educación de Cataluña','El Acord GOV/205/2026 lo fija en 50 €/mes en 2026 (14 pagas) para todo el personal docente, con efectos desde el 01-01-2026, y sube a 50 € en 2027, 100 € en 2028 y 170 € en 2029. No está aplicado. ¿En qué nómina se paga?'],
   ],
   'Extremadura': [
     ['¿El +80 € mensual del acuerdo de enero de 2026 afecta al Director de EOEP?', 'La tabla oficial de este complemento es de 2025 (250,12 € Maestros, 79,40 € resto). No sabemos si hay una tabla 2026.'],
@@ -6152,7 +6156,7 @@ const PENDIENTES = {
     ['Complemento de PTFP de 158,16 €', 'Sale de ANPE Galicia. No aparece en el Anexo V de la Orde ni en la tabla del STEG. ¿Sigue vigente y con ese importe?'],
   ],
   'La Rioja': [
-    ['Carrera profesional: subida del acuerdo de julio de 2026, aún sin cobrar', 'El acuerdo del 13-07-2026 fija el Grado I en 1.759 €/año (A1) y 1.352 €/año (A2) y el Grado II al doble, en 14 pagas. Pasaría de 104,73 a 125,64 € (A1) y de 80,52 a 96,57 € (A2) en el Grado I, y de 141 a 251,29 € (A1) y de 109 a 193,14 € (A2) en el Grado II. Falta confirmar el Grado II y la fecha de cobro.'],
+    ['Carrera profesional: subida del Grado II aún sin cobrar', 'El acuerdo del 13-07-2026 (BOR 15-09-2026) sube un 12,5 % el Grado II con efectos desde el 01-08-2026. Se usa el importe vigente (125,70 € en A1 y 96,64 € en A2 al mes). Cuando se cobre pasará a 141,41 € y 108,72 €. El Grado I no cambia. Falta la fecha de pago.'],
   ],
   'Madrid': [
     ['¿El cargo directivo se cobra en las pagas extra?', 'Se asume que entra en la mensualidad de específico de las extras. El BOCM no lo dice expresamente.'],
@@ -6184,7 +6188,7 @@ const PENDIENTES = {
     ['¿Existe la Jefatura de estudios adjunta en institutos?', 'No tiene importe en la web. La tabla oficial no tiene ninguna fila de jefe de estudios adjunto. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Específico y cargo directivo en las pagas extra?', 'La tabla oficial solo trae importes mensuales, sin columna de paga extra. Se asumen íntegros en las 14 pagas.'],
     ['Vicedirector en Secundaria tipo E', 'La tabla da 217,15 € solo para ese tamaño. Es la única celda de ese tipo con importe.'],
-    ['Inspección: nivel 28 y cargos', 'La tabla oficial tiene un bloque "Inspectores A1-28" (1.041,22 €) tras el Decreto 10/2026. Se aplica a toda la Inspección. ¿Alcanza a todos los inspectores o solo a los de cargo? Los cargos (Inspector general 682,09 €, jefe territorial 511,54 €, adjunto, secretario y coordinador 403,54 €) no se suman.'],
+    ['Cargos de Inspección', 'Un inspector sin cargo cobra el nivel 28 y el específico base. Los cargos (Inspector general 682,09 €, jefe territorial 511,54 €, adjunto, secretario y coordinador 403,54 €) no se suman.'],
   ],
   'Ceuta y Melilla': [
     ['¿Existe el Director de equipo de orientación?', 'No aparece en la resolución oficial de 2009 ni en la tabla de CSIF. Si existe, ¿con qué importe?'],
