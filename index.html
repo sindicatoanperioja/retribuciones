@@ -6095,18 +6095,24 @@ function refreshDateIndicators(name, updated){
 const PENDIENTES_AYUDA = 'Lo que más ayuda es una nómina real (PDF) de un mes con paga extra, con y sin cargo directivo, o la tabla oficial de este año donde aparezca el concepto.';
 const PENDIENTES = {
   'Andalucía': [
+    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. La tabla oficial solo la recoge en institutos. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Existe una figura de Director de equipo de orientación con importe propio?', 'La tabla solo recoge el Coordinador/a de equipo de orientación educativa (1.081,92 € nivel 24, 1.060,62 € nivel 21) y se usa como equivalente.'],
     ['¿Hay tabla oficial de la Junta para 2026?', 'Las cifras salen de ANPE Andalucía y UGT-SP Andalucía (enero 2026); la tabla oficial publicada por la Junta es de 2024. Conviene cotejarlas si existe una más reciente.'],
   ],
   'Aragón': [
+    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. El Excel oficial la sitúa solo en Secundaria y FP. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['Tutoría', 'Se modela a 0 € a la espera de que aparezca con importe en la tabla oficial.'],
   ],
-  'Asturias': [],
+  'Asturias': [
+    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. ANPE Asturias indica que existe solo en Secundaria. Si existe, ¿con qué importe y en qué tamaños de centro?'],
+  ],
   'Baleares (Islas)': [
+    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. La tabla oficial solo la recoge en institutos. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿El cargo directivo se cobra íntegro en las pagas extra?', 'Se da por cobrado en las 14 pagas; la tabla oficial de cargos solo trae el importe mensual. Una nómina de junio con cargo lo confirmaría.'],
     ['¿El Director de equipo de orientación tiene importe propio?', 'La tabla da 82,20 €, igual que el Cap de departament, y se usa ese. No sabemos si es un importe propio o el genérico de cargo unipersonal.'],
   ],
   'Canarias': [
+    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. La tabla oficial solo la recoge en Secundaria. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿El cargo directivo se reduce al 78% en la paga adicional?', 'La ley aplica el 78% al específico y a la formación permanente, y el cargo es un complemento específico, pero ningún documento lo dice. Hoy se paga íntegro.'],
     ['¿Jefe de departamento, tutoría y complemento de Inspector en la paga adicional?', 'La tabla oficial de pagas extras no los recoge. Se pagan íntegros.'],
     ['¿Hay Director de equipo de orientación?', 'Solo figura el Coord. EOEP (107,45 €), que se usa como equivalente.'],
@@ -6117,22 +6123,24 @@ const PENDIENTES = {
     ['Revalorización por IPC y tramos de 2027 a 2029', 'El acuerdo los prevé, pero sin importes todavía. No están aplicados.'],
   ],
   'Castilla La Mancha': [
-    ['¿Existe complemento de Director de equipo de orientación?', 'No aparece en la Orden 194/2025 ni en las guías sindicales revisadas. No se modela.'],
+    ['¿Existe el Director de equipo de orientación?', 'No aparece en la Orden 194/2025 ni en las guías sindicales revisadas. Si existe, ¿con qué importe?'],
   ],
   'Castilla y León': [
     ['Primer sexenio: 70,21 € o 70,22 €', 'La ORDEN PRE/1/2026 publica 70,22 € y la web usa 70,21 €. Diferencia de un céntimo.'],
     ['¿La tutoría de 20 € se cobra en las pagas extra y cómo sube en 2027?', 'Se paga solo en 12 mensualidades, con el importe del primer curso.'],
   ],
   'Cataluña': [
+    ['¿Existe la Jefatura de estudios adjunta en escuelas?', 'No tiene importe en la web. Ni el Excel oficial ni las tablas de CCOO la recogen en escuelas. Si existe, ¿con qué importe y en qué tamaños de centro?'],
+    ['¿Existe el Director de equipo de orientación?', 'Las tablas solo recogen un coordinador de servicios educativos (1.002,85 €), que no se ha usado por no ser claramente el mismo cargo. Si existe, ¿con qué importe?'],
     ['¿La Jefatura de estudios adjunta se cobra en institutos que no son tipo A?', 'El Excel oficial solo da importe en el tipo A (886,11 €). En los tipos B, C y D no hay mención ni importe, así que se deja a 0 €.'],
     ['Inspección: específico general y nivel de destino', 'El Excel oficial solo trae el complemento singular de Inspector (1.476,25 €). Se usa 720,83 € de específico y nivel 26 de destino sin documento que lo confirme.'],
     ['¿El cargo directivo se cobra en las pagas extra?', 'Sin prueba directa en el documento oficial. Se asume íntegro.'],
-    ['Director de equipo de orientación (EAP)', 'No hay un cargo de dirección explícito en las tablas; no se modela.'],
   ],
   'Extremadura': [
     ['¿El +80 € mensual del acuerdo de enero de 2026 afecta al Director de EOEP?', 'La tabla oficial de este complemento es de 2025 (250,12 € Maestros, 79,40 € resto). No sabemos si hay una tabla 2026.'],
   ],
   'Galicia': [
+    ['¿Existe la Jefatura de estudios adjunta en colegios ni en institutos?', 'No tiene importe en la web. No figura en ninguna tabla y ANPE Galicia indica que no existe. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Quien dirige un equipo de orientación cobra algo más que el resto del equipo?', 'La tabla da 410,45 € a todos los miembros, sin plus de dirección. Se usa esa cifra.'],
     ['¿El jefe de departamento entra en la paga extra?', 'La guía de ANPE dice que el resto de conceptos van completos sin nombrarlos. Se da por íntegro.'],
   ],
@@ -6148,24 +6156,29 @@ const PENDIENTES = {
     ['Jefatura de departamento', 'El importe depende del número de miembros. Se usa el tramo de 3 a 6 (100,09 €).'],
   ],
   'Murcia': [
+    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. El BORM solo la recoge en Secundaria. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿El cargo directivo, el jefe de departamento y el director de EOEP se cobran solo en 12 mensualidades?', 'Se pagan en 12 porque la paga extra son tres bloques enumerados en el BORM y estos conceptos no aparecen en ninguno. Sin frase literal; una nómina de junio con cargo lo confirmaría.'],
     ['Director de EOEP: tipo A o tipo B', 'Hay dos importes (446,74 € y 345,21 €) sin criterio publicado para elegir. Se usa el tipo B.'],
   ],
   'Navarra': [
+    ['¿Existe la Jefatura de estudios adjunta en institutos?', 'No tiene importe en la web. El Decreto Foral 71/2012 solo la recoge en colegios. Si existe, ¿con qué importe y en qué tamaños de centro?'],
+    ['¿Existe el Director de equipo de orientación?', 'No aparece en el documento oficial ni en la tabla de LAB. Solo está el Jefe de departamento de orientación, que es otro cargo. Si existe, ¿con qué importe?'],
     ['¿El cargo directivo se cobra en las dos pagas extra?', 'Se asume 14 pagas porque el porcentaje del Decreto Foral 71/2012 se aplica sobre una mensualidad de 14 pagas. No hay frase literal.'],
     ['Inspección: ¿hay más complementos que "Dedicación exclusiva" y "Puesto de trabajo"?', 'El documento solo trae esos dos porcentajes (55% y 17,88% del sueldo inicial). No aparece un tramo de jefe de inspección.'],
-    ['¿Existe complemento de Director de equipo de orientación?', 'No aparece en el documento oficial ni en la tabla de LAB. Solo está el Jefe de departamento de orientación, que no es lo mismo.'],
     ['Jefe de departamento', 'El importe depende del número de profesores. Se usa el 6% (de 7 a 10 profesores).'],
   ],
   'País Vasco': [
-    ['¿Existe un complemento de dirección de equipos de orientación?', 'No se ha encontrado un equivalente: Berritzegune es la red de formación e innovación. No se modela.'],
+    ['¿Existe el Director de equipo de orientación?', 'No se ha encontrado un equivalente: Berritzegune es la red de formación e innovación, no de orientación. Si existe, ¿con qué importe?'],
     ['Cargo directivo de PTFP, Maestros de Taller y Catedráticos', 'Usan las tablas de otros cuerpos. El Anexo trae tablas propias (EG04 y EG02) que no se pueden modelar con la estructura actual.'],
   ],
   'Valencia': [
+    ['¿Existe la Jefatura de estudios adjunta en colegios ni en institutos?', 'No tiene importe en la web. La tabla oficial no tiene ninguna fila de jefe de estudios adjunto. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Específico y cargo directivo en las pagas extra?', 'La tabla oficial solo trae importes mensuales, sin columna de paga extra. Se asumen íntegros en las 14 pagas.'],
     ['Vicedirector en Secundaria tipo E', 'La tabla da 217,15 € solo para ese tamaño. Es la única celda de ese tipo con importe.'],
   ],
   'Ceuta y Melilla': [
+    ['¿Existe la Jefatura de estudios adjunta en colegios?', 'No tiene importe en la web. La resolución oficial de 2009 solo la recoge en institutos. Si existe, ¿con qué importe y en qué tamaños de centro?'],
+    ['¿Existe el Director de equipo de orientación?', 'No aparece en la resolución oficial de 2009 ni en la tabla de CSIF. Si existe, ¿con qué importe?'],
     ['Específico de Maestros, PTFP y Secundaria', 'Se usa 438,33 / 436,57 / 433,91 € (cifra orientativa de CSIF). La resolución oficial de 2009 puesta al día, UGT 2024 y ANPE Melilla 2022 dan unos 467 €, y UGT dice que baja con la antigüedad. Falta saber el importe inicial y cómo se reduce.'],
     ['Específico y singular de Inspección', 'Se usan 519,94 € y 610 €. Las fuentes oficiales puestas al día dan unos 560 € y 622 €.'],
     ['Residencia en 2026', 'Los 820,76 € (A2) y 1.102,57 € (A1) son una extrapolación, sin tabla oficial 2026. Las tablas oficiales la fijan en 12 mensualidades sin repercusión en extras, aunque una calculadora no oficial la muestra en la extra.'],
