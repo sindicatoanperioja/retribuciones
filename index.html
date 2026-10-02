@@ -628,6 +628,7 @@ input.prov-4{box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--prov-neutral) 
 .pending-box li{margin-bottom:11px; font-size:.9rem;}
 .pending-q{display:block; font-weight:600;}
 .pending-detail{display:block; margin-top:2px; font-size:.84rem; color:var(--ink-2); max-width:78ch;}
+.admin-sidebar .sidebar-legend{padding:2px 8px 4px; text-align:right; font-size:.68rem; font-weight:600; color:var(--ink-2);}
 .admin-sidebar a .pend-count{
   flex:0 0 auto; min-width:18px; padding:0 5px; border-radius:999px; font-size:.68rem; font-weight:700; line-height:18px;
   text-align:center; color:var(--ink); background:color-mix(in srgb, var(--warn) 30%, var(--surface));
@@ -647,6 +648,7 @@ input.prov-4{box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--prov-neutral) 
     flex-direction:row; flex-wrap:wrap; overflow-y:visible; overflow-x:auto;
   }
   .admin-sidebar a.sidebar-ministerio{margin-bottom:0; padding-bottom:8px; border-bottom:none; border-right:1px solid var(--border); border-radius:6px;}
+  .admin-sidebar .sidebar-legend{flex:0 0 100%; text-align:left;}
   /* En columna (móvil), align-items:flex-start deja que .admin-content encoja/crezca a su ancho de
      contenido en vez de ocupar el ancho del contenedor — con una tabla ancha dentro (aunque tenga su
      propio scroll horizontal en .data-table-scroll), eso empujaba TODA la página a desbordar en
@@ -6238,6 +6240,7 @@ function pendientesHtml(name){
 function buildAdmin(){
   const idx = document.getElementById('adminSidebar');
   if (idx) idx.innerHTML = `<a href="#" class="sidebar-ministerio" data-page="ministerio"><span class="sidebar-label">Ministerio</span>${staleBadge(GENERIC_META.updated)}</a>` +
+    `<div class="sidebar-legend">Dudas sin resolver aún</div>` +
     E.COMUNIDAD_ORDER.map(name =>
       `<a href="#" data-page="${slugifyCC(name)}"><span class="sidebar-label">${name}</span>${(PENDIENTES[name]||[]).length ? `<span class="pend-count" title="${PENDIENTES[name].length} punto(s) pendientes de confirmar">${PENDIENTES[name].length}</span>` : ''}${staleBadge((META[name]||{}).updated)}</a>`).join('');
   const root = document.getElementById('adminAccordion');
