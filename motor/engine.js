@@ -244,8 +244,14 @@ const CARGO_RAW = {
   // identical to Secretari/Cap d'Estudis for the same tipo — that row is this role, previously left at
   // 0€ by mistake. Escoles have no equivalent row in either source (only a "Coordinador AFA" stipend
   // specific to tipo H, a different, unrelated role), so Jefatura Adjunta stays unmodeled (0€) there.
+  // Revisado 2026-10-02 (auditoría de anomalías): la etiqueta "Secretari / Cap d'Estudis / Càrrecs directius
+  // addicionals" (que es la que da la Jefatura de Estudios Adjunta) figura SOLO en la fila Tipus A del xlsx
+  // oficial (886,11€); las filas B, C y D dicen únicamente "Secretari / Cap d'Estudis". Ningún documento
+  // consultado (xlsx, DOIGC de òrgans unipersonals, tablas de CGT/CCOO) fija un importe de cap d'estudis
+  // adjunt para B/C/D — el DOIGC solo dice cuándo un institut lo incorpora (>1.000 alumnos, doble turno, etc.),
+  // sin importe. Se deja la Adjunta solo en tipo A y a 0€ en B/C/D (antes copiaba la cifra de Secretaría).
   'Cataluña': { A2:[[0,882.32,0,551.13,0,551.13],[0,833.46,0,522.55,0,522.55],[0,717.29,0,474.53,0,474.53],[0,605.43,0,429.81,0,429.81],[0,422.61,0,0,0,288.45],[0,305.6,0,0,0,0]],
-                A1:[[0,1183.48,0,886.11,886.11,886.11],[0,1029.03,0,778.91,778.91,778.91],[0,881.31,0,671.76,671.76,671.76],[0,814.79,0,618.73,618.73,618.73],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
+                A1:[[0,1183.48,0,886.11,886.11,886.11],[0,1029.03,0,778.91,0,778.91],[0,881.31,0,671.76,0,671.76],[0,814.79,0,618.73,0,618.73],[0,0,0,0,0,0],[0,0,0,0,0,0]] },
   // Updated 2026-09-20 from the official document (Junta de Extremadura, 2026): "Jefatura Estudios
   // Adjunta" 100,05€/mes (Otros centros) y 161,08€/mes (Secundaria) — sin cambios, ya coincidía.
   // Dirección/Jefatura de Estudios/Secretaría por tipo de centro, actualizados.
@@ -701,6 +707,11 @@ COMUNIDADES['Aragón'] = {
   // equivale a sexenio × 0,9 en los 5 tramos (96,53×0,9=86,88 ✓, 114,53×0,9=103,08 ✓,
   // 143,73×0,9=129,36 ✓, 162,77×0,9=146,49 ✓, 60,09×0,9=54,08 ✓). Modelado ahora como parámetro
   // editable (antes hardcodeado como especificoAutonomicoFactor + una tabla sexenioExtra separada).
+  // 2026-10-02: la hoja "adicional" del xlsx oficial de Aragón (Tablas_retribuciones_docentes_2026.xlsx) trae TAMBIÉN el
+  // cargo directivo (Director/Vicedirector/Jefe de estudios/Secretario), el jefe de departamento, el Director de EOEP
+  // y el complemento de Inspector al 90% en las dos pagas adicionales (p. ej. Director IES A 809,51 frente a 899,46),
+  // no solo el específico y los sexenios: antes el motor los pagaba íntegros (×14) y daba el de Inspector "sin reducción".
+  cargoReducidoEnExtra: true,
   rules: { reduccionPagaExtra: 0.9 },
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
     const b = trunc(anios/3);
@@ -715,11 +726,11 @@ COMUNIDADES['Aragón'] = {
     const base = (d.sueldoBase[idx]+d.destino[idx]+d.especifico[idx]+cargoInspector)*12
       + d.trienios[idx]*b*12
       + (d.extraSueldoBase[idx]+d.destino[idx])*2
-      + (especificoExtra+cargoInspector)*2
+      + (especificoExtra+cargoInspector*rules.reduccionPagaExtra)*2
       + d.extraTrienio[idx]*b*2
-      + cargoAmt*14
-      + jefeDept*14
-      + eoepDir*14
+      + cargoAmt*(12+2*rules.reduccionPagaExtra)
+      + jefeDept*(12+2*rules.reduccionPagaExtra)
+      + eoepDir*(12+2*rules.reduccionPagaExtra)
       // Corrected 2026-09-19 at the user's request: Aragón's own formula gated adicionalESO/tutoría
       // on a column-F "s" literal (never equals the real selector value "SI"/"NO") — dead code, now
       // live like every other complement.
@@ -772,9 +783,10 @@ COMUNIDADES['Aragón'] = {
       {label:'Sexenios', monthly: normal * rules.reduccionPagaExtra},
       {label:'Productividad', monthly: d.productividad[idx]},
     ];
-    if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
-    if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
-    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
+    const r90 = rules.reduccionPagaExtra;
+    if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector*r90});
+    if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept*r90});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir*r90});
     return items;
   }
 };
@@ -1766,6 +1778,10 @@ COMUNIDADES['Madrid'] = makeStandard({
 // o 60% (IES) de ese importe completo, por ANPE Madrid "Retribuciones 2026"; Jefatura de Estudios
 // Adjunta es fija (385,49€), no depende de alumnos. Se llama una vez al cargar (para que CARGO_TABLE
 // arranque en sync con rules.alumnos) y de nuevo cada vez que el usuario edita un valor de alumnos.
+// OJO (BOCM núm. 33, Anexo II, 2.Uno.A, nota con asterisco): el documento fija un "límite máximo de las cantidades a
+// percibir por el nuevo sistema retributivo" de 1.923,22€/mes. Con el alumnado asumido por defecto (máx. 1.000) no
+// se alcanza (hace falta >2.015 alumnos), y el texto no aclara si el tope aplica al Director, a los demás cargos o
+// a ambos, así que no se aplica aquí; si se editan los alumnos por encima de ese valor, el importe sobrestima.
 function recalcMadridCargoDirectivo(){
   const alumnos = COMUNIDADES['Madrid'].rules.alumnos;
   const pct = { A2: 0.54, A1: 0.60 };
@@ -2072,6 +2088,12 @@ COMUNIDADES['Murcia'] = {
   // carreraMinAnios: umbral real de años de servicio para el Tramo I de la Carrera Profesional
   // (único tramo que existe en la práctica — ver nota junto a carreraProf más abajo). Editable en
   // "Reglas / parámetros especiales", por si la Administración lo cambia.
+  // 2026-10-02: la paga extra de Murcia son solo tres bloques enumerados en el BORM (sueldo y trienios, productividad
+  // semestral y paga adicional del específico por sexenios): los cargos directivos, el jefe de departamento, el
+  // Director de EOEP y la acción tutorial figuran solo como "euros/mes" y no aparecen en ninguna tabla de paga extra,
+  // así que se cobran en 12 mensualidades (antes ×14). Es una inferencia por la estructura del Anexo XI, no una
+  // frase literal — confirmar con una nómina real de junio con cargo.
+  cargoSoloOrdinario: true,
   rules: { carreraMinAnios: 6 },
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
     const b = trunc(anios/3);
@@ -2105,9 +2127,9 @@ COMUNIDADES['Murcia'] = {
     const base = (d.sueldoBase[idx]+d.destino[idx]+d.especificoGeneral[idx]+d.especificoSingular[idx]+d.productividadFijaMensual[idx])*12
       + d.trienios[idx]*b*12
       + (d.extraSueldoBase[idx]+d.destino[idx])*2
-      + cargoAmt*14
-      + jefeDept*14
-      + eoepDir*14
+      + cargoAmt*12
+      + jefeDept*12
+      + eoepDir*12
       + d.extraTrienio[idx]*b*2
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*12 : 0)   // Murcia's own gate uses "si" (real)
       + sexNormal*12
@@ -2162,7 +2184,7 @@ COMUNIDADES['Murcia'] = {
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
     const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     return d.extraSueldoBase[idx] + d.extraTrienio[idx]*b + d.destino[idx]
-      + d.shiftDestino[idx] + d.shiftProdFija[idx] + pagaAdicTable[nSex] + jefeDept + eoepDir;
+      + d.shiftDestino[idx] + d.shiftProdFija[idx] + pagaAdicTable[nSex];
   },
   // Itemized version of pagaExtraOverride (2026-09-21, a petición del usuario), for the "Su nómina"
   // payslip display: replaces the app's generic fallback (repeat every monthly concept at its
@@ -2189,8 +2211,6 @@ COMUNIDADES['Murcia'] = {
       {label:'Productividad semestral (factor específico)', monthly: d.shiftProdFija[idx]},
       {label:'Paga adicional del complemento específico', monthly: pagaAdicTable[nSex]},
     ];
-    if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
-    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     return items;
   }
 };
@@ -2601,7 +2621,14 @@ function pagaExtraItemsFor(community, profile){
   const flags = buildFlags(profile);
   flags.jefeDepartamento = rs.jefeFlag;
   flags.directorEOEP = rs.eoepFlag;
-  return def.pagaExtraItems(idx, profile.anios, flags, rs.sd, def.rules);
+  const items = def.pagaExtraItems(idx, profile.anios, flags, rs.sd, def.rules).slice();
+  // Cargo directivo en las pagas extra (ver nota en computeCommunity). Murcia (def.cargoSoloOrdinario) no lo cobra
+  // en las extras; Aragón lo cobra reducido (def.rules.reduccionPagaExtra, igual que su específico).
+  if (rs.cargoAmt > 0 && !def.cargoSoloOrdinario){
+    const f = (def.rules && def.rules.reduccionPagaExtra !== undefined && def.cargoReducidoEnExtra) ? def.rules.reduccionPagaExtra : 1;
+    items.push({label:'Cargo directivo', monthly: rs.cargoAmt * f});
+  }
+  return items;
 }
 
 // Compute one community's full breakdown for a given profile.
@@ -2644,11 +2671,12 @@ function computeCommunity(community, profile, today, wantItems){
   if (wantItems){
     {
       const cargoItem = items.find(it => it.label === 'Cargo directivo');
-      // Genuine source-workbook quirk (idx===8, Inspección): the annual total's own Cargo directivo
-      // row has no formula for column N (blank => 0, see cargoAmt above), but the "Nómina mensual"
-      // sheet's row29 has its own INDEX/MATCH for every column including N — not zeroed there.
-      // (Skip if the community already set its own displayMonthly, e.g. Navarra's structural hide.)
-      if (cargoItem && typeof cargoAmtRaw === 'number' && cargoItem.displayMonthly === undefined) cargoItem.displayMonthly = (idx === 8) ? cargoAmtRaw : sing.cargoAmt;
+      // (2026-10-02) Antes, para Inspección (idx 8) se mostraba en la nómina mensual el cargo directivo del Excel
+      // original (cuya hoja "Nómina mensual" no lo ponía a 0 aunque el total anual sí) — un Inspector con
+      // "Dirección" seleccionado veía +800€/mes que no estaban en su total. Ahora la nómina mensual usa el mismo
+      // importe efectivo que el cálculo anual (0€ para Inspección).
+      // (Skip if the community already set its own displayMonthly.)
+      if (cargoItem && typeof cargoAmtRaw === 'number' && cargoItem.displayMonthly === undefined) cargoItem.displayMonthly = sing.cargoAmt;
     }
     // Every item may carry two figures:
     //  - `monthly`: the concept's true ×12-rate contribution, exactly mirroring what the (already
@@ -2666,13 +2694,12 @@ function computeCommunity(community, profile, today, wantItems){
     const trueOrdinary = items.filter(it => !it.extraOnly).reduce((s, it) => s + it.monthly, 0);
     mensualBruto = items.filter(it => !it.extraOnly).reduce((s, it) => s + (it.displayMonthly !== undefined ? it.displayMonthly : it.monthly), 0);
     pagaExtraTotal = (annual - trueOrdinary * 12) / 2;
-    // Universal source-workbook quirk, confirmed across the "Nómina mensual" sheet dump for every
-    // community: the "Paga extra, ..." row block (rows 34-39/40) never includes a mirror row for
-    // Cargo directivo, even though the annual formula pays it at the combined ×14 rate (validated).
-    // It IS shown normally in the ordinary monthly total (see displayMonthly above), just never
-    // repeated as a separate June/December payment — so exclude it from the derived pagaExtraTotal.
-    const cargoItemForExtra = items.find(it => it.label === 'Cargo directivo');
-    if (cargoItemForExtra && !cargoItemForExtra.keepInPagaExtra) pagaExtraTotal -= cargoItemForExtra.monthly;
+    // (2026-10-02) Antes, por una omisión de la hoja "Nómina mensual" del Excel original, el cargo directivo se
+    // restaba de la paga extra aunque el total anual lo pagaba 14 veces: la nómina de un mes con paga extra
+    // mostraba el cargo solo una vez. Contrastado con fuente oficial en Andalucía, Asturias, Castilla y León,
+    // Castilla-La Mancha, Extremadura, Galicia, País Vasco y Navarra (el componente singular se cobra en las dos
+    // extras); Aragón lo cobra al 90% y Murcia solo en 12 mensualidades — esos dos lo reflejan ya en su propia
+    // fórmula anual, y el desglose de la paga extra (def.pagaExtraItems / pagaExtraItemsFor) lo itemiza.
     // A handful of communities have a concept that genuinely contributes to the annual formula's
     // ×2 term (validated) but has NO corresponding row anywhere in the source "Nómina mensual"
     // sheet's paga-extra block (confirmed against the sheet dump) — def.pagaExtraAdjust exposes
