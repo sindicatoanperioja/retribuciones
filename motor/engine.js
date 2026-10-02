@@ -1811,16 +1811,14 @@ recalcMadridCargoDirectivo();
 // A1-24 (Secundaria/EOI/Música/Artes Plásticas) 741,97€ · A1-26 (Catedráticos) 807,18€ · Inspección
 // (tabla propia "INSPECTORS/RES A1-28") 1.610,37€.
 COMUNIDADES['Valencia'] = makeStandard({
-  destino: arr9(592.11,729.14,729.14,729.14,729.14,729.14,729.14,873.38,873.38),
+  // Inspección: nivel 28 (1.041,22€) tras el Decreto 10/2026, de 23 de enero (DOGV 10312 bis, Tabla 2, bloque
+  // "Inspectors/res A1-28", que lista todos los puestos de inspección).
+  destino: arr9(592.11,729.14,729.14,729.14,729.14,729.14,729.14,873.38,1041.22),
   especifico: arr9(737.37,738.99,738.99,741.97,741.97,741.97,741.97,807.18,1610.37),
-  // Complemento específico singular (2026-09-21, corregido a petición del usuario): el nivel 28
-  // (1.041,22€ de destino) del DOGV es solo para "Inspector/a Cap Territorial", no para Inspección en
-  // general — no toca `destino` (queda compartido en nivel 26, igual que el resto de la app). Lo que
-  // sí aplica a toda Inspección es su propio "ESPECÍFIC BASE" de la tabla separada "INSPECTORS/RES
-  // A1-28" del DOGV: 1.610,37€ (ya en `especifico` arriba) MÁS este componente singular —
-  // "INSPECTOR/A GRAL. EDUCACIÓ" — de 682,09€, mismo patrón que Aragón/Baleares/Cantabria/Cataluña/
-  // Galicia/La Rioja/Madrid.
-  complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,682.09),
+  // Los 682,09€ son el cargo "Inspector/a Gral. Educació" (código 1601), un puesto único: un inspector sin cargo cobra
+  // solo el específico base. Los cargos de la tabla (Cap Territorial 511,54; adjunto/secretario/coordinador 403,54)
+  // no se modelan.
+  complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,0),
   // Sexenios corregidos igual que el específico — tabla "SEXENNIS PERSONAL DOCENT" del mismo DOGV,
   // columna MENSUAL (el incremento propio de cada tramo, no el acumulado): 1r 128,37€ · 2n 135,98€ ·
   // 3r 155,54€ · 4t 169,30€ · 5è 98,42€.
@@ -1845,7 +1843,8 @@ COMUNIDADES['Valencia'] = makeStandard({
   // 2026-09-21 (a petición del usuario): el DOGV no recoge ninguno de los dos para el personal
   // docente valenciano — no son "0€ sin verificar", son conceptos que Valencia no tiene.
   productividad: fill(0),
-  jefeDepartamento: fill(84.76), // ANPE Comunitat Valenciana, "Jefatura de Departamento": 84,76€/mes
+  // DOGV 10312 bis, Tabla 2: "Cap departament" 84,76€ para Profesores, PTFP y Catedráticos; el Maestro (6531) tiene "-".
+  jefeDepartamento: arr9(0,84.76,84.76,84.76,84.76,84.76,84.76,84.76,84.76),
   // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
   // usuario): DOGV núm. 10312 bis (27-02-2026), Tabla 2 "Retribucions del personal docent" — "Director/a
   // de S.P.E." (Servicio Psicopedagógico Escolar, equivalente valenciano del EOEP de sector): 556,35€/mes,
@@ -2059,7 +2058,7 @@ COMUNIDADES['Murcia'] = {
     especificoGeneral: arr9(369.21,369.21,369.21,369.21,369.21,369.21,369.21,428.60,463.70),
     especificoSingular: arr9(64.21,64.21,64.21,64.21,64.21,64.21,64.21,64.21,989.90),
     productividadFijaMensual: arr9(437.91,444.36,444.36,444.36,444.36,444.36,444.36,447.68,394.50),
-    sexenio: {sin:0, s1:70.45, s2:88.89, s3:118.44, s4:162.07, s5:47.38},
+    sexenio: {sin:0, s1:70.45, s2:88.89, s3:118.44, s4:162.07, s5:47.77},
     carreraProfesional: arr9(90.26,90.26,90.26,160.6,160.6,160.6,160.6,160.6,160.6),
     adicionalESO: onlyF(139.1),
     // "Productividad semestral" helper tables (paid twice a year, in the paga extra), per cuerpo idx
