@@ -617,6 +617,23 @@ input.prov-4{box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--prov-neutral) 
 }
 .admin-sidebar a .sidebar-label{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0;}
 .admin-sidebar a .stale-flag{flex:0 0 auto; font-size:.85rem; color:var(--warn);}
+/* Cuadro de dudas abiertas al final de cada ficha de comunidad (Datos CCAA). */
+.pending-box{
+  margin-top:22px; padding:14px 18px; border:1px solid var(--border); border-left:4px solid var(--warn);
+  border-radius:8px; background:color-mix(in srgb, var(--warn) 7%, var(--surface));
+}
+.pending-box h3{margin:0 0 6px;}
+.pending-intro{margin:0 0 10px; font-size:.84rem; color:var(--ink-2); max-width:78ch;}
+.pending-box ol{margin:0; padding-left:20px;}
+.pending-box li{margin-bottom:11px; font-size:.9rem;}
+.pending-q{display:block; font-weight:600;}
+.pending-detail{display:block; margin-top:2px; font-size:.84rem; color:var(--ink-2); max-width:78ch;}
+.admin-sidebar a .pend-count{
+  flex:0 0 auto; min-width:18px; padding:0 5px; border-radius:999px; font-size:.68rem; font-weight:700; line-height:18px;
+  text-align:center; color:var(--ink); background:color-mix(in srgb, var(--warn) 30%, var(--surface));
+}
+.admin-sidebar a.active .pend-count{background:color-mix(in srgb, var(--accent-ink) 30%, transparent); color:var(--accent-ink);}
+
 .admin-sidebar a:hover{background:var(--surface-2); color:var(--ink);}
 .admin-sidebar a.active{background:var(--accent); color:var(--accent-ink);}
 .admin-sidebar a.sidebar-ministerio{margin-bottom:6px; padding-bottom:8px; border-bottom:1px solid var(--border); border-radius:6px 6px 0 0;}
@@ -6071,11 +6088,108 @@ function refreshDateIndicators(name, updated){
   }
 }
 
+
+// Dudas abiertas por comunidad, para que quien conozca esa comunidad pueda confirmarlas o corregirlas. Cada
+// entrada es [pregunta, detalle]: el detalle dice qué usa hoy la web y qué dato la cerraría. Se muestran al
+// final de la ficha de cada comunidad en Datos CCAA; quitar una entrada cuando quede resuelta.
+const PENDIENTES_AYUDA = 'Lo que más ayuda es una nómina real (PDF) de un mes con paga extra, con y sin cargo directivo, o la tabla oficial de este año donde aparezca el concepto.';
+const PENDIENTES = {
+  'Andalucía': [
+    ['¿Existe una figura de Director de equipo de orientación con importe propio?', 'La tabla solo recoge el Coordinador/a de equipo de orientación educativa (1.081,92 € nivel 24, 1.060,62 € nivel 21) y se usa como equivalente.'],
+    ['¿Hay tabla oficial de la Junta para 2026?', 'Las cifras salen de ANPE Andalucía y UGT-SP Andalucía (enero 2026); la tabla oficial publicada por la Junta es de 2024. Conviene cotejarlas si existe una más reciente.'],
+  ],
+  'Aragón': [
+    ['Tutoría', 'Se modela a 0 € a la espera de que aparezca con importe en la tabla oficial.'],
+  ],
+  'Asturias': [],
+  'Baleares (Islas)': [
+    ['¿El cargo directivo se cobra íntegro en las pagas extra?', 'Se da por cobrado en las 14 pagas; la tabla oficial de cargos solo trae el importe mensual. Una nómina de junio con cargo lo confirmaría.'],
+    ['¿El Director de equipo de orientación tiene importe propio?', 'La tabla da 82,20 €, igual que el Cap de departament, y se usa ese. No sabemos si es un importe propio o el genérico de cargo unipersonal.'],
+  ],
+  'Canarias': [
+    ['¿El cargo directivo se reduce al 78% en la paga adicional?', 'La ley aplica el 78% al específico y a la formación permanente, y el cargo es un complemento específico, pero ningún documento lo dice. Hoy se paga íntegro.'],
+    ['¿Jefe de departamento, tutoría y complemento de Inspector en la paga adicional?', 'La tabla oficial de pagas extras no los recoge. Se pagan íntegros.'],
+    ['¿Hay Director de equipo de orientación?', 'Solo figura el Coord. EOEP (107,45 €), que se usa como equivalente.'],
+  ],
+  'Cantabria': [
+    ['¿El cargo directivo se cobra en las dos pagas extra?', 'Se asume íntegro en 14 pagas; no hay frase oficial que cite el componente singular. Una nómina de junio con cargo lo cerraría.'],
+    ['¿Los +60,23 € y +30 € del acuerdo de mejora alcanzan a Inspección?', 'Se aplican al componente general de la función pública docente y no a Inspección, que tiene su propia tabla de específico.'],
+    ['Revalorización por IPC y tramos de 2027 a 2029', 'El acuerdo los prevé, pero sin importes todavía. No están aplicados.'],
+  ],
+  'Castilla La Mancha': [
+    ['¿Existe complemento de Director de equipo de orientación?', 'No aparece en la Orden 194/2025 ni en las guías sindicales revisadas. No se modela.'],
+  ],
+  'Castilla y León': [
+    ['Primer sexenio: 70,21 € o 70,22 €', 'La ORDEN PRE/1/2026 publica 70,22 € y la web usa 70,21 €. Diferencia de un céntimo.'],
+    ['¿La tutoría de 20 € se cobra en las pagas extra y cómo sube en 2027?', 'Se paga solo en 12 mensualidades, con el importe del primer curso.'],
+  ],
+  'Cataluña': [
+    ['¿La Jefatura de estudios adjunta se cobra en institutos que no son tipo A?', 'El Excel oficial solo da importe en el tipo A (886,11 €). En los tipos B, C y D no hay mención ni importe, así que se deja a 0 €.'],
+    ['Inspección: específico general y nivel de destino', 'El Excel oficial solo trae el complemento singular de Inspector (1.476,25 €). Se usa 720,83 € de específico y nivel 26 de destino sin documento que lo confirme.'],
+    ['¿El cargo directivo se cobra en las pagas extra?', 'Sin prueba directa en el documento oficial. Se asume íntegro.'],
+    ['Director de equipo de orientación (EAP)', 'No hay un cargo de dirección explícito en las tablas; no se modela.'],
+  ],
+  'Extremadura': [
+    ['¿El +80 € mensual del acuerdo de enero de 2026 afecta al Director de EOEP?', 'La tabla oficial de este complemento es de 2025 (250,12 € Maestros, 79,40 € resto). No sabemos si hay una tabla 2026.'],
+  ],
+  'Galicia': [
+    ['¿Quien dirige un equipo de orientación cobra algo más que el resto del equipo?', 'La tabla da 410,45 € a todos los miembros, sin plus de dirección. Se usa esa cifra.'],
+    ['¿El jefe de departamento entra en la paga extra?', 'La guía de ANPE dice que el resto de conceptos van completos sin nombrarlos. Se da por íntegro.'],
+  ],
+  'La Rioja': [
+    ['¿La carrera profesional se cobra en las pagas extra?', 'ANPE 2023 la anota como 12 meses sin extras y el ejemplo de ANPE 2026 la suma en la extra. Se modela en las 14 pagas.'],
+    ['Específico de Secundaria, EOI, Música y Artes: 837,85 € o 825,47 €', 'Se usa 837,85 € porque coincide con una nómina real; el documento oficial trae 825,47 €.'],
+    ['¿El cargo directivo se cobra en las pagas extra?', 'Se asume íntegro porque STE indica que los complementos singulares se mantienen como en una mensualidad normal.'],
+  ],
+  'Madrid': [
+    ['¿El cargo directivo se cobra en las pagas extra?', 'Se asume que entra en la mensualidad de específico de las extras. El BOCM no lo dice expresamente.'],
+    ['Alumnado real por tipo de centro', 'El importe de dirección depende del número de alumnos. Se usan valores supuestos (editables en Reglas); con los reales saldría la cifra exacta.'],
+    ['Tope de 1.923,22 € al mes', 'El BOCM fija un límite máximo en el nuevo sistema retributivo, sin aclarar a qué cargos aplica. No está aplicado; solo afectaría a centros de más de unos 2.000 alumnos.'],
+    ['Jefatura de departamento', 'El importe depende del número de miembros. Se usa el tramo de 3 a 6 (100,09 €).'],
+  ],
+  'Murcia': [
+    ['¿El cargo directivo, el jefe de departamento y el director de EOEP se cobran solo en 12 mensualidades?', 'Se pagan en 12 porque la paga extra son tres bloques enumerados en el BORM y estos conceptos no aparecen en ninguno. Sin frase literal; una nómina de junio con cargo lo confirmaría.'],
+    ['Director de EOEP: tipo A o tipo B', 'Hay dos importes (446,74 € y 345,21 €) sin criterio publicado para elegir. Se usa el tipo B.'],
+  ],
+  'Navarra': [
+    ['¿El cargo directivo se cobra en las dos pagas extra?', 'Se asume 14 pagas porque el porcentaje del Decreto Foral 71/2012 se aplica sobre una mensualidad de 14 pagas. No hay frase literal.'],
+    ['Inspección: ¿hay más complementos que "Dedicación exclusiva" y "Puesto de trabajo"?', 'El documento solo trae esos dos porcentajes (55% y 17,88% del sueldo inicial). No aparece un tramo de jefe de inspección.'],
+    ['¿Existe complemento de Director de equipo de orientación?', 'No aparece en el documento oficial ni en la tabla de LAB. Solo está el Jefe de departamento de orientación, que no es lo mismo.'],
+    ['Jefe de departamento', 'El importe depende del número de profesores. Se usa el 6% (de 7 a 10 profesores).'],
+  ],
+  'País Vasco': [
+    ['¿Existe un complemento de dirección de equipos de orientación?', 'No se ha encontrado un equivalente: Berritzegune es la red de formación e innovación. No se modela.'],
+    ['Cargo directivo de PTFP, Maestros de Taller y Catedráticos', 'Usan las tablas de otros cuerpos. El Anexo trae tablas propias (EG04 y EG02) que no se pueden modelar con la estructura actual.'],
+  ],
+  'Valencia': [
+    ['¿Específico y cargo directivo en las pagas extra?', 'La tabla oficial solo trae importes mensuales, sin columna de paga extra. Se asumen íntegros en las 14 pagas.'],
+    ['Vicedirector en Secundaria tipo E', 'La tabla da 217,15 € solo para ese tamaño. Es la única celda de ese tipo con importe.'],
+  ],
+  'Ceuta y Melilla': [
+    ['Específico de Maestros, PTFP y Secundaria', 'Se usa 438,33 / 436,57 / 433,91 € (cifra orientativa de CSIF). La resolución oficial de 2009 puesta al día, UGT 2024 y ANPE Melilla 2022 dan unos 467 €, y UGT dice que baja con la antigüedad. Falta saber el importe inicial y cómo se reduce.'],
+    ['Específico y singular de Inspección', 'Se usan 519,94 € y 610 €. Las fuentes oficiales puestas al día dan unos 560 € y 622 €.'],
+    ['Residencia en 2026', 'Los 820,76 € (A2) y 1.102,57 € (A1) son una extrapolación, sin tabla oficial 2026. Las tablas oficiales la fijan en 12 mensualidades sin repercusión en extras, aunque una calculadora no oficial la muestra en la extra.'],
+    ['¿El cargo directivo se cobra en las pagas extra?', 'Sin dato. Se asume íntegro. El BOE de 2009 trae además cargos que no están modelados: Vicesecretario, colegios de tipos E y F y coordinador de especialidad.'],
+  ],
+};
+function pendientesHtml(name){
+  const lista = PENDIENTES[name] || [];
+  const intro = lista.length
+    ? `<p class="pending-intro">Estos puntos no se han podido cerrar con documentos. Si conoces esta comunidad, ayúdanos a confirmarlos o corregirlos. ${PENDIENTES_AYUDA}</p>`
+    : `<p class="pending-intro">Sin dudas abiertas por ahora.</p>`;
+  const items = lista.map(([q, d]) => `<li><span class="pending-q">${q}</span><span class="pending-detail">${d}</span></li>`).join('');
+  return `<div class="pending-box">
+    <h3>Pendiente de confirmar</h3>
+    ${intro}
+    ${items ? `<ol>${items}</ol>` : ''}
+  </div>`;
+}
+
 function buildAdmin(){
   const idx = document.getElementById('adminSidebar');
   if (idx) idx.innerHTML = `<a href="#" class="sidebar-ministerio" data-page="ministerio"><span class="sidebar-label">Ministerio</span>${staleBadge(GENERIC_META.updated)}</a>` +
     E.COMUNIDAD_ORDER.map(name =>
-      `<a href="#" data-page="${slugifyCC(name)}"><span class="sidebar-label">${name}</span>${staleBadge((META[name]||{}).updated)}</a>`).join('');
+      `<a href="#" data-page="${slugifyCC(name)}"><span class="sidebar-label">${name}</span>${(PENDIENTES[name]||[]).length ? `<span class="pend-count" title="${PENDIENTES[name].length} punto(s) pendientes de confirmar">${PENDIENTES[name].length}</span>` : ''}${staleBadge((META[name]||{}).updated)}</a>`).join('');
   const root = document.getElementById('adminAccordion');
   root.innerHTML = buildGenericPageHtml() + E.COMUNIDAD_ORDER.map(name => {
     const def = E.COMUNIDADES[name];
@@ -6361,6 +6475,7 @@ function buildAdmin(){
           <h3 style="margin-bottom:8px;">Fuentes oficiales de consulta</h3>
           <ul>${meta.fuentes.map(f => `<li><a href="${f.url}" target="_blank" rel="noopener">${f.label}</a></li>`).join('')}</ul>
         </div>` : ''}
+        ${pendientesHtml(name)}
       </div>
     </div>`;
   }).join('');
