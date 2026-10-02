@@ -745,11 +745,11 @@ COMUNIDADES['Aragón'] = {
     }
     return base;
   },
-  // Mismo quirk que Canarias (ver su propio pagaExtraAdjust): la fila "Sexenios" del bloque de paga
-  // extra en la nómina mensual del Excel original repite el valor completo de la escala ordinaria en
-  // vez de la escala reducida al 90% que la fórmula ANUAL sí usa — validado tal cual contra la
-  // fixture. Reescrito para derivar la escala reducida a partir de sexenio×0,9 en vez de una tabla
-  // sexenioExtra separada (matemáticamente idéntico, ver nota en `rules` de arriba).
+  // Corregido 2026-10-02 (auditoría de anomalías): el desglose de la paga extra mostraba los sexenios al
+  // 100% (herencia de un quirk del Excel original, compensado con un pagaExtraAdjust que además dejaba
+  // el total de la extra 2×10% del sexenio por encima de lo que suma la fórmula anual y exigía una fila
+  // "Ajuste"). El propio documento de ANPE Aragón dice que la paga adicional paga el sexenio al 90% (igual
+  // que el específico) y la fórmula anual ya lo hace así — ahora el desglose coincide y no hace falta Ajuste.
   // Itemized version of the real paga extra (2026-09-21, a petición del usuario): without this, the
   // app's generic fallback double-counted "Complemento específico" — once as a naive full-rate
   // repeat of the ordinary item, AGAIN via the dedicated reduced-rate `especificoExtra` extraOnly
@@ -769,42 +769,13 @@ COMUNIDADES['Aragón'] = {
       {label:'Trienios', monthly: d.extraTrienio[idx]*b},
       {label:'Complemento de destino', monthly: d.destino[idx]},
       {label:'Complemento específico (general o básico, reducido al 90%)', monthly: especificoExtra},
-      {label:'Sexenios', monthly: normal},
+      {label:'Sexenios', monthly: normal * rules.reduccionPagaExtra},
       {label:'Productividad', monthly: d.productividad[idx]},
     ];
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
     if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     return items;
-  },
-  pagaExtraAdjust(idx, anios, flags, d, rules){
-    const r = anios/6;
-    const s = d.sexenio;
-    let normal;
-    if (idx===0){
-      if (r>=5) normal = s.s1+s.s2+s.s3+s.s4+s.s5;
-      else if (r>=4) normal = s.s1+s.s2+s.s3+s.s4;
-      else if (r>=3) normal = s.s1+s.s2+s.s3;
-      else if (r>=2) normal = s.s1+s.s2;
-      else if (r>=1) normal = s.s1;
-      else normal = 0;
-    } else {
-      if (r>=5) normal = s.s1+s.s2+s.s3+s.s4+s.s5;
-      else if (r>=4) normal = s.s2+s.s3+s.s4+s.s5;
-      else if (r>=3) normal = s.s1+s.s2+s.s3;
-      else if (r>=2) normal = s.s1+s.s2;
-      else if (r>=1) normal = s.s1;
-      else normal = s.sin;
-    }
-    const factor = rules.reduccionPagaExtra;
-    let extra;
-    if (r>=5) extra = (s.s1+s.s2+s.s3+s.s4+s.s5)*factor;
-    else if (r>=4) extra = (s.s1+s.s2+s.s3+s.s4)*factor;
-    else if (r>=3) extra = (s.s1+s.s2+s.s3)*factor;
-    else if (r>=2) extra = (s.s1+s.s2)*factor;
-    else if (r>=1) extra = s.s1*factor;
-    else extra = 0;
-    return extra - normal;
   }
 };
 
@@ -1401,7 +1372,11 @@ COMUNIDADES['Castilla y León'] = {
     // Orientación Educativa" = 178,67€/mes, un puesto distinto (sin dirección), no modelado aquí.
     directorEOEP: arr9(261.66,261.66,261.66,261.66,261.66,261.66,261.66,261.66,0),
     // Tabla real "Carrera profesional" (categorías/tramos C1-C4), Acuerdo de 25/08/2021 (BOCYL
-    // 02/09/2021): importes mensuales por categoría, acumulativos según años de servicio.
+    // 02/09/2021): importe mensual TOTAL de cada categoría (Anexo XIX de la ORDEN PRE/1/2026, pág. 97) — se
+    // cobra solo el de la categoría reconocida, NO se suman las anteriores. Corregido 2026-10-02 (auditoría de
+    // anomalías): el motor sumaba C1+C2+C3+C4 (1.772€/mes para A1 en C4 en vez de 684,73€), inflando a CyL un
+    // +28% en Secundaria con 25 años. Prueba: la tabla de UGT CyL da la misma cifra en "mensual" y "mensual
+    // acumulado" para cada categoría.
     // Categoría 3 (A1) corregida 2026-09-20 contra el UGT/BOCyL: 523,62€, no 523,60€ (su propio
     // importe anual, 7.330,68€, solo cuadra con 523,62×14).
     carreraTramoC1: arr9(153.11,153.11,153.11,201.43,201.43,201.43,201.43,201.43,201.43),
@@ -1421,9 +1396,9 @@ COMUNIDADES['Castilla y León'] = {
     const carreraOn = si(flags.carreraGeneral);
     let carreraTotal = 0;
     if (carreraOn){
-      if (anios >= rules.carreraTramoUmbral4) carreraTotal = d.carreraTramoC1[idx]+d.carreraTramoC2[idx]+d.carreraTramoC3[idx]+d.carreraTramoC4[idx];
-      else if (anios >= rules.carreraTramoUmbral3) carreraTotal = d.carreraTramoC1[idx]+d.carreraTramoC2[idx]+d.carreraTramoC3[idx];
-      else if (anios >= rules.carreraTramoUmbral2) carreraTotal = d.carreraTramoC1[idx]+d.carreraTramoC2[idx];
+      if (anios >= rules.carreraTramoUmbral4) carreraTotal = d.carreraTramoC4[idx];
+      else if (anios >= rules.carreraTramoUmbral3) carreraTotal = d.carreraTramoC3[idx];
+      else if (anios >= rules.carreraTramoUmbral2) carreraTotal = d.carreraTramoC2[idx];
       else if (anios >= rules.carreraTramoUmbral1) carreraTotal = d.carreraTramoC1[idx];
     }
     // Elegir sexenios o carrera profesional (no ambos) — la que sea más alta se cobra, la otra queda a 0.
@@ -1485,9 +1460,9 @@ COMUNIDADES['Castilla y León'] = {
     const carreraOn = si(flags.carreraGeneral);
     let carreraTotal = 0;
     if (carreraOn){
-      if (anios >= rules.carreraTramoUmbral4) carreraTotal = d.carreraTramoC1[idx]+d.carreraTramoC2[idx]+d.carreraTramoC3[idx]+d.carreraTramoC4[idx];
-      else if (anios >= rules.carreraTramoUmbral3) carreraTotal = d.carreraTramoC1[idx]+d.carreraTramoC2[idx]+d.carreraTramoC3[idx];
-      else if (anios >= rules.carreraTramoUmbral2) carreraTotal = d.carreraTramoC1[idx]+d.carreraTramoC2[idx];
+      if (anios >= rules.carreraTramoUmbral4) carreraTotal = d.carreraTramoC4[idx];
+      else if (anios >= rules.carreraTramoUmbral3) carreraTotal = d.carreraTramoC3[idx];
+      else if (anios >= rules.carreraTramoUmbral2) carreraTotal = d.carreraTramoC2[idx];
       else if (anios >= rules.carreraTramoUmbral1) carreraTotal = d.carreraTramoC1[idx];
     }
     const useCarrera = carreraOn && carreraTotal > sexAnual;
@@ -2269,7 +2244,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
     const base = (d.sueldoBase[idx]+d.destino[idx]+d.especifico[idx]+cargoInspector+d.residencia[idx])*12
       + d.trienios[idx]*b*12
       + (d.extraSueldoBase[idx]+d.destino[idx])*2
-      + (d.especifico[idx]+cargoInspector+d.residencia[idx])*2
+      + (d.especifico[idx]+cargoInspector)*2
       + cargoAmt*14
       + jefeDept*14
       + d.extraTrienio[idx]*b*2
@@ -2301,12 +2276,13 @@ COMUNIDADES['Ceuta y Melilla'] = {
     }
     return base;
   },
-  // Source quirk (Nómina mensual!rows 34-39): the "Paga extra, ..." block has NO row mirroring
-  // Residencia (row30) at all — unlike Complemento Específico, which DOES get its own paga-extra
-  // row. Residencia genuinely contributes to the annual formula's ×2 term (validated as-is), but
-  // that contribution never surfaces in either the ordinary or paga-extra monthly display, so it
-  // must be excluded from the derived pagaExtraTotal.
-  pagaExtraAdjust(idx, anios, flags, d, rules){ return d.residencia[idx]; },
+  // Corregido 2026-10-02 (auditoría de anomalías): la residencia se pagaba ×14 en el total anual (herencia de
+  // la fórmula del Excel, que la metía también en el término ×2 de las pagas extra) pero ni la nómina mensual
+  // ni la paga extra la mostraban, así que el total anual no cuadraba con 12×mes + 2×extra (+2.205€/año en
+  // A1, +1.642€ en A2). Las tablas oficiales de la indemnización por residencia (Resoluciones de la Secretaría
+  // de Estado de Hacienda de 2008/2009) dicen literalmente "La indemnización por residencia comprende doce
+  // mensualidades, sin repercusión en pagas extraordinarias" — y lo mismo para los incrementos por trienio.
+  // Ahora va solo ×12 (en el término ordinario) y no entra en la paga extra: ya no hace falta pagaExtraAdjust.
   // Itemized version of the real paga extra (2026-09-21, a petición del usuario): "Residencia" y
   // "Trienios de residencia" no se cobran en la extra (confirmado numéricamente: sin ellas, la suma
   // de los conceptos reales coincide exacta con pagaExtraTotal; con ellas, el mecanismo genérico de
@@ -2574,7 +2550,48 @@ function resolveSingularesFor(community, profile){
   const grp = resolveCargoGroup(community, idx, profile.tablaCargo);
   const raw = getCargoAmount(community, grp, profile.tipoCentro, profile.cargoDirectivo);
   const cargoAmt = (idx === 8 || raw === CARGO_ERROR) ? 0 : raw;
-  return resolveSingulares(def, idx, profile.jefeDepartamento, cargoAmt, profile.directorEOEP);
+  const fl = buildFlags(profile);
+  return resolveSingulares(def, idx, fl.jefeDepartamento, cargoAmt, fl.directorEOEP);
+}
+
+// Banderas que lee cada calc()/pagaExtraItems() de comunidad, derivadas del perfil. Extraído de
+// computeCommunity (2026-10-02, auditoría de anomalías) para que la paga extra itemizada de la UI use
+// EXACTAMENTE las mismas banderas: antes se le pasaba el perfil crudo, así que Baleares veía
+// flags.funcionario sin definir (CEA de interino en la extra aunque fuese funcionario, con una fila
+// "Ajuste" de +125€) y Galicia flags.is598 sin definir.
+// Baleares' calc() reads flags.funcionario==='carrera' to gate its seniority-scaled autonomous
+// complement — a structurally different concept from the national 3-way "Situación Laboral" field
+// (it means "not an interino/prácticas hire"). Anything other than Interino/Laboral counts as "carrera".
+function buildFlags(profile){
+  const situFlag = normSituacion(profile.situacionLaboral);
+  // Inspección (idx 8) no puede ser tutor/a, jefe/a de departamento, director/a de EOEP ni maestro/a de 1º-2º
+  // de ESO: esos interruptores no le suman nada (antes, en comunidades sin complemento de cargo de Inspector
+  // como Asturias o Murcia, un Inspector con "Jefe de departamento" activado cobraba +83€/+148€ al mes).
+  if (cuerpoIndex(profile.cuerpo) === 8){
+    profile = Object.assign({}, profile, { tutor:'NO', jefeDepartamento:'NO', directorEOEP:'NO', maestroESO:'NO' });
+  }
+  return {
+    maestroESO: profile.maestroESO, tutor: profile.tutor,
+    islaNoCapitalina: profile.islaNoCapitalina, funcionario: situFlag === 'interino' ? 'interino' : 'carrera',
+    islaBaleares: profile.islaBaleares, vallAran: profile.vallAran, jefeDepartamento: profile.jefeDepartamento,
+    carreraGeneral: profile.carreraGeneral, directorEOEP: profile.directorEOEP,
+    // 598-PESSFP is normally a pure alias onto idx1 (591/596's data slot, see CUERPO_ALIASES above),
+    // but Galicia's "Complemento de profesor de FP" is a genuine exception: it applies to 591 only,
+    // not to 598 despite sharing the same idx — see Galicia's calc().
+    is598: profile.cuerpo === CUERPO_598_LABEL
+  };
+}
+// Desglose real de la paga extra de una comunidad (o null si no define pagaExtraItems), con las mismas
+// banderas y la misma regla de "solo se cobra el mayor" que el cálculo anual.
+function pagaExtraItemsFor(community, profile){
+  const def = COMUNIDADES[community];
+  if (!def || typeof def.pagaExtraItems !== 'function') return null;
+  const idx = cuerpoIndex(profile.cuerpo);
+  const rs = resolveSingularesFor(community, profile);
+  const flags = buildFlags(profile);
+  flags.jefeDepartamento = rs.jefeFlag;
+  flags.directorEOEP = rs.eoepFlag;
+  return def.pagaExtraItems(idx, profile.anios, flags, rs.sd, def.rules);
 }
 
 // Compute one community's full breakdown for a given profile.
@@ -2604,17 +2621,7 @@ function computeCommunity(community, profile, today, wantItems){
   // (it means "not an interino/prácticas hire"). Map the new field onto that same boolean: anything
   // other than Interino/Laboral (i.e. either Clases Pasivas or S.Social) counts as "carrera", exactly
   // preserving Baleares' previously-validated behavior.
-  const situFlag = normSituacion(profile.situacionLaboral);
-  const flags = {
-    maestroESO: profile.maestroESO, tutor: profile.tutor,
-    islaNoCapitalina: profile.islaNoCapitalina, funcionario: situFlag === 'interino' ? 'interino' : 'carrera',
-    islaBaleares: profile.islaBaleares, vallAran: profile.vallAran, jefeDepartamento: profile.jefeDepartamento,
-    carreraGeneral: profile.carreraGeneral, directorEOEP: profile.directorEOEP,
-    // 598-PESSFP is normally a pure alias onto idx1 (591/596's data slot, see CUERPO_ALIASES above),
-    // but Galicia's "Complemento de profesor de FP" is a genuine exception: it applies to 591 only,
-    // not to 598 despite sharing the same idx — see Galicia's calc().
-    is598: profile.cuerpo === CUERPO_598_LABEL
-  };
+  const flags = buildFlags(profile);
   const sing = resolveSingulares(def, idx, flags.jefeDepartamento, cargoAmt, flags.directorEOEP);
   flags.jefeDepartamento = sing.jefeFlag;
   flags.directorEOEP = sing.eoepFlag;
@@ -2749,6 +2756,7 @@ global.SalaryEngine = {
   CUERPOS, CUERPO_ORDER: CUERPOS, CUERPO_SELECT_OPTIONS, CUERPO_ALIASES, CUERPO_598_LABEL, CUERPO_598_SHORT, COMUNIDADES, COMUNIDAD_ORDER, CARGOS, TIPOS,
   CARGO_TABLE, setCargoTable, getCargoAmount, emptyCargoTable,
   groupOf, cuerpoIndex, computeCommunity, computeNational, computeAll, normSituacion, resolveSingulares, resolveSingularesFor,
+  buildFlags, pagaExtraItemsFor,
   GENERIC_DATA, GENERIC_FIELDS, SS_RATES, getOverride, setOverride, setGenericData,
   resolveSalaryData, resolveAllSalaryData, recalcMadridCargoDirectivo
 };
