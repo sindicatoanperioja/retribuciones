@@ -1081,6 +1081,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 // ============================================================================
 // ============================================================================
 // ============================================================================
+// ============================================================================
 // ANPE Comparativa de Retribuciones Docentes — calculation engine
 // Ported cell-by-cell from comparativa.xlsx (sheets Retribuciones + Nómina mensual)
 // Column order for cuerpo docente arrays (index 0..8) = F..N in Retribuciones:
@@ -1500,7 +1501,7 @@ const GENERIC_DATA = {
   extraTrienio:    arr9(31.74,31.74,31.74,32.96,32.96,32.96,32.96,32.96,32.96),
   destino:         arr9(592.11,729.14,729.14,729.14,729.14,729.14,729.14,873.38,873.38),
   muface:          arr9(-40.68,-40.68,-40.68,-51.68,-51.68,-51.68,-51.68,-51.68,-51.68),
-  clasesPasivas:   arr9(-92.9,-92.9,-92.9,118.04,118.04,118.04,118.04,118.04,118.04)
+  clasesPasivas:   arr9(92.9,92.9,92.9,118.04,118.04,118.04,118.04,118.04,118.04)
 };
 
 // Social Security contribution rates (worker's share) used by computeNational() below — kept as a
@@ -6166,6 +6167,9 @@ const PENDIENTES = {
     ['¿El cargo directivo se cobra en las dos pagas extra?', 'Se asume 14 pagas porque el porcentaje del Decreto Foral 71/2012 se aplica sobre una mensualidad de 14 pagas. No hay frase literal.'],
     ['Inspección: ¿hay más complementos que "Dedicación exclusiva" y "Puesto de trabajo"?', 'El documento solo trae esos dos porcentajes (55% y 17,88% del sueldo inicial). No aparece un tramo de jefe de inspección.'],
     ['Jefe de departamento', 'El importe depende del número de profesores. Se usa el 6% (de 7 a 10 profesores).'],
+    ['A partir de 35 años de servicio', 'El documento oficial no publica la escalera de antigüedad en euros. Con la tabla oficial salen 975,86 € (Maestros) y 1.137,21 € (Secundaria) a los 35 años, y la guía de ANPE Navarra trae 12,07 € más. A los 40 años se repite el valor de los 35. ¿Cuál es el correcto?'],
+    ['¿Los cuerpos 591/598 y 596 cobran Jefe de departamento?', 'En la web no se paga. Dan clase en institutos y pueden ocupar el cargo. El documento no dice sobre qué sueldo inicial se aplica el porcentaje.'],
+    ['Complementos que no se modelan', 'Coordinador de programas (20 %), asesor o ayudante de programas (17 %), jefe de departamento adjunto y jefe de actividades externas de FP.'],
   ],
   'País Vasco': [
     ['¿Existe el Director de equipo de orientación?', 'No se ha encontrado un equivalente: Berritzegune es la red de formación e innovación, no de orientación. Si existe, ¿con qué importe?'],

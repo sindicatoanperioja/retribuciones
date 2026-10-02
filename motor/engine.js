@@ -418,7 +418,7 @@ const GENERIC_DATA = {
   extraTrienio:    arr9(31.74,31.74,31.74,32.96,32.96,32.96,32.96,32.96,32.96),
   destino:         arr9(592.11,729.14,729.14,729.14,729.14,729.14,729.14,873.38,873.38),
   muface:          arr9(-40.68,-40.68,-40.68,-51.68,-51.68,-51.68,-51.68,-51.68,-51.68),
-  clasesPasivas:   arr9(-92.9,-92.9,-92.9,118.04,118.04,118.04,118.04,118.04,118.04)
+  clasesPasivas:   arr9(92.9,92.9,92.9,118.04,118.04,118.04,118.04,118.04,118.04)
 };
 
 // Social Security contribution rates (worker's share) used by computeNational() below — kept as a

@@ -100,6 +100,13 @@ for (const c of CCAA) {
   if (Math.abs(r1 - r0) > 0.01) add('Inspección-con-interruptores', `${c}`);
 }
 
+// 9b. Las deducciones nunca suman al líquido (signo de MUFACE, derechos pasivos, cotizaciones e IRPF)
+for (const c of CCAA) for (const cu of CUERPOS) for (const sl of ['ssocial','interino','clasesPasivas']) {
+  const r = calc(c, P({ cuerpo:cu, situacionLaboral:sl })); if (r.error) continue;
+  for (const k of ['cuotasMuface','derechosPasivos','cotizContingencias','cotizDesempleo','cotizFP','cotizMei','retencionIRPF'])
+    if (r[k] > 0.005) add('Deducción-positiva', `${c} | ${short(cu)} | ${sl} | ${k}=${r[k].toFixed(2)}`);
+}
+
 // 10. Paga extra: el desglose itemizado debe sumar el total (sin fila "Ajuste") — mismo camino que la UI
 const isZero = v => Math.abs(v) < 0.005;
 const perfilesExtra = [
