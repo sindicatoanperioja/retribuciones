@@ -1085,6 +1085,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 // ============================================================================
 // ============================================================================
 // ============================================================================
+// ============================================================================
 // ANPE Comparativa de Retribuciones Docentes — calculation engine
 // Ported cell-by-cell from comparativa.xlsx (sheets Retribuciones + Nómina mensual)
 // Column order for cuerpo docente arrays (index 0..8) = F..N in Retribuciones:
@@ -3036,10 +3037,9 @@ COMUNIDADES['La Rioja'] = {
     // profesional" y por años de antigüedad (Grado I ≥5 años, Grado II ≥11 años). Pagado en las 14
     // pagas (no solo 12), a diferencia de Asturias.
     carreraGradoI: arr9(80.52,80.52,80.52,104.73,104.73,104.73,104.73,104.73,104.73),
-    // Grado II: importes vigentes a 1-01-2026 (BOR nº 177, 15-09-2026, Resolución 1437/2026): 1.759,73 €/año (A1) y
-    // 1.352,90 €/año (A2) en 14 pagas. El acuerdo del 13-07-2026 los sube un 12,5 % con efectos desde el 1-08-2026
-    // (141,41 y 108,72 €/mes) y todavía no se cobra.
-    carreraGradoII: arr9(96.64,96.64,96.64,125.70,125.70,125.70,125.70,125.70,125.70),
+    // Grado II: 141 y 109 €/mes ya incluyen el +12,5 % de 2026 del acuerdo del 13-07-2026 (BOR 15-09-2026;
+    // a 1-01-2026 eran 1.759,73 y 1.352,90 €/año). Grado I (1.466,21 y 1.127,32 €/año) sin cambios.
+    carreraGradoII: arr9(109,109,109,141,141,141,141,141,141),
   },
   rules: { carreraUmbral1: 5, carreraUmbral2: 11 },
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
@@ -6156,7 +6156,6 @@ const PENDIENTES = {
     ['Complemento de PTFP de 158,16 €', 'Sale de ANPE Galicia. No aparece en el Anexo V de la Orde ni en la tabla del STEG. ¿Sigue vigente y con ese importe?'],
   ],
   'La Rioja': [
-    ['Carrera profesional: subida del Grado II aún sin cobrar', 'El acuerdo del 13-07-2026 (BOR 15-09-2026) sube un 12,5 % el Grado II con efectos desde el 01-08-2026. Se usa el importe vigente (125,70 € en A1 y 96,64 € en A2 al mes). Cuando se cobre pasará a 141,41 € y 108,72 €. El Grado I no cambia. Falta la fecha de pago.'],
   ],
   'Madrid': [
     ['¿El cargo directivo se cobra en las pagas extra?', 'Se asume que entra en la mensualidad de específico de las extras. El BOCM no lo dice expresamente.'],
