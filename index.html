@@ -792,7 +792,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
         <h1>Retribuciones docentes por CCAA</h1>
       </div>
     </div>
-    <span class="badge" id="parityBadge" title="29/198 coinciden al céntimo con el Excel original (comparativa.xlsx). Los 169 restantes son correcciones deliberadas, verificadas contra las tablas oficiales de retribuciones 2026 de cada comunidad (ANPE, BOCyL y fuentes equivalentes) — no errores de esta aplicación. Motivos típicos: complementos actualizados a la subida salarial de 2026 que el Excel original no reflejaba, condiciones (Maestro ESO/Tutor/Carrera profesional) que nunca se activaban por errores de fórmula, estructuras propias de cada comunidad (CEA, consolidación, carrera profesional, cargo de Inspector) corregidas o completadas, un tamaño de centro sin datos (p. ej. Baleares sin CEIP de tamaño A) que ahora usa el sueldo del tamaño real más cercano en vez de devolver 0€, y — desde el 01/10/2026 — Inspección y cargo directivo en Navarra, que tenían errores reales de lectura del documento oficial (un complemento de Inspección muy por debajo de su cifra real, y un desplazamiento de columna en la tabla de cargos de colegios) y — desde el 02/10/2026 — la residencia de Ceuta y Melilla, que el Excel pagaba en 14 pagas aunque la normativa dice 12 mensualidades. Esta cifra crece con cada comunidad que se revisa a fondo — no es un indicio de que la app sea menos fiable, es que cada revisión encuentra otra cifra que el Excel tenía desfasada. Ver las 'Observaciones' de cada comunidad en la pestaña Datos CCAA para el detalle.">Motor validado: 29/198 casos de control — 169 correcciones deliberadas frente al Excel original</span>
+    <span class="badge" id="parityBadge" title="34/198 coinciden al céntimo con el Excel original (comparativa.xlsx). Los 164 restantes son correcciones deliberadas, verificadas contra las tablas oficiales de retribuciones 2026 de cada comunidad (ANPE, BOCyL y fuentes equivalentes) — no errores de esta aplicación. Motivos típicos: complementos actualizados a la subida salarial de 2026 que el Excel original no reflejaba, condiciones (Maestro ESO/Tutor/Carrera profesional) que nunca se activaban por errores de fórmula, estructuras propias de cada comunidad (CEA, consolidación, carrera profesional, cargo de Inspector) corregidas o completadas, un tamaño de centro sin datos (p. ej. Baleares sin CEIP de tamaño A) que ahora usa el sueldo del tamaño real más cercano en vez de devolver 0€, y — desde el 01/10/2026 — Inspección y cargo directivo en Navarra, que tenían errores reales de lectura del documento oficial (un complemento de Inspección muy por debajo de su cifra real, y un desplazamiento de columna en la tabla de cargos de colegios) y — desde el 02/10/2026 — la residencia de Ceuta y Melilla, que el Excel pagaba en 14 pagas aunque la normativa dice 12 mensualidades. Esta cifra crece con cada comunidad que se revisa a fondo — no es un indicio de que la app sea menos fiable, es que cada revisión encuentra otra cifra que el Excel tenía desfasada. Ver las 'Observaciones' de cada comunidad en la pestaña Datos CCAA para el detalle.">Motor validado: 34/198 casos de control — 164 correcciones deliberadas frente al Excel original</span>
   </header>
 
   <!-- Compact profile selector: sits above "Su nómina" and "Comparativa" (both read the same
@@ -1018,6 +1018,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
    ============================================================================ */
 </script>
 <script>
+// ============================================================================
 // ============================================================================
 // ============================================================================
 // ============================================================================
@@ -2447,9 +2448,9 @@ COMUNIDADES['Castilla y León'] = {
     // Complemento específico singular (antes "Complemento de cargo de Inspector"): 801,88€.
     complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,801.88),
     especificoAutonomico: arr9(423.45,423.45,423.45,424.79,424.79,424.79,424.79,424.79,234.63),
-    // Corrected 2026-09-20 against the UGT/BOCyL infographic (más completo que el documento ANPE
-    // usado antes): 1º sexenio es 70,21€, no 70,22€ (1 céntimo).
-    sexenio: {sin:0, s1:70.21, s2:88.56, s3:124.87, s4:251.87, s5:144.8},
+    // 1º sexenio: 70,22€ según el BOCYL (ORDEN PRE/1/2026, Anexo V, apartado Tercero, pág. 50, leído en
+    // imagen); una infografía sindical decía 70,21€.
+    sexenio: {sin:0, s1:70.22, s2:88.56, s3:124.87, s4:251.87, s5:144.8},
     // "Tutoría" (2026-09-22, a petición del usuario): reinstaurada — un acuerdo nuevo de julio 2026
     // (CSIF/ANPE/STECyL-i con la Consejería de Educación) crea este complemento por primera vez, vigente
     // desde el 1/09/2026, con subida progresiva por curso: 20€/mes (2026-27), 40€/mes (2027-28), 60€/mes
@@ -6126,7 +6127,6 @@ const PENDIENTES = {
     ['¿Existe el Director de equipo de orientación?', 'No aparece en la Orden 194/2025 ni en las guías sindicales revisadas. Si existe, ¿con qué importe?'],
   ],
   'Castilla y León': [
-    ['Primer sexenio: 70,21 € o 70,22 €', 'La ORDEN PRE/1/2026 publica 70,22 € y la web usa 70,21 €. Diferencia de un céntimo.'],
     ['¿La tutoría de 20 € se cobra en las pagas extra y cómo sube en 2027?', 'Se paga solo en 12 mensualidades, con el importe del primer curso.'],
   ],
   'Cataluña': [

@@ -1366,9 +1366,9 @@ COMUNIDADES['Castilla y León'] = {
     // Complemento específico singular (antes "Complemento de cargo de Inspector"): 801,88€.
     complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,801.88),
     especificoAutonomico: arr9(423.45,423.45,423.45,424.79,424.79,424.79,424.79,424.79,234.63),
-    // Corrected 2026-09-20 against the UGT/BOCyL infographic (más completo que el documento ANPE
-    // usado antes): 1º sexenio es 70,21€, no 70,22€ (1 céntimo).
-    sexenio: {sin:0, s1:70.21, s2:88.56, s3:124.87, s4:251.87, s5:144.8},
+    // 1º sexenio: 70,22€ según el BOCYL (ORDEN PRE/1/2026, Anexo V, apartado Tercero, pág. 50, leído en
+    // imagen); una infografía sindical decía 70,21€.
+    sexenio: {sin:0, s1:70.22, s2:88.56, s3:124.87, s4:251.87, s5:144.8},
     // "Tutoría" (2026-09-22, a petición del usuario): reinstaurada — un acuerdo nuevo de julio 2026
     // (CSIF/ANPE/STECyL-i con la Consejería de Educación) crea este complemento por primera vez, vigente
     // desde el 1/09/2026, con subida progresiva por curso: 20€/mes (2026-27), 40€/mes (2027-28), 60€/mes
