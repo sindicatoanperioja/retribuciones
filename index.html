@@ -792,7 +792,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
         <h1>Retribuciones docentes por CCAA</h1>
       </div>
     </div>
-    <span class="badge" id="parityBadge" title="34/198 coinciden al céntimo con el Excel original (comparativa.xlsx). Los 164 restantes son correcciones deliberadas, verificadas contra las tablas oficiales de retribuciones 2026 de cada comunidad (ANPE, BOCyL y fuentes equivalentes) — no errores de esta aplicación. Motivos típicos: complementos actualizados a la subida salarial de 2026 que el Excel original no reflejaba, condiciones (Maestro ESO/Tutor/Carrera profesional) que nunca se activaban por errores de fórmula, estructuras propias de cada comunidad (CEA, consolidación, carrera profesional, cargo de Inspector) corregidas o completadas, un tamaño de centro sin datos (p. ej. Baleares sin CEIP de tamaño A) que ahora usa el sueldo del tamaño real más cercano en vez de devolver 0€, y — desde el 01/10/2026 — Inspección y cargo directivo en Navarra, que tenían errores reales de lectura del documento oficial (un complemento de Inspección muy por debajo de su cifra real, y un desplazamiento de columna en la tabla de cargos de colegios) y — desde el 02/10/2026 — la residencia de Ceuta y Melilla, que el Excel pagaba en 14 pagas aunque la normativa dice 12 mensualidades. Esta cifra crece con cada comunidad que se revisa a fondo — no es un indicio de que la app sea menos fiable, es que cada revisión encuentra otra cifra que el Excel tenía desfasada. Ver las 'Observaciones' de cada comunidad en la pestaña Datos CCAA para el detalle.">Motor validado: 34/198 casos de control — 164 correcciones deliberadas frente al Excel original</span>
+    <span class="badge" id="parityBadge" title="30/198 coinciden al céntimo con el Excel original (comparativa.xlsx). Los 168 restantes son correcciones deliberadas, verificadas contra las tablas oficiales de retribuciones 2026 de cada comunidad (ANPE, BOCyL y fuentes equivalentes) — no errores de esta aplicación. Motivos típicos: complementos actualizados a la subida salarial de 2026 que el Excel original no reflejaba, condiciones (Maestro ESO/Tutor/Carrera profesional) que nunca se activaban por errores de fórmula, estructuras propias de cada comunidad (CEA, consolidación, carrera profesional, cargo de Inspector) corregidas o completadas, un tamaño de centro sin datos (p. ej. Baleares sin CEIP de tamaño A) que ahora usa el sueldo del tamaño real más cercano en vez de devolver 0€, y — desde el 01/10/2026 — Inspección y cargo directivo en Navarra, que tenían errores reales de lectura del documento oficial (un complemento de Inspección muy por debajo de su cifra real, y un desplazamiento de columna en la tabla de cargos de colegios) y — desde el 02/10/2026 — la residencia de Ceuta y Melilla, que el Excel pagaba en 14 pagas aunque la normativa dice 12 mensualidades. Esta cifra crece con cada comunidad que se revisa a fondo — no es un indicio de que la app sea menos fiable, es que cada revisión encuentra otra cifra que el Excel tenía desfasada. Ver las 'Observaciones' de cada comunidad en la pestaña Datos CCAA para el detalle.">Motor validado: 30/198 casos de control — 168 correcciones deliberadas frente al Excel original</span>
   </header>
 
   <!-- Compact profile selector: sits above "Su nómina" and "Comparativa" (both read the same
@@ -1018,6 +1018,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
    ============================================================================ */
 </script>
 <script>
+// ============================================================================
 // ============================================================================
 // ============================================================================
 // ============================================================================
@@ -1708,7 +1709,7 @@ COMUNIDADES['Andalucía'] = {
       // el complemento de destino se paga siempre íntegro en la extra, esta diferencia (137,03€) va
       // con él, igual que en Valencia.
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*2 : 0)
-      + (si(flags.tutor) ? d.tutoria[idx]*12 : 0)
+      + (si(flags.tutor) ? d.tutoria[idx]*14 : 0)
       + (b < 6 ? s.sin : 0)
       + (si(flags.carreraGeneral) ? d.complementoMejora[idx]*12 : 0) + d.productividad[idx]*2
       + escal*14;
@@ -1747,6 +1748,7 @@ COMUNIDADES['Andalucía'] = {
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
     if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
+    if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
   }
 };
@@ -2101,7 +2103,7 @@ COMUNIDADES['Baleares (Islas)'] = {
       + sex12*12
       // Corrected 2026-09-19 at the user's request: Baleares gated Tutoría on $C$7="s" (never equals
       // the real "SI"/"NO" selector value) — dead code, now live like every other complement.
-      + (si(flags.tutor) ? d.tutoria[idx]*12 : 0)
+      + (si(flags.tutor) ? d.tutoria[idx]*14 : 0)
       + sex2*2
       + carreraProf;
     if (items){
@@ -2165,6 +2167,7 @@ COMUNIDADES['Baleares (Islas)'] = {
     if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     items.push({label:'Sexenios', monthly: sex2});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
+    if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
   }
 };
@@ -2526,7 +2529,7 @@ COMUNIDADES['Castilla y León'] = {
       // del específico" para Maestros de 1º/2º de ESO "también se incluye en cada paga extraordinaria".
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*2 : 0)
       + sexPagado*12
-      + (si(flags.tutor) ? d.tutoria[idx]*12 : 0)
+      + (si(flags.tutor) ? d.tutoria[idx]*14 : 0)
       + sexPagado*2
       + jefeDept
       + eoepDir
@@ -2587,6 +2590,7 @@ COMUNIDADES['Castilla y León'] = {
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
     if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
+    if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
   }
 };
@@ -2734,7 +2738,7 @@ COMUNIDADES['Galicia'] = {
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
     const b = trunc(anios/3);
     const sexAnual = sexenioStandard(anios, d.sexenio);
-    const tutorTerm = si(flags.tutor) ? d.tutoria[idx]*12 : 0;
+    const tutorTerm = si(flags.tutor) ? d.tutoria[idx]*14 : 0;
     const adic = si(flags.maestroESO) ? d.adicionalESO[idx] : 0;
     const jefeDept = (d.jefeDepartamento[idx] && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx]*14 : 0;
     const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx]*14 : 0;
@@ -2801,6 +2805,7 @@ COMUNIDADES['Galicia'] = {
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
     if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
+    if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
   }
 };
@@ -2859,6 +2864,7 @@ COMUNIDADES['Madrid'] = makeStandard({
   // de Maestros en 1º/2º de ESO es, igual que en el resto de comunidades, una diferencia del propio
   // complemento de destino — así que se cobra también en la extra.
   adicionalESOInExtra: true,
+  tutoriaInExtra: true,
 });
 // Deriva la tabla de cargo directivo de Madrid (CARGO_TABLE) a partir de rules.alumnos: Director =
 // 653,57€ (módulo fijo) + 0,63€ × alumnos; Vicedirección/Jefatura de Estudios/Secretaría = 54% (CEIP)
@@ -3375,7 +3381,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
       // pagaExtraAdjust arriba).
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*2 : 0)
       + sexAnual*12
-      + (si(flags.tutor) ? d.tutoria[idx]*12 : 0)
+      + (si(flags.tutor) ? d.tutoria[idx]*14 : 0)
       + sexAnual*2
       + d.productividad[idx]*2;
     if (items){
@@ -3421,6 +3427,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
+    if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
   }
 };
@@ -5406,11 +5413,36 @@ function renderFixedProfilesChart(fixedStats){
     };
   });
   if (fixedProfilesChartInstance) fixedProfilesChartInstance.destroy();
+  // Nombre de la comunidad a la izquierda del primer punto de su línea (margen izquierdo calculado con el
+  // nombre más largo; el eje de posiciones pasa a la derecha para que no tape los nombres).
+  const labelFont = (bold) => `${bold ? '700 ' : '400 '}${window.innerWidth < 640 ? 10 : 12}px system-ui, sans-serif`;
+  const measureCtx = canvas.getContext('2d');
+  measureCtx.font = labelFont(true);
+  const labelPad = Math.ceil(Math.max(...E.COMUNIDAD_ORDER.map(n => measureCtx.measureText(n).width))) + 12;
+  const lineNames = {
+    id:'lineNames',
+    afterDatasetsDraw(chart){
+      const c = chart.ctx;
+      c.save();
+      c.textAlign = 'right'; c.textBaseline = 'middle';
+      chart.data.datasets.forEach((ds, di) => {
+        const pt = chart.getDatasetMeta(di).data[0];
+        if (!pt || ds.data[0] == null) return;
+        const isRef = ds.label === state.comunidadRef;
+        c.font = labelFont(isRef);
+        c.fillStyle = isRef ? colors.accent2 : colors.ink2;
+        c.fillText(ds.label, pt.x - 8, pt.y);
+      });
+      c.restore();
+    },
+  };
   fixedProfilesChartInstance = new Chart(canvas.getContext('2d'), {
     type:'line',
     data:{ labels, datasets },
+    plugins:[lineNames],
     options:{
       responsive:true, maintainAspectRatio:false,
+      layout:{ padding:{ left: labelPad } },
       interaction:{ mode:'nearest', intersect:true },
       plugins:{
         legend:{ display:false },
@@ -5425,6 +5457,7 @@ function renderFixedProfilesChart(fixedStats){
       scales:{
         x:{ grid:{display:false}, ticks:{color:colors.ink2} },
         y:{
+          position:'right',
           reverse:true, min:1, max:E.COMUNIDAD_ORDER.length,
           grid:{color:colors.grid},
           ticks:{color:colors.ink2, stepSize:1, callback:v=>`${v}.º`},
@@ -6115,18 +6148,15 @@ const PENDIENTES = {
     ['Jefe de departamento en PTFP y Maestros de Taller', 'La web lo paga a 0. El BOPA lo recoge en Secundaria, FP y asimilados sin restringir por cuerpo. ¿Pueden cobrarlo?'],
   ],
   'Baleares (Islas)': [
-    ['¿El cargo directivo se cobra íntegro en las pagas extra?', 'Se da por cobrado en las 14 pagas; la tabla oficial de cargos solo trae el importe mensual. Una nómina de junio con cargo lo confirmaría.'],
     ['¿El Director de equipo de orientación tiene importe propio?', 'La tabla da 82,20 €, igual que el Cap de departament, y se usa ese. No sabemos si es un importe propio o el genérico de cargo unipersonal.'],
     ['Complemento de difícil cobertura en Menorca e Ibiza', 'La web suma 200 € (Menorca) y 300 € (Ibiza) a todos. Según el CAIB solo lo cobran las plazas o especialidades declaradas de difícil cobertura cada curso. En Formentera sí son todas. ¿Se aplica a todo el profesorado de esas islas?'],
     ['Jefe de departamento en Maestros y Maestros de Taller', 'La web lo paga a 0. La tabla de 82,20 € no lo restringe por cuerpo. ¿Pueden cobrarlo?'],
   ],
   'Canarias': [
     ['¿El cargo directivo se reduce al 78% en la paga adicional?', 'La ley aplica el 78% al específico y a la formación permanente, y el cargo es un complemento específico, pero ningún documento lo dice. Hoy se paga íntegro.'],
-    ['¿Jefe de departamento, tutoría y complemento de Inspector en la paga adicional?', 'La tabla oficial de pagas extras no los recoge. Se pagan íntegros.'],
     ['¿Hay Director de equipo de orientación?', 'Solo figura el Coord. EOEP (107,45 €), que se usa como equivalente.'],
   ],
   'Cantabria': [
-    ['¿El cargo directivo se cobra en las dos pagas extra?', 'Se asume íntegro en 14 pagas; no hay frase oficial que cite el componente singular. Una nómina de junio con cargo lo cerraría.'],
     ['¿Los +60,23 € y +30 € del acuerdo de mejora alcanzan a Inspección?', 'El acuerdo habla de todos los cuerpos docentes, pero la instrucción da a Inspección su propia cifra de 1.140,46 € sin citarlos. No se aplican a Inspección.'],
     ['Revalorización por IPC y tramos de 2027 a 2029', 'El acuerdo los prevé, pero sin importes todavía. No están aplicados.'],
   ],
@@ -6134,13 +6164,12 @@ const PENDIENTES = {
     ['¿Existe el Director de equipo de orientación?', 'No aparece en la Orden 194/2025 ni en las guías sindicales revisadas. Si existe, ¿con qué importe?'],
   ],
   'Castilla y León': [
-    ['¿La tutoría de 20 € se cobra en las pagas extra y cómo sube en 2027?', 'Se paga solo en 12 mensualidades, con el importe del primer curso.'],
+    ['Tutoría: subida de 2027 y 2028', 'El acuerdo la sube a 40 € el curso 2027-28 y a 60 € el 2028-29. Ahora se usa el importe del primer curso, 20 €.'],
   ],
   'Cataluña': [
     ['¿Existe el Director de equipo de orientación?', 'Las tablas solo recogen un coordinador de servicios educativos (1.002,85 €), que no se ha usado por no ser claramente el mismo cargo. Si existe, ¿con qué importe?'],
     ['¿La Jefatura de estudios adjunta se cobra en institutos que no son tipo A?', 'El Excel oficial solo da importe en el tipo A (886,11 €). En los tipos B, C y D no hay mención ni importe, así que se deja a 0 €.'],
     ['Inspección: específico general y nivel de destino', 'El Excel oficial solo trae el complemento singular de Inspector (1.476,25 €). Se usa 720,83 € de específico y nivel 26 de destino sin documento que lo confirme.'],
-    ['¿El cargo directivo se cobra en las pagas extra?', 'Sin prueba directa en el documento oficial. Se asume íntegro.'],
     ['Subida del específico de 2026 (+8,5 %)', 'El Acord GOV/88/2026 la abona en un pago único en la nómina de mayo de 2026 (839,02 € Maestros y 857,92 € Secundaria al año). Se asume que no cambia la nómina mensual. Para Catedráticos e Inspección no hay cifra.'],
     ['Complemento de mejora del Servicio de Educación de Cataluña','El Acord GOV/205/2026 lo fija en 50 €/mes en 2026 (14 pagas) para todo el personal docente, con efectos desde el 01-01-2026, y sube a 50 € en 2027, 100 € en 2028 y 170 € en 2029. No está aplicado. ¿En qué nómina se paga?'],
   ],
@@ -6151,14 +6180,12 @@ const PENDIENTES = {
   'Galicia': [
     ['¿Existe la Jefatura de estudios adjunta en institutos?', 'No tiene importe en la web. No figura en ninguna tabla y ANPE Galicia indica que no existe. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Quien dirige un equipo de orientación cobra algo más que el resto del equipo?', 'La tabla da 410,45 € a todos los miembros, sin plus de dirección. Se usa esa cifra.'],
-    ['¿El jefe de departamento entra en la paga extra?', 'La guía de ANPE dice que el resto de conceptos van completos sin nombrarlos. Se da por íntegro.'],
     ['Maestros en 1.º ciclo de ESO: 118,25 € o 137,03 €', 'ANPE Galicia da 118,25 € y la nómina 2026 del STEG da 137,03 € (la diferencia entre destino 24 y 21). La Orde de 23-01-2026 no trae cifra. Se usa 118,25 €.'],
     ['Complemento de PTFP de 158,16 €', 'Sale de ANPE Galicia. No aparece en el Anexo V de la Orde ni en la tabla del STEG. ¿Sigue vigente y con ese importe?'],
   ],
   'La Rioja': [
   ],
   'Madrid': [
-    ['¿El cargo directivo se cobra en las pagas extra?', 'Se asume que entra en la mensualidad de específico de las extras. El BOCM no lo dice expresamente.'],
     ['Alumnado real por tipo de centro', 'El importe de dirección depende del número de alumnos. Se usan valores supuestos (editables en Reglas); con los reales saldría la cifra exacta.'],
     ['Tope de 1.923,22 € al mes', 'El BOCM fija un límite máximo en el nuevo sistema retributivo, sin aclarar a qué cargos aplica. No está aplicado; solo afectaría a centros de más de unos 2.000 alumnos.'],
     ['Jefatura de departamento', 'El importe depende del número de miembros. Se usa el tramo de 3 a 6 (100,09 €).'],
@@ -6172,7 +6199,6 @@ const PENDIENTES = {
   'Navarra': [
     ['¿Existe la Jefatura de estudios adjunta en institutos?', 'No tiene importe en la web. El Decreto Foral 71/2012 solo la recoge en colegios. Si existe, ¿con qué importe y en qué tamaños de centro?'],
     ['¿Existe el Director de equipo de orientación?', 'No aparece en el documento oficial ni en la tabla de LAB. Solo está el Jefe de departamento de orientación, que es otro cargo. Si existe, ¿con qué importe?'],
-    ['¿El cargo directivo se cobra en las dos pagas extra?', 'Se asume 14 pagas porque el porcentaje del Decreto Foral 71/2012 se aplica sobre una mensualidad de 14 pagas. No hay frase literal.'],
     ['Inspección: ¿hay más complementos que "Dedicación exclusiva" y "Puesto de trabajo"?', 'El documento solo trae esos dos porcentajes (55% y 17,88% del sueldo inicial). No aparece un tramo de jefe de inspección.'],
     ['Jefe de departamento', 'El importe depende del número de profesores. Se usa el 6% (de 7 a 10 profesores).'],
     ['A partir de 35 años de servicio', 'El documento oficial no publica la escalera de antigüedad en euros. Con la tabla oficial salen 975,86 € (Maestros) y 1.137,21 € (Secundaria) a los 35 años, y la guía de ANPE Navarra trae 12,07 € más. A los 40 años se repite el valor de los 35. ¿Cuál es el correcto?'],
@@ -6185,7 +6211,6 @@ const PENDIENTES = {
   ],
   'Valencia': [
     ['¿Existe la Jefatura de estudios adjunta en institutos?', 'No tiene importe en la web. La tabla oficial no tiene ninguna fila de jefe de estudios adjunto. Si existe, ¿con qué importe y en qué tamaños de centro?'],
-    ['¿Específico y cargo directivo en las pagas extra?', 'La tabla oficial solo trae importes mensuales, sin columna de paga extra. Se asumen íntegros en las 14 pagas.'],
     ['Vicedirector en Secundaria tipo E', 'La tabla da 217,15 € solo para ese tamaño. Es la única celda de ese tipo con importe.'],
     ['Cargos de Inspección', 'Un inspector sin cargo cobra el nivel 28 y el específico base. Los cargos (Inspector general 682,09 €, jefe territorial 511,54 €, adjunto, secretario y coordinador 403,54 €) no se suman.'],
   ],
@@ -6194,7 +6219,7 @@ const PENDIENTES = {
     ['Específico de Maestros, PTFP y Secundaria', 'Se usa 438,33 / 436,57 / 433,91 € (cifra orientativa de CSIF). La resolución oficial de 2009 puesta al día, UGT 2024 y ANPE Melilla 2022 dan unos 467 €, y UGT dice que baja con la antigüedad. Falta saber el importe inicial y cómo se reduce.'],
     ['Específico y singular de Inspección', 'Se usan 519,94 € y 610 €. Las fuentes oficiales puestas al día dan unos 560 € y 622 €.'],
     ['Residencia en 2026', 'Los 820,76 € (A2) y 1.102,57 € (A1) son una extrapolación, sin tabla oficial 2026. Las tablas oficiales la fijan en 12 mensualidades sin repercusión en extras, aunque una calculadora no oficial la muestra en la extra.'],
-    ['¿El cargo directivo se cobra en las pagas extra?', 'Sin dato. Se asume íntegro. El BOE de 2009 trae además cargos que no están modelados: Vicesecretario, colegios de tipos E y F y coordinador de especialidad.'],
+    ['Cargos no modelados', 'El BOE de 2009 trae además Vicesecretario, colegios de tipos E y F y coordinador de especialidad.'],
   ],
 };
 function pendientesHtml(name){

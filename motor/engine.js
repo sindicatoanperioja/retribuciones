@@ -621,7 +621,7 @@ COMUNIDADES['Andalucía'] = {
       // el complemento de destino se paga siempre íntegro en la extra, esta diferencia (137,03€) va
       // con él, igual que en Valencia.
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*2 : 0)
-      + (si(flags.tutor) ? d.tutoria[idx]*12 : 0)
+      + (si(flags.tutor) ? d.tutoria[idx]*14 : 0)
       + (b < 6 ? s.sin : 0)
       + (si(flags.carreraGeneral) ? d.complementoMejora[idx]*12 : 0) + d.productividad[idx]*2
       + escal*14;
@@ -660,6 +660,7 @@ COMUNIDADES['Andalucía'] = {
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
     if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
+    if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
   }
 };
@@ -1014,7 +1015,7 @@ COMUNIDADES['Baleares (Islas)'] = {
       + sex12*12
       // Corrected 2026-09-19 at the user's request: Baleares gated Tutoría on $C$7="s" (never equals
       // the real "SI"/"NO" selector value) — dead code, now live like every other complement.
-      + (si(flags.tutor) ? d.tutoria[idx]*12 : 0)
+      + (si(flags.tutor) ? d.tutoria[idx]*14 : 0)
       + sex2*2
       + carreraProf;
     if (items){
@@ -1078,6 +1079,7 @@ COMUNIDADES['Baleares (Islas)'] = {
     if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     items.push({label:'Sexenios', monthly: sex2});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
+    if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
   }
 };
@@ -1439,7 +1441,7 @@ COMUNIDADES['Castilla y León'] = {
       // del específico" para Maestros de 1º/2º de ESO "también se incluye en cada paga extraordinaria".
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*2 : 0)
       + sexPagado*12
-      + (si(flags.tutor) ? d.tutoria[idx]*12 : 0)
+      + (si(flags.tutor) ? d.tutoria[idx]*14 : 0)
       + sexPagado*2
       + jefeDept
       + eoepDir
@@ -1500,6 +1502,7 @@ COMUNIDADES['Castilla y León'] = {
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
     if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
+    if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
   }
 };
@@ -1647,7 +1650,7 @@ COMUNIDADES['Galicia'] = {
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
     const b = trunc(anios/3);
     const sexAnual = sexenioStandard(anios, d.sexenio);
-    const tutorTerm = si(flags.tutor) ? d.tutoria[idx]*12 : 0;
+    const tutorTerm = si(flags.tutor) ? d.tutoria[idx]*14 : 0;
     const adic = si(flags.maestroESO) ? d.adicionalESO[idx] : 0;
     const jefeDept = (d.jefeDepartamento[idx] && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx]*14 : 0;
     const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx]*14 : 0;
@@ -1714,6 +1717,7 @@ COMUNIDADES['Galicia'] = {
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
     if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
+    if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
   }
 };
@@ -1772,6 +1776,7 @@ COMUNIDADES['Madrid'] = makeStandard({
   // de Maestros en 1º/2º de ESO es, igual que en el resto de comunidades, una diferencia del propio
   // complemento de destino — así que se cobra también en la extra.
   adicionalESOInExtra: true,
+  tutoriaInExtra: true,
 });
 // Deriva la tabla de cargo directivo de Madrid (CARGO_TABLE) a partir de rules.alumnos: Director =
 // 653,57€ (módulo fijo) + 0,63€ × alumnos; Vicedirección/Jefatura de Estudios/Secretaría = 54% (CEIP)
@@ -2288,7 +2293,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
       // pagaExtraAdjust arriba).
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*2 : 0)
       + sexAnual*12
-      + (si(flags.tutor) ? d.tutoria[idx]*12 : 0)
+      + (si(flags.tutor) ? d.tutoria[idx]*14 : 0)
       + sexAnual*2
       + d.productividad[idx]*2;
     if (items){
@@ -2334,6 +2339,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
+    if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
   }
 };
