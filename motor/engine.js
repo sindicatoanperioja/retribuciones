@@ -1646,8 +1646,8 @@ COMUNIDADES['Galicia'] = {
     complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,938.38),
     sexenio: {sin:0, s1:89.63, s2:115.22, s3:153.67, s4:217.64, s5:64},
     tutoria: arr9(66.04,66.04,66.04,66.04,66.04,66.04,66.04,66.04,0),
-    // 137,03€: nómina 2026 del STEG y CSIF Galicia, igual que la diferencia de destino 24-21; ANPE Galicia traía 118,25€.
-    adicionalESO: onlyF(137.03),
+    // 118,25€ según ANPE Galicia (la Orde no trae cifra; el STEG y CSIF dan 137,03€).
+    adicionalESO: onlyF(118.25),
     complementoProfesorFP: arr9(0,158.16,0,0,0,0,0,0,0),
     // ANPE Galicia, "Xefatura de departamento, Coordinacións, ENDL": 83€/mes — no aplica a Inspección.
     jefeDepartamento: arr9(0,83,83,83,83,83,83,83,0),
@@ -2077,7 +2077,7 @@ COMUNIDADES['Murcia'] = {
     especificoGeneral: arr9(369.21,369.21,369.21,369.21,369.21,369.21,369.21,428.60,463.70),
     especificoSingular: arr9(64.21,64.21,64.21,64.21,64.21,64.21,64.21,64.21,989.90),
     productividadFijaMensual: arr9(437.91,444.36,444.36,444.36,444.36,444.36,444.36,447.68,394.50),
-    sexenio: {sin:0, s1:70.45, s2:88.89, s3:118.44, s4:162.07, s5:47.77},
+    sexenio: {sin:0, s1:70.45, s2:88.89, s3:118.44, s4:162.07, s5:47.38},
     carreraProfesional: arr9(90.26,90.26,90.26,160.6,160.6,160.6,160.6,160.6,160.6),
     adicionalESO: onlyF(139.1),
     // "Productividad semestral" helper tables (paid twice a year, in the paga extra), per cuerpo idx

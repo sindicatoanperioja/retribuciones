@@ -1103,6 +1103,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 // ============================================================================
 // ============================================================================
 // ============================================================================
+// ============================================================================
 // ANPE Comparativa de Retribuciones Docentes — calculation engine
 // Ported cell-by-cell from comparativa.xlsx (sheets Retribuciones + Nómina mensual)
 // Column order for cuerpo docente arrays (index 0..8) = F..N in Retribuciones:
@@ -2750,8 +2751,8 @@ COMUNIDADES['Galicia'] = {
     complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,938.38),
     sexenio: {sin:0, s1:89.63, s2:115.22, s3:153.67, s4:217.64, s5:64},
     tutoria: arr9(66.04,66.04,66.04,66.04,66.04,66.04,66.04,66.04,0),
-    // 137,03€: nómina 2026 del STEG y CSIF Galicia, igual que la diferencia de destino 24-21; ANPE Galicia traía 118,25€.
-    adicionalESO: onlyF(137.03),
+    // 118,25€ según ANPE Galicia (la Orde no trae cifra; el STEG y CSIF dan 137,03€).
+    adicionalESO: onlyF(118.25),
     complementoProfesorFP: arr9(0,158.16,0,0,0,0,0,0,0),
     // ANPE Galicia, "Xefatura de departamento, Coordinacións, ENDL": 83€/mes — no aplica a Inspección.
     jefeDepartamento: arr9(0,83,83,83,83,83,83,83,0),
@@ -3181,7 +3182,7 @@ COMUNIDADES['Murcia'] = {
     especificoGeneral: arr9(369.21,369.21,369.21,369.21,369.21,369.21,369.21,428.60,463.70),
     especificoSingular: arr9(64.21,64.21,64.21,64.21,64.21,64.21,64.21,64.21,989.90),
     productividadFijaMensual: arr9(437.91,444.36,444.36,444.36,444.36,444.36,444.36,447.68,394.50),
-    sexenio: {sin:0, s1:70.45, s2:88.89, s3:118.44, s4:162.07, s5:47.77},
+    sexenio: {sin:0, s1:70.45, s2:88.89, s3:118.44, s4:162.07, s5:47.38},
     carreraProfesional: arr9(90.26,90.26,90.26,160.6,160.6,160.6,160.6,160.6,160.6),
     adicionalESO: onlyF(139.1),
     // "Productividad semestral" helper tables (paid twice a year, in the paga extra), per cuerpo idx
@@ -6172,7 +6173,7 @@ const OBSERVACIONES = {
   "Castilla y León": ["Tutoría desde el curso 2026-27: 20 €, con subida a 40 y 60 € los dos cursos siguientes.", "Carrera profesional: categorías C1 a C4 (5, 10, 16 y 23 años). Se cobra solo el importe de la categoría alcanzada y es excluyente con los sexenios (se paga la más alta).", "CEA y Consolidación punto 4.º son complementos distintos.", "Adicional Maestro ESO también en la extra.", "Director de EOEP: 261,66 €. Jefatura de estudios adjunta: 166,03 €. Ambos también en las extras."],
   "Cataluña": ["Complemento de cargo de Inspector aparte.", "Cap de departament: 93,60 €.", "Residencia (Vall d'Aran) con su propio interruptor.", "Sin complemento autonómico ni carrera profesional ni productividad (ocultos).", "Adicional Maestro ESO (1r cicle d'ESO) y tutoría también en la extra.", "Jefatura de estudios adjunta: solo en institutos de tipo A (886,11 €); en B, C y D no existe.", "Director de EAP: se usa el componente de cargo de la tabla (528,28 €).", "Subida del específico de 2026 (+8,5 %): pago único en la nómina de mayo (838,89 € en primaria y 857,79 € en secundaria al año). No cambia la nómina mensual y no menciona Catedráticos ni Inspección.", "Complemento de mejora del Servicio de Educación (Acord GOV/205/2026): no aplicado. 50 €/mes en 14 pagas desde el 01-01-2026 para todo el personal docente (50 € en 2027, 100 € en 2028 y 170 € en 2029); se prevé cobrarlo desde la nómina de octubre."],
   "Extremadura": ["Tutoría solo en Secundaria y superiores (no Maestros ni Inspección), también en la extra.", "Adicional Maestro ESO también en la extra.", "CEA plano salvo Inspección (434,85 €).", "Complemento de cargo de Inspector aparte del CEA.", "Sin vicedirección (ese cargo no existe en Extremadura).", "Director de EOEP: 253,88 € en Maestros y 80,60 € en el resto. Jefatura de estudios adjunta: 161,08 € en Secundaria y 100,05 € en otros centros.", "No modelado: secciones bilingües (37,28 €), profesor de CRA (80,59 €), coordinación AFC (57,27 a 113,46 €), asesorías docentes, jefatura de residencia y, en Inspección, jefatura provincial (965,98 €) y adjunta (683,09 €)."],
-  "Galicia": ["Sin complemento autonómico (CEA).", "El complemento de profesor de FP (solo PTFP) y el de cargo de Inspector son conceptos distintos.", "Xefatura de departamento: no aplica a Inspección ni a Maestros.", "Adicional Maestro ESO: 137,03 € (nómina 2026 del STEG y CSIF), también en la extra.", "Director de EOEP: 410,45 € para todos los miembros del equipo, sin plus de dirección.", "Jefatura de estudios adjunta: no existe."],
+  "Galicia": ["Sin complemento autonómico (CEA).", "El complemento de profesor de FP (solo PTFP) y el de cargo de Inspector son conceptos distintos.", "Xefatura de departamento: no aplica a Inspección ni a Maestros.", "Adicional Maestro ESO: 118,25 € según ANPE Galicia, también en la extra.", "Director de EOEP: 410,45 € para todos los miembros del equipo, sin plus de dirección.", "Jefatura de estudios adjunta: no existe."],
   "La Rioja": ["Carrera profesional: dos grados (I desde 5 años, II desde 11), distinto en A2 y A1, en las 14 pagas. El Grado II ya incluye la subida de 2026 (141 € en A1 y 109 € en A2).", "Complemento de cargo de Inspector aparte.", "Específico de Secundaria, EOI, Música y Artes: 837,85 €. El documento oficial trae 825,47 €, pero es un error del documento (confirmado con una nómina real).", "Cargo directivo en las dos pagas extra."],
   "Madrid": ["Cargo directivo: módulo fijo de 653,57 € más 0,63 € por alumno; vicedirector, jefe de estudios y secretario cobran el 54 % (colegios) o el 60 % (institutos) de esa cifra. El alumnado por tipo de centro es supuesto y editable en Reglas.", "Complemento de cargo de Inspector aparte.", "Jefatura de departamento: 80,30 € (1-2 miembros), 100,09 € (3-6), 143,86 € (7-10) y 187,65 € (más de 10). Se usa el tramo de 3 a 6.", "Director de EOEP: 187,65 € con 12 o más profesionales (143,86 € con menos).", "Adicional Maestro ESO también en la extra.", "No modelado: productividades (bilingüe, inglés avanzado, FP dual, coordinador TIC), coordinador de especialidad (80,30 €) y vicesecretario (47,30 €)."],
   "Murcia": ["Específico general y singular separados; Inspección tiene su propio singular.", "Paga extra distinta: productividad semestral más paga adicional del específico (por sexenios, editable).", "Carrera profesional: solo Tramo I, desde 6 años.", "Cargo directivo, jefe de departamento y director de EOEP solo en 12 mensualidades (no figuran en ninguna tabla de paga extra).", "Vicedirección y jefatura de estudios adjunta: solo en Secundaria.", "Director de EOEP: tipo A (equipos de 9 o más docentes) 453,44 € y tipo B 350,39 €. Se usa el tipo B.", "No modelado: vicesecretaría, educación especial con residencia, adultos y colegios rurales agrupados."],
@@ -6192,10 +6193,10 @@ const PENDIENTES = {
   "Castilla y León": [["Tutoría: ¿se confirman los 40 y 60 € y se paga en 12 o en 14 pagas?", "Los importes de 2027-28 y 2028-29 salen de un preacuerdo con la Consejería, sin texto oficial. No consta si se paga en las extras."]],
   "Cataluña": [["Director de EAP: ¿528,28 €, 477,13 € o 1.005,41 €?", "La tabla oficial da Director grup A a 1.005,41 €, que suma 528,28 € de cargo y 477,13 € de puesto, este último para todo el personal del servicio. Se usa 528,28 €. No hay una fila propia de director de EAP."], ["Inspección: específico general y nivel de destino", "El Excel oficial solo trae el singular de Inspector (1.476,25 €). Se usa 720,83 € de específico y nivel 26 de destino, sin documento que lo confirme."]],
   "Extremadura": [],
-  "Galicia": [["Complemento de PTFP: ¿158,16 o 158,22 €?", "ANPE Galicia da 158,16 € y CSIF Galicia 158,22 €, ambas como cifra de 2025 más un 1,5 %. No aparece en la Orde ni en la tabla del STEG."]],
+  "Galicia": [],
   "La Rioja": [],
   "Madrid": [["Tope de 1.923,22 € al mes", "Aplica al componente del director (fijo más variable) y se alcanza con unos 2.015 alumnos. El BOCM no dice si el 54 % o el 60 % se calcula sobre el importe ya topado."]],
-  "Murcia": [["¿El cargo directivo, el jefe de departamento y el director de EOEP se cobran solo en 12 mensualidades?", "La paga extra son tres bloques enumerados en el BORM y estos conceptos no aparecen en ninguno. No hay frase literal; una nómina de junio con cargo lo confirmaría."], ["Quinto sexenio: ¿47,77 €?", "El BORM de 2025 da 47,06 € y la guía de CCOO de enero de 2026 da 47,77 €. El importe oficial de 2026 no está publicado aparte."]],
+  "Murcia": [["¿El cargo directivo, el jefe de departamento y el director de EOEP se cobran solo en 12 mensualidades?", "La paga extra son tres bloques enumerados en el BORM y estos conceptos no aparecen en ninguno. No hay frase literal; una nómina de junio con cargo lo confirmaría."]],
   "Navarra": [["¿Existe la jefatura de estudios adjunta en institutos?", "No tiene importe fijo. El Decreto Foral 71/2012 solo la recoge en colegios y conservatorios, y su art. 2.4 dice que los adjuntos no previstos se cuantifican con los criterios del Anexo, sin cifra."], ["¿Existe el director de equipo de orientación?", "El Decreto Foral 71/2012 solo tiene jefe de departamento de orientación y los cargos del CREENA (director 20 %, responsable de área 17 %)."]],
   "País Vasco": [["¿Existe el director de equipo de orientación?", "No hay EOEP. El equivalente más cercano es el director de Berritzegune (583,37 €), de la red de formación e innovación, y el plus de consultor u orientador en centros (71,35 €)."]],
   "Valencia": [["Vicedirector en Secundaria tipo E", "La tabla da 217,15 € solo para ese tamaño. Es la única celda de ese tipo con importe."]],
