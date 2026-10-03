@@ -1646,8 +1646,9 @@ COMUNIDADES['Galicia'] = {
     complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,938.38),
     sexenio: {sin:0, s1:89.63, s2:115.22, s3:153.67, s4:217.64, s5:64},
     tutoria: arr9(66.04,66.04,66.04,66.04,66.04,66.04,66.04,66.04,0),
-    // 118,25€ según ANPE Galicia (la Orde no trae cifra; el STEG y CSIF dan 137,03€).
-    adicionalESO: onlyF(118.25),
+    // 137,03€ = 135,00 de 2025 por 1,015, la regla del punto 6.º del Anexo V de la Orde de 23-01-2026 para lo no itemizado;
+    // coincide con CIG, STEG y CSIF (ANPE Galicia traía 118,25€, que no cuadra con ninguna serie).
+    adicionalESO: onlyF(137.03),
     complementoProfesorFP: arr9(0,158.16,0,0,0,0,0,0,0),
     // ANPE Galicia, "Xefatura de departamento, Coordinacións, ENDL": 83€/mes — no aplica a Inspección.
     jefeDepartamento: arr9(0,83,83,83,83,83,83,83,0),
