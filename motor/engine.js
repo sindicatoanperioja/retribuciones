@@ -695,9 +695,7 @@ COMUNIDADES['Aragón'] = {
     // y Melilla (todas confirmadas SÍ lo pagan en la extra) y de La Rioja (confirmado por el usuario,
     // "12 mensualidades").
     adicionalESO: onlyF(139.7),
-    // Complemento fondos adicionales (Acuerdo del Gobierno de Aragón de 14-01-2026): 168,36 €/año para todo el personal docente,
-    // abonado con las pagas extraordinarias (84,18 € en cada una; el reparto entre las dos es una deducción).
-    complementoMejora: fill(0), productividad: fill(84.18),
+    complementoMejora: fill(0), productividad: fill(0),
     jefeDepartamento: fill(83.69), // ANPE Aragón: "Jefe de Departamento/Seminario/División, Coordinador de Especialidad": 83,69€/mes
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
     // usuario): tabla oficial "Tablas_retribuciones_docentes_2026.xlsx", apdo. B.2 "Desempeño de puestos
@@ -787,7 +785,7 @@ COMUNIDADES['Aragón'] = {
       {label:'Complemento de destino', monthly: d.destino[idx]},
       {label:'Complemento específico (general o básico, reducido al 90%)', monthly: especificoExtra},
       {label:'Sexenios', monthly: normal * rules.reduccionPagaExtra},
-      {label:'Complemento fondos adicionales', monthly: d.productividad[idx]},
+      {label:'Productividad', monthly: d.productividad[idx]},
     ];
     const r90 = rules.reduccionPagaExtra;
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector*r90});
@@ -1276,7 +1274,8 @@ function makeStandard(sd, opts){
 // sube de 35,77€ a 55€. Los sexenios ya reconocidos mejoran de oficio.
 COMUNIDADES['Cantabria'] = makeStandard({
   destino: arr9(623.22,767.49,767.49,767.49,767.49,767.49,767.49,919.32,919.32),
-  especifico: arr9(965.33,965.33,965.33,965.33,965.33,965.33,965.33,1030.5,1140.46),
+  // Inspección: 1.140,46 € de la Resolución de 30-01-2026 más los 60,23 € y 30 € del Acuerdo de mejora = 1.230,69 €.
+  especifico: arr9(965.33,965.33,965.33,965.33,965.33,965.33,965.33,1030.5,1230.69),
   complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,1062.50),
   // "sin" (ANPE Cantabria, "Componente de fomento a la formación"): 35,77€/mes, en vez del importe
   // habitual "sin sexenio".
@@ -1546,9 +1545,7 @@ COMUNIDADES['Cataluña'] = makeStandard({
   sexenio: {sin:0, s1:128.88, s2:135.54, s3:153.66, s4:166.39, s5:145.65},
   tutoria: arr9(66.56,93.6,93.6,93.6,93.6,93.6,93.6,93.6,0),
   adicionalESO: onlyF(137.03),
-  // Complement de millora del Servei d'Educació de Catalunya (Acord GOV/205/2026): 50 €/mes en 14 pagas, con efectos desde el 01-01-2026,
-  // para todo el personal docente (el acuerdo no menciona Inspección). Sube a 50 € en 2027, 100 € en 2028 y 170 € en 2029.
-  complementoMejora: arr9(50,50,50,50,50,50,50,50,0), productividad: fill(0),
+  complementoMejora: fill(0), productividad: fill(0),
   // Director de servicio educativo (EAP, CRP, CREDA, CdA): 1.005,41 € = 528,28 de cargo + 477,13 del puesto (tablas oficiales
   // del Departament, hoja SINGULARS 2026, bloque Serveis Educatius). El puesto de 477,13 € lo cobra todo el personal del servicio.
   directorEOEP: arr9(1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,0),
@@ -1556,7 +1553,6 @@ COMUNIDADES['Cataluña'] = makeStandard({
   // "Complement d'indemnització de la Vall d'Aran": Mestres 75,56€/mes, Secundaria i resta 104,83€/mes.
   residenciaVallAran: arr9(75.56,75.56,75.56,104.83,104.83,104.83,104.83,104.83,104.83),
 }, { overrides: {},
-  complementoMejoraAlwaysOn: true, complementoMejoraInExtra: true, complementoMejoraLabel: 'Complemento de mejora del Servicio de Educación',
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
   // adicionalESOInExtra (2026-09-21, a petición del usuario, "revisa comunidad por comunidad"): el
   // "1r Cicle d'ESO" catalán es, igual que en Andalucía/Extremadura/Valencia, una compensación por la
@@ -1773,7 +1769,8 @@ COMUNIDADES['Madrid'] = makeStandard({
   // puestos de trabajo docentes singulares — dos tramos por tamaño de equipo: <12 profesionales
   // 143,86€/mes · ≥12 profesionales 187,65€/mes. Sin selector de tamaño de equipo en esta app, se usa el
   // tramo inferior (<12) como aproximación representativa, a petición del usuario.
-  directorEOEP: fill(143.86),
+  // Equipos con 12 o más profesionales (BOCM nº 33, 9-2-2026, p. 53): 187,65 €; con menos de 12 serían 143,86 €.
+  directorEOEP: fill(187.65),
 }, {
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
   // Alumnado asumido por tipo de centro (2026-09-21, a petición del usuario) — editable en Datos CCAA

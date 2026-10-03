@@ -794,7 +794,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
         <h1>Retribuciones docentes por CCAA</h1>
       </div>
     </div>
-    <span class="badge" id="parityBadge" title="25/198 coinciden al céntimo con el Excel original (comparativa.xlsx). Los 173 restantes son correcciones deliberadas, verificadas contra las tablas oficiales de retribuciones 2026 de cada comunidad (ANPE, BOCyL y fuentes equivalentes) — no errores de esta aplicación. Motivos típicos: complementos actualizados a la subida salarial de 2026 que el Excel original no reflejaba, condiciones (Maestro ESO/Tutor/Carrera profesional) que nunca se activaban por errores de fórmula, estructuras propias de cada comunidad (CEA, consolidación, carrera profesional, cargo de Inspector) corregidas o completadas, un tamaño de centro sin datos (p. ej. Baleares sin CEIP de tamaño A) que ahora usa el sueldo del tamaño real más cercano en vez de devolver 0€, y — desde el 01/10/2026 — Inspección y cargo directivo en Navarra, que tenían errores reales de lectura del documento oficial (un complemento de Inspección muy por debajo de su cifra real, y un desplazamiento de columna en la tabla de cargos de colegios) y — desde el 02/10/2026 — la residencia de Ceuta y Melilla, que el Excel pagaba en 14 pagas aunque la normativa dice 12 mensualidades. Esta cifra crece con cada comunidad que se revisa a fondo — no es un indicio de que la app sea menos fiable, es que cada revisión encuentra otra cifra que el Excel tenía desfasada. Ver las 'Observaciones' de cada comunidad en la pestaña Datos CCAA para el detalle.">Motor validado: 25/198 casos de control — 173 correcciones deliberadas frente al Excel original</span>
+    <span class="badge" id="parityBadge" title="30/198 coinciden al céntimo con el Excel original (comparativa.xlsx). Los 168 restantes son correcciones deliberadas, verificadas contra las tablas oficiales de retribuciones 2026 de cada comunidad (ANPE, BOCyL y fuentes equivalentes) — no errores de esta aplicación. Motivos típicos: complementos actualizados a la subida salarial de 2026 que el Excel original no reflejaba, condiciones (Maestro ESO/Tutor/Carrera profesional) que nunca se activaban por errores de fórmula, estructuras propias de cada comunidad (CEA, consolidación, carrera profesional, cargo de Inspector) corregidas o completadas, un tamaño de centro sin datos (p. ej. Baleares sin CEIP de tamaño A) que ahora usa el sueldo del tamaño real más cercano en vez de devolver 0€, y — desde el 01/10/2026 — Inspección y cargo directivo en Navarra, que tenían errores reales de lectura del documento oficial (un complemento de Inspección muy por debajo de su cifra real, y un desplazamiento de columna en la tabla de cargos de colegios) y — desde el 02/10/2026 — la residencia de Ceuta y Melilla, que el Excel pagaba en 14 pagas aunque la normativa dice 12 mensualidades. Esta cifra crece con cada comunidad que se revisa a fondo — no es un indicio de que la app sea menos fiable, es que cada revisión encuentra otra cifra que el Excel tenía desfasada. Ver las 'Observaciones' de cada comunidad en la pestaña Datos CCAA para el detalle.">Motor validado: 30/198 casos de control — 168 correcciones deliberadas frente al Excel original</span>
   </header>
 
   <!-- Compact profile selector: sits above "Su nómina" and "Comparativa" (both read the same
@@ -1020,6 +1020,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
    ============================================================================ */
 </script>
 <script>
+// ============================================================================
 // ============================================================================
 // ============================================================================
 // ============================================================================
@@ -1788,9 +1789,7 @@ COMUNIDADES['Aragón'] = {
     // y Melilla (todas confirmadas SÍ lo pagan en la extra) y de La Rioja (confirmado por el usuario,
     // "12 mensualidades").
     adicionalESO: onlyF(139.7),
-    // Complemento fondos adicionales (Acuerdo del Gobierno de Aragón de 14-01-2026): 168,36 €/año para todo el personal docente,
-    // abonado con las pagas extraordinarias (84,18 € en cada una; el reparto entre las dos es una deducción).
-    complementoMejora: fill(0), productividad: fill(84.18),
+    complementoMejora: fill(0), productividad: fill(0),
     jefeDepartamento: fill(83.69), // ANPE Aragón: "Jefe de Departamento/Seminario/División, Coordinador de Especialidad": 83,69€/mes
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
     // usuario): tabla oficial "Tablas_retribuciones_docentes_2026.xlsx", apdo. B.2 "Desempeño de puestos
@@ -1880,7 +1879,7 @@ COMUNIDADES['Aragón'] = {
       {label:'Complemento de destino', monthly: d.destino[idx]},
       {label:'Complemento específico (general o básico, reducido al 90%)', monthly: especificoExtra},
       {label:'Sexenios', monthly: normal * rules.reduccionPagaExtra},
-      {label:'Complemento fondos adicionales', monthly: d.productividad[idx]},
+      {label:'Productividad', monthly: d.productividad[idx]},
     ];
     const r90 = rules.reduccionPagaExtra;
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector*r90});
@@ -2369,7 +2368,8 @@ function makeStandard(sd, opts){
 // sube de 35,77€ a 55€. Los sexenios ya reconocidos mejoran de oficio.
 COMUNIDADES['Cantabria'] = makeStandard({
   destino: arr9(623.22,767.49,767.49,767.49,767.49,767.49,767.49,919.32,919.32),
-  especifico: arr9(965.33,965.33,965.33,965.33,965.33,965.33,965.33,1030.5,1140.46),
+  // Inspección: 1.140,46 € de la Resolución de 30-01-2026 más los 60,23 € y 30 € del Acuerdo de mejora = 1.230,69 €.
+  especifico: arr9(965.33,965.33,965.33,965.33,965.33,965.33,965.33,1030.5,1230.69),
   complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,1062.50),
   // "sin" (ANPE Cantabria, "Componente de fomento a la formación"): 35,77€/mes, en vez del importe
   // habitual "sin sexenio".
@@ -2639,9 +2639,7 @@ COMUNIDADES['Cataluña'] = makeStandard({
   sexenio: {sin:0, s1:128.88, s2:135.54, s3:153.66, s4:166.39, s5:145.65},
   tutoria: arr9(66.56,93.6,93.6,93.6,93.6,93.6,93.6,93.6,0),
   adicionalESO: onlyF(137.03),
-  // Complement de millora del Servei d'Educació de Catalunya (Acord GOV/205/2026): 50 €/mes en 14 pagas, con efectos desde el 01-01-2026,
-  // para todo el personal docente (el acuerdo no menciona Inspección). Sube a 50 € en 2027, 100 € en 2028 y 170 € en 2029.
-  complementoMejora: arr9(50,50,50,50,50,50,50,50,0), productividad: fill(0),
+  complementoMejora: fill(0), productividad: fill(0),
   // Director de servicio educativo (EAP, CRP, CREDA, CdA): 1.005,41 € = 528,28 de cargo + 477,13 del puesto (tablas oficiales
   // del Departament, hoja SINGULARS 2026, bloque Serveis Educatius). El puesto de 477,13 € lo cobra todo el personal del servicio.
   directorEOEP: arr9(1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,0),
@@ -2649,7 +2647,6 @@ COMUNIDADES['Cataluña'] = makeStandard({
   // "Complement d'indemnització de la Vall d'Aran": Mestres 75,56€/mes, Secundaria i resta 104,83€/mes.
   residenciaVallAran: arr9(75.56,75.56,75.56,104.83,104.83,104.83,104.83,104.83,104.83),
 }, { overrides: {},
-  complementoMejoraAlwaysOn: true, complementoMejoraInExtra: true, complementoMejoraLabel: 'Complemento de mejora del Servicio de Educación',
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
   // adicionalESOInExtra (2026-09-21, a petición del usuario, "revisa comunidad por comunidad"): el
   // "1r Cicle d'ESO" catalán es, igual que en Andalucía/Extremadura/Valencia, una compensación por la
@@ -2866,7 +2863,8 @@ COMUNIDADES['Madrid'] = makeStandard({
   // puestos de trabajo docentes singulares — dos tramos por tamaño de equipo: <12 profesionales
   // 143,86€/mes · ≥12 profesionales 187,65€/mes. Sin selector de tamaño de equipo en esta app, se usa el
   // tramo inferior (<12) como aproximación representativa, a petición del usuario.
-  directorEOEP: fill(143.86),
+  // Equipos con 12 o más profesionales (BOCM nº 33, 9-2-2026, p. 53): 187,65 €; con menos de 12 serían 143,86 €.
+  directorEOEP: fill(187.65),
 }, {
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
   // Alumnado asumido por tipo de centro (2026-09-21, a petición del usuario) — editable en Datos CCAA
@@ -6169,7 +6167,6 @@ const PENDIENTES = {
     ['¿El cargo directivo se reduce al 78% en la paga adicional?', 'La ley aplica el 78% al específico y a la formación permanente, y el cargo es un complemento específico, pero ningún documento lo dice. Hoy se paga íntegro.'],
   ],
   'Cantabria': [
-    ['¿Los +60,23 € y +30 € del acuerdo de mejora alcanzan a Inspección?', 'El acuerdo habla de todos los cuerpos docentes, pero la instrucción da a Inspección su propia cifra de 1.140,46 € sin citarlos. No se aplican a Inspección.'],
     ['Tramos de 2027 a 2029 del acuerdo de mejora', 'El acuerdo suma 30 € al mes cada 01-09 de 2027 y 2028 y el 01-01-2029, más IPC autonómico y sujetos a disponibilidad presupuestaria. Solo está aplicado el de 2026.'],
     ['Director de EOEP según tamaño del equipo', 'La Resolución da 259,40 € desde 15 docentes, 216,17 € de 5 a 14 y 172,95 € con menos de 5. Se usa 216,17 €.'],
   ],
@@ -6183,7 +6180,7 @@ const PENDIENTES = {
     ['Director de EAP', 'Se usa el director de servicio educativo (1.005,41 € = 528,28 de cargo + 477,13 del puesto, que cobra todo el personal del servicio). No hay una fila propia de director de EAP.'],
     ['Inspección: específico general y nivel de destino', 'El Excel oficial solo trae el complemento singular de Inspector (1.476,25 €). Se usa 720,83 € de específico y nivel 26 de destino sin documento que lo confirme.'],
     ['Subida del específico de 2026 (+8,5 %)', 'El acuerdo de marzo de 2026 la paga en un pago único en la nómina de mayo (838,89 € en primaria y 857,79 € en secundaria al año). La nómina mensual sigue en 704,95 y 720,83 €. El acuerdo no menciona Catedráticos ni Inspección.'],
-    ['Complemento de mejora del Servicio de Educación', 'Aplicado: 50 €/mes en 14 pagas desde el 01-01-2026 a todo el personal docente salvo Inspección. ANPE Catalunya prevé que se pague desde la nómina de octubre. Sube a 50 € en 2027, 100 € en 2028 y 170 € en 2029.'],
+    ['Complemento de mejora del Servicio de Educación', 'No está aplicado. El Acord GOV/205/2026 lo fija en 50 €/mes en 14 pagas con efectos desde el 01-01-2026, para todo el personal docente, y sube a 50 € en 2027, 100 € en 2028 y 170 € en 2029. ANPE Catalunya prevé cobrarlo desde la nómina de octubre.'],
   ],
   'Extremadura': [
     ['Complementos que no se modelan', 'Secciones bilingües (37,28 €), profesor de CRA (80,59 €), coordinación AFC (57,27 a 113,46 €), asesorías docentes, jefatura de residencia y, en Inspección, jefatura provincial (965,98 €) y adjunta (683,09 €).'],
@@ -6196,7 +6193,7 @@ const PENDIENTES = {
   'Madrid': [
     ['Alumnado real por centro', 'El director cobra 653,57 € más 0,63 € por alumno matriculado, y el resto del equipo el 54 % (colegios) o el 60 % (institutos) de ese importe. Los tipos A a F son una simplificación con alumnado supuesto, editable en Reglas.'],
     ['Tope de 1.923,22 € al mes', 'Aplica al componente del director (fijo más variable) y se alcanza con unos 2.015 alumnos. El BOCM no dice si el 54 % o el 60 % se calcula sobre el importe ya topado. No está aplicado.'],
-    ['Jefatura de departamento y director de EOEP por tramos', 'Jefe de departamento: 80,30 € (1-2 miembros), 100,09 € (3-6), 143,86 € (7-10) y 187,65 € (más de 10); se usa el de 3-6. Director de EOEP: 143,86 € con menos de 12 profesionales y 187,65 € con 12 o más; se usa 143,86 €.'],
+    ['Jefatura de departamento y director de EOEP por tramos', 'Jefe de departamento: 80,30 € (1-2 miembros), 100,09 € (3-6), 143,86 € (7-10) y 187,65 € (más de 10); se usa el de 3-6. Director de EOEP: 187,65 € con 12 o más profesionales, que es lo que se usa, y 143,86 € con menos.'],
     ['Productividades y coordinaciones', 'No se modelan: bilingüe, inglés avanzado, FP dual, coordinador TIC, coordinador de especialidad (80,30 €) y vicesecretario (47,30 €).'],
   ],
   'Murcia': [
