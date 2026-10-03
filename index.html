@@ -1093,6 +1093,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 // ============================================================================
 // ============================================================================
 // ============================================================================
+// ============================================================================
 // ANPE Comparativa de Retribuciones Docentes — calculation engine
 // Ported cell-by-cell from comparativa.xlsx (sheets Retribuciones + Nómina mensual)
 // Column order for cuerpo docente arrays (index 0..8) = F..N in Retribuciones:
@@ -2640,9 +2641,10 @@ COMUNIDADES['Cataluña'] = makeStandard({
   tutoria: arr9(66.56,93.6,93.6,93.6,93.6,93.6,93.6,93.6,0),
   adicionalESO: onlyF(137.03),
   complementoMejora: fill(0), productividad: fill(0),
-  // Director de servicio educativo (EAP, CRP, CREDA, CdA): 1.005,41 € = 528,28 de cargo + 477,13 del puesto (tablas oficiales
-  // del Departament, hoja SINGULARS 2026, bloque Serveis Educatius). El puesto de 477,13 € lo cobra todo el personal del servicio.
-  directorEOEP: arr9(1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,0),
+  // Director de servicio educativo (EAP, CRP, CREDA, CdA): componente singular de cargo, 528,28 € (tablas oficiales del Departament,
+  // hoja SINGULARS 2026, fila "Director grup A (528,28 + 477,13)"). Los 477,13 € restantes son el componente de puesto, que cobra
+  // todo el personal del servicio y no se suma.
+  directorEOEP: arr9(528.28,528.28,528.28,528.28,528.28,528.28,528.28,528.28,0),
   jefeDepartamento: fill(93.6), // ANPE Catalunya, "Cap de Departament": 93,60€/mes
   // "Complement d'indemnització de la Vall d'Aran": Mestres 75,56€/mes, Secundaria i resta 104,83€/mes.
   residenciaVallAran: arr9(75.56,75.56,75.56,104.83,104.83,104.83,104.83,104.83,104.83),
@@ -6177,7 +6179,7 @@ const PENDIENTES = {
     ['Tutoría: subida de 2027 y 2028', 'Los 20, 40 y 60 € de los cursos 2026-27, 2027-28 y 2028-29 salen de un preacuerdo de CSIF, ANPE y STECyL-i con la Consejería, sin texto oficial. No consta si se paga en 12 o en 14 pagas.'],
   ],
   'Cataluña': [
-    ['Director de EAP', 'Se usa el director de servicio educativo (1.005,41 € = 528,28 de cargo + 477,13 del puesto, que cobra todo el personal del servicio). No hay una fila propia de director de EAP.'],
+    ['Director de EAP: ¿528,28 €, 477,13 € o 1.005,41 €?', 'La tabla oficial da "Director grup A" a 1.005,41 €, que suma 528,28 € de cargo y 477,13 € de puesto, este último para todo el personal del servicio. Se usa 528,28 €. No hay una fila propia de director de EAP. Conviene que lo confirmen desde Cataluña.'],
     ['Inspección: específico general y nivel de destino', 'El Excel oficial solo trae el complemento singular de Inspector (1.476,25 €). Se usa 720,83 € de específico y nivel 26 de destino sin documento que lo confirme.'],
     ['Subida del específico de 2026 (+8,5 %)', 'El acuerdo de marzo de 2026 la paga en un pago único en la nómina de mayo (838,89 € en primaria y 857,79 € en secundaria al año). La nómina mensual sigue en 704,95 y 720,83 €. El acuerdo no menciona Catedráticos ni Inspección.'],
     ['Complemento de mejora del Servicio de Educación', 'No está aplicado. El Acord GOV/205/2026 lo fija en 50 €/mes en 14 pagas con efectos desde el 01-01-2026, para todo el personal docente, y sube a 50 € en 2027, 100 € en 2028 y 170 € en 2029. ANPE Catalunya prevé cobrarlo desde la nómina de octubre.'],

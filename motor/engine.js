@@ -1546,9 +1546,10 @@ COMUNIDADES['Cataluña'] = makeStandard({
   tutoria: arr9(66.56,93.6,93.6,93.6,93.6,93.6,93.6,93.6,0),
   adicionalESO: onlyF(137.03),
   complementoMejora: fill(0), productividad: fill(0),
-  // Director de servicio educativo (EAP, CRP, CREDA, CdA): 1.005,41 € = 528,28 de cargo + 477,13 del puesto (tablas oficiales
-  // del Departament, hoja SINGULARS 2026, bloque Serveis Educatius). El puesto de 477,13 € lo cobra todo el personal del servicio.
-  directorEOEP: arr9(1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,0),
+  // Director de servicio educativo (EAP, CRP, CREDA, CdA): componente singular de cargo, 528,28 € (tablas oficiales del Departament,
+  // hoja SINGULARS 2026, fila "Director grup A (528,28 + 477,13)"). Los 477,13 € restantes son el componente de puesto, que cobra
+  // todo el personal del servicio y no se suma.
+  directorEOEP: arr9(528.28,528.28,528.28,528.28,528.28,528.28,528.28,528.28,0),
   jefeDepartamento: fill(93.6), // ANPE Catalunya, "Cap de Departament": 93,60€/mes
   // "Complement d'indemnització de la Vall d'Aran": Mestres 75,56€/mes, Secundaria i resta 104,83€/mes.
   residenciaVallAran: arr9(75.56,75.56,75.56,104.83,104.83,104.83,104.83,104.83,104.83),
