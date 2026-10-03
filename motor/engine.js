@@ -573,9 +573,12 @@ COMUNIDADES['Andalucía'] = {
     sexenio: {sin:0, s1:85.62, s2:99.51, s3:127.77, s4:162.29, s5:63.4},
     tutoria: arr9(31.97,31.97,31.97,31.97,31.97,31.97,31.97,31.97,0),
     residenciaCapitalina: fill(0), residenciaNoCapitalina: fill(0), trieniosResidenciaNoCapitalina: fill(0),
-    adicionalESO: onlyF(137.03),
+    // 161,19€ = 137,03 de destino (nivel 24 en vez de 21) + 24,16 de componente básico: tablas 2026 de ANPE Andalucía y UGT-SP;
+    // coincide con el complemento compensatorio de maestros de BOJA nº 21 (02-02-2026) para la concertada.
+    adicionalESO: onlyF(161.19),
     complementoMejora: fill(0), productividad: fill(0),
-    jefeDepartamento: arr9(0,0,0,58.57,58.57,58.57,58.57,58.57,0), // ANPE Andalucía: "Jefe de Departamento" (IES): 58,57€/mes
+    // Decreto 327/2010, art. 95.1: la jefatura se propone entre el profesorado funcionario con destino definitivo en el centro.
+    jefeDepartamento: arr9(0,58.57,58.57,58.57,58.57,58.57,58.57,58.57,0), // 58,57€/mes en cualquier centro
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
     // usuario): el documento oficial no trae un cargo de "Director", solo "Coordinador/a Equipo de
     // Orientación Educativa" — se usa como equivalente. Fuente: ANPE Andalucía y UGT-SP Andalucía,
@@ -692,7 +695,9 @@ COMUNIDADES['Aragón'] = {
     // y Melilla (todas confirmadas SÍ lo pagan en la extra) y de La Rioja (confirmado por el usuario,
     // "12 mensualidades").
     adicionalESO: onlyF(139.7),
-    complementoMejora: fill(0), productividad: fill(0),
+    // Complemento fondos adicionales (Acuerdo del Gobierno de Aragón de 14-01-2026): 168,36 €/año para todo el personal docente,
+    // abonado con las pagas extraordinarias (84,18 € en cada una; el reparto entre las dos es una deducción).
+    complementoMejora: fill(0), productividad: fill(84.18),
     jefeDepartamento: fill(83.69), // ANPE Aragón: "Jefe de Departamento/Seminario/División, Coordinador de Especialidad": 83,69€/mes
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
     // usuario): tabla oficial "Tablas_retribuciones_docentes_2026.xlsx", apdo. B.2 "Desempeño de puestos
@@ -782,7 +787,7 @@ COMUNIDADES['Aragón'] = {
       {label:'Complemento de destino', monthly: d.destino[idx]},
       {label:'Complemento específico (general o básico, reducido al 90%)', monthly: especificoExtra},
       {label:'Sexenios', monthly: normal * rules.reduccionPagaExtra},
-      {label:'Productividad', monthly: d.productividad[idx]},
+      {label:'Complemento fondos adicionales', monthly: d.productividad[idx]},
     ];
     const r90 = rules.reduccionPagaExtra;
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector*r90});
@@ -809,7 +814,7 @@ COMUNIDADES['Asturias'] = {
     // ANPE Asturias, "Jefe de Departamento": 82,95€/mes — listed under "Centros de Enseñanza
     // Secundaria, FP y Asimilados" specifically, so modeled as A1-group-only (idx3-8), matching how
     // "jefatura de departamento" doesn't structurally exist in Infantil/Primaria centres.
-    jefeDepartamento: arr9(0,0,0,82.95,82.95,82.95,82.95,82.95,82.95),
+    jefeDepartamento: arr9(0,82.95,82.95,82.95,82.95,82.95,82.95,82.95,82.95), // BOPA 132 (10-07-2026), Anexo V.3.2: sin restricción por cuerpo
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
     // usuario): BOPA núm. 132 (10-07-2026), Acuerdo de 6-7-2026, Anexo V.3.2.b, bloque "Equipos del
     // Servicio de Orientación Educativa y Psicopedagógica" — "Director": 276,48€/mes, cifra única (sin
@@ -1166,6 +1171,7 @@ function makeStandard(sd, opts){
         + jefeDept
         + eoepDir
         + carreraMejora
+        + ((opts.complementoMejoraInExtra && mejoraOn && d.complementoMejora) ? d.complementoMejora[idx]*2 : 0)
         + vallAran*12;
       if (opts.finalTerms) base += opts.finalTerms(idx, anios, flags, d);
       if (items){
@@ -1223,6 +1229,10 @@ function makeStandard(sd, opts){
       if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
       const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
       if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
+      const mejoraOnExtra = opts.complementoMejoraAlwaysOn ? true : si(flags.carreraGeneral);
+      if (opts.complementoMejoraInExtra && mejoraOnExtra && d.complementoMejora && d.complementoMejora[idx] !== 0){
+        items.push({label: opts.complementoMejoraLabel || 'Complemento de mejora', monthly: d.complementoMejora[idx]});
+      }
       // opts.adicionalESOInExtra / opts.tutoriaInExtra (2026-09-21): see the matching comments in
       // calc() above — only true for comunidades whose own source confirms it (Extremadura both,
       // Valencia adicionalESO only).
@@ -1536,11 +1546,17 @@ COMUNIDADES['Cataluña'] = makeStandard({
   sexenio: {sin:0, s1:128.88, s2:135.54, s3:153.66, s4:166.39, s5:145.65},
   tutoria: arr9(66.56,93.6,93.6,93.6,93.6,93.6,93.6,93.6,0),
   adicionalESO: onlyF(137.03),
-  complementoMejora: fill(0), productividad: fill(0),
+  // Complement de millora del Servei d'Educació de Catalunya (Acord GOV/205/2026): 50 €/mes en 14 pagas, con efectos desde el 01-01-2026,
+  // para todo el personal docente (el acuerdo no menciona Inspección). Sube a 50 € en 2027, 100 € en 2028 y 170 € en 2029.
+  complementoMejora: arr9(50,50,50,50,50,50,50,50,0), productividad: fill(0),
+  // Director de servicio educativo (EAP, CRP, CREDA, CdA): 1.005,41 € = 528,28 de cargo + 477,13 del puesto (tablas oficiales
+  // del Departament, hoja SINGULARS 2026, bloque Serveis Educatius). El puesto de 477,13 € lo cobra todo el personal del servicio.
+  directorEOEP: arr9(1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,1005.41,0),
   jefeDepartamento: fill(93.6), // ANPE Catalunya, "Cap de Departament": 93,60€/mes
   // "Complement d'indemnització de la Vall d'Aran": Mestres 75,56€/mes, Secundaria i resta 104,83€/mes.
   residenciaVallAran: arr9(75.56,75.56,75.56,104.83,104.83,104.83,104.83,104.83,104.83),
 }, { overrides: {},
+  complementoMejoraAlwaysOn: true, complementoMejoraInExtra: true, complementoMejoraLabel: 'Complemento de mejora del Servicio de Educación',
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
   // adicionalESOInExtra (2026-09-21, a petición del usuario, "revisa comunidad por comunidad"): el
   // "1r Cicle d'ESO" catalán es, igual que en Andalucía/Extremadura/Valencia, una compensación por la
@@ -1584,14 +1600,11 @@ COMUNIDADES['Extremadura'] = makeStandard({
   adicionalESO: onlyF(137.03),
   complementoMejora: fill(0), productividad: fill(0),
   jefeDepartamento: arr9(80.6,80.6,80.6,80.6,80.6,80.6,80.6,80.6,0), // ANPE Extremadura: "Jefatura Departamento" (Secundaria y otros centros): 80,60€/mes
-  // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
-  // usuario): tabla oficial de Profex (Retribuciones del Personal Docente, bloque "Complemento específico
-  // singular" > "Otros cargos") — "Dirección EOEP (Maestros)": 250,12€/mes (597-Maestros); "Dirección
-  // EOEP (Profesores/Prof. Técnicos)": 79,40€/mes (resto de cuerpos salvo Inspección). Tabla fechada
-  // 2025 (+2,5%); el acuerdo de Consejo de Gobierno de 13-01-2026 añade +80€/mes brutos desde 2026 a las
-  // retribuciones docentes en general, sin confirmar si afecta a este complemento singular en concreto
-  // — revisar cuando se publique una tabla 2026 específica.
-  directorEOEP: arr9(250.12,79.40,79.40,79.40,79.40,79.40,79.40,79.40,0),
+  // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP): tabla oficial de Profex "Retribuciones
+  // 2026 (incluido Acuerdo CG 13/01/2026)", página 2, "Otros cargos": Dirección EOEP Maestros 253,88€ y
+  // Profesores/Prof. Técnicos 80,60€ (los de 2025, 250,12 y 79,40, más un 1,5 %). Los +80€ del acuerdo van en el
+  // específico autonómico y no tocan este complemento.
+  directorEOEP: arr9(253.88,80.60,80.60,80.60,80.60,80.60,80.60,80.60,0),
 }, {
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
   // Revisado 2026-09-21 a petición del usuario ("revisa maestro de ESO comunidad por comunidad"): la
@@ -1636,7 +1649,8 @@ COMUNIDADES['Galicia'] = {
     complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,938.38),
     sexenio: {sin:0, s1:89.63, s2:115.22, s3:153.67, s4:217.64, s5:64},
     tutoria: arr9(66.04,66.04,66.04,66.04,66.04,66.04,66.04,66.04,0),
-    adicionalESO: onlyF(118.25),
+    // 137,03€: nómina 2026 del STEG y CSIF Galicia, igual que la diferencia de destino 24-21; ANPE Galicia traía 118,25€.
+    adicionalESO: onlyF(137.03),
     complementoProfesorFP: arr9(0,158.16,0,0,0,0,0,0,0),
     // ANPE Galicia, "Xefatura de departamento, Coordinacións, ENDL": 83€/mes — no aplica a Inspección.
     jefeDepartamento: arr9(83,83,83,83,83,83,83,83,0),
@@ -2079,7 +2093,7 @@ COMUNIDADES['Murcia'] = {
     // Psicopedagógica": Tipo A 446,74€/mes · Tipo B 345,21€/mes (la fuente no define el criterio de
     // clasificación entre tipos). Sin selector en esta app, se usa el Tipo B (más conservador) como
     // tramo representativo, a petición del usuario.
-    directorEOEP: fill(345.21),
+    directorEOEP: fill(350.39), // tipo B (menos de 9 docentes) 2026; el tipo A (9 o más) es 453,44 €
     // "Paga adicional del complemento específico" (2026-09-21, previously undocumented/unmodeled):
     // official CARM figures, graduated by nº de sexenios (0-5), ANEXO XI.4º of the Acuerdo de
     // Consejo de Gobierno de 11-12-2025 (BORM núm. 291, 18-12-2025), ×1.015 for the 2026 RD-ley
@@ -2226,23 +2240,16 @@ COMUNIDADES['Ceuta y Melilla'] = {
   overrides: {},
   salaryData: {
     destino: arr9(592.11,729.14,729.14,729.14,729.14,729.14,729.14,873.38,873.38),
-    // Complemento específico corregido 2026-09-21 (a petición del usuario, "coge la tabla ANPE y sigue
-    // el aumento de 1,1196 para Catedráticos e Inspectores"): la tabla ANPE Melilla 2022 muestra un
-    // específico real de 464,40€ para "Catedráticos e Inspectores" (frente a 417,34€ Maestros/PTFP y
-    // 413,13€ Secundaria y EOI) — un grupo compartido, no dos cifras separadas. Escalado con el mismo
-    // factor ×1,1196 (2022→2026) ya confirmado contra el cargo directivo de CSIF: 464,40×1,1196=519,94€,
-    // aplicado a Catedráticos (idx7) e Inspección (idx8) por igual. Maestros/PTFP/Secundaria (idx0-6)
-    // se dejan con la cifra de CSIF 2026, más próxima a su propio escalado (467,25€/462,54€) que la
-    // cifra anterior.
-    especifico: arr9(438.33,436.57,436.57,433.91,433.91,433.91,433.91,519.94,519.94),
-    // Complemento específico singular (2026-09-21, a petición del usuario): el Excel original de
-    // ANPE ya traía Inspección con dos cifras separadas — 507,58€ de específico general (la que
-    // ahora sustituye la corrección de arriba) + 544,84€ de componente singular por el puesto de
-    // Inspector — que el motor nunca había separado en dos campos (solo la suma, 1.052,42€, en un
-    // único "especifico"). Actualizado con el mismo factor ×1,1196 (2022→2026): 544,84×1,1196=610,00€,
-    // mismo patrón que Aragón/Baleares/Cantabria/Castilla La Mancha/Castilla y León/Cataluña/
-    // Extremadura/Galicia/La Rioja/Madrid/Valencia.
-    complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,610.00),
+    // Complemento específico general: componente general de la Resolución de 2-1-2009 (BOE-A-2009-71, Anexo VIII 1.º: Maestros
+    // y PTFP 391,57; Profesores 388,79; Catedráticos 440,72; Inspección 469,79) por 1,1915, el mismo factor que reproduce los
+    // cargos de CSIF 2026. Da 466,6 € en Maestros, que coincide con ANPE Melilla 2022 por 1,1196 (467,25) y con UGT 2024 al día.
+    // UGT indica que baja con la antigüedad (hasta unos 50 €) sin detallar cómo.
+    especifico: arr9(466.56,466.56,466.56,463.24,463.24,463.24,463.24,525.11,559.75),
+    // Complemento singular de Inspector: 522,18 € de 2009 por 1,1915.
+    complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,622.18),
+    // Director de Equipo del Servicio de Orientación Educativa y Psicopedagógica (BOE-A-2009-71, Anexo VIII 2.º Dos): Maestro
+    // orientador 217,21 € y Profesor de Secundaria o PTFP 68,93 €, por 1,1915.
+    directorEOEP: arr9(258.80,82.13,82.13,82.13,82.13,82.13,82.13,82.13,0),
     sexenio: {sin:0, s1:69.49, s2:87.67, s3:116.79, s4:159.78, s5:47.08},
     tutoria: arr9(50.09,50.09,50.09,63.23,63.23,63.23,63.23,63.23,63.23),
     trieniosResidencia: arr9(50.91,50.91,50.91,66.76,66.76,66.76,66.76,66.76,66.76),
@@ -2276,6 +2283,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
     const b = trunc(anios/3);
     const sexAnual = sexenioStandard(anios, d.sexenio);
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const cargoInspector = d.complementoCargoInspector ? d.complementoCargoInspector[idx] : 0;
     const base = (d.sueldoBase[idx]+d.destino[idx]+d.especifico[idx]+cargoInspector+d.residencia[idx])*12
       + d.trienios[idx]*b*12
@@ -2283,6 +2291,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
       + (d.especifico[idx]+cargoInspector)*2
       + cargoAmt*14
       + jefeDept*14
+      + eoepDir*14
       + d.extraTrienio[idx]*b*2
       + d.trieniosResidencia[idx]*b*12
       + (si(flags.maestroESO) ? d.adicionalESO[idx]*12 : 0)
@@ -2306,6 +2315,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
       items.push({label:'Trienios de residencia', monthly: d.trieniosResidencia[idx]*b});
       items.push({label:'Cargo directivo', monthly: cargoAmt});
       if (d.jefeDepartamento && d.jefeDepartamento[idx] !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+      if (d.directorEOEP && d.directorEOEP[idx] !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
       if (d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: si(flags.maestroESO) ? d.adicionalESO[idx] : 0});
       items.push({label:'Sexenios', monthly: sexAnual});
       if (d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: si(flags.tutor) ? d.tutoria[idx] : 0});
@@ -2328,6 +2338,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
     const b = trunc(anios/3);
     const sexAnual = sexenioStandard(anios, d.sexenio);
     const jefeDept = (d.jefeDepartamento && si(flags.jefeDepartamento)) ? d.jefeDepartamento[idx] : 0;
+    const eoepDir = (d.directorEOEP && si(flags.directorEOEP)) ? d.directorEOEP[idx] : 0;
     const cargoInspector = d.complementoCargoInspector ? d.complementoCargoInspector[idx] : 0;
     const items = [
       {label:'Sueldo base', monthly: d.extraSueldoBase[idx]},
@@ -2338,6 +2349,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
     ];
     if (cargoInspector !== 0) items.push({label:'Complemento específico singular', monthly: cargoInspector});
     if (jefeDept !== 0) items.push({label:'Jefe de departamento / coordinación', monthly: jefeDept});
+    if (eoepDir !== 0) items.push({label:'Director de Equipo de Orientación Educativa (EOEP)', monthly: eoepDir});
     if (si(flags.maestroESO) && d.adicionalESO[idx] !== 0) items.push({label:'Adicional Maestro ESO', monthly: d.adicionalESO[idx]});
     if (si(flags.tutor) && d.tutoria[idx] !== 0) items.push({label:'Tutoría', monthly: d.tutoria[idx]});
     return items;
@@ -2408,17 +2420,19 @@ COMUNIDADES['Navarra'] = {
     // Solo aplica a Secundaria y superiores (idx3-7): "departamento didáctico" no existe en Primaria
     // (idx0-2, sin jefeDepartamento) ni en Inspección (idx8) — mismo patrón que Andalucía/Aragón/etc.
     // 6% de 2.258,75€ (sueldo inicial Secundaria/A1) = 135,53€.
-    jefeDepartamento: arr9(0,0,0,135.53,135.53,135.53,135.53,135.53,0),
+    // DF 71/2012, Anexo I y art. 2.6: porcentaje sobre el sueldo inicial del nivel de quien ocupa el puesto; el Anexo no excluye ningún cuerpo.
+    // 6 % (7 a 10 profesores): 114,01 € sobre el nivel B (Maestros, 591/598, 596) y 135,53 € sobre el A.
+    jefeDepartamento: arr9(114.01,114.01,114.01,135.53,135.53,135.53,135.53,135.53,0),
     // antigüedad ladder amounts, maestros-side (AB) used for idx 0-2, PES-side (AC) for idx 3-8
     ladderMaestros: {
       5: 24.15, 6.583333: 195.17, 10: 219.32, 13.166667: 390.34, 15: 408.45,
       19.75: 579.47, 20: 597.59, 25: 609.66, 26.333333: 780.68, 30: 792.76,
-      32.916667: 963.77, 35: 987.93, 40: 987.93
+      32.916667: 963.77, 35: 975.86, 40: 987.93
     },
     ladderPES: {
       5: 24.15, 6.583333: 227.44, 10: 251.59, 13.166667: 454.88, 15: 472.99,
       19.75: 676.28, 20: 694.39, 25: 706.47, 26.333333: 909.75, 30: 921.83,
-      32.916667: 1125.12, 35: 1149.27, 40: 1149.27
+      32.916667: 1125.12, 35: 1137.21, 40: 1149.27
     },
   },
   rules: {
