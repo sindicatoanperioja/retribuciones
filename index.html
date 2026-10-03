@@ -670,6 +670,7 @@ input.prov-4{box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--prov-neutral) 
 .no-rules{font-size:.85rem; color:var(--ink-muted); font-style:italic;}
 footer.appfoot{margin-top:40px; padding-top:16px; border-top:1px solid var(--border); font-size:.78rem; color:var(--ink-muted);}
 footer.appfoot p{margin:0 0 6px;}
+footer.appfoot .app-parity{margin:8px 0;}
 footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 .flag-warn{color:var(--warn); font-weight:700;}
 .flag-err{color:var(--bad); font-weight:700;}
@@ -803,7 +804,6 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
         <h1>Retribuciones docentes por CCAA</h1>
       </div>
     </div>
-    <span class="badge" id="parityBadge" title="30/198 coinciden al céntimo con el Excel original (comparativa.xlsx). Los 168 restantes son correcciones deliberadas, verificadas contra las tablas oficiales de retribuciones 2026 de cada comunidad (ANPE, BOCyL y fuentes equivalentes) — no errores de esta aplicación. Motivos típicos: complementos actualizados a la subida salarial de 2026 que el Excel original no reflejaba, condiciones (Maestro ESO/Tutor/Carrera profesional) que nunca se activaban por errores de fórmula, estructuras propias de cada comunidad (CEA, consolidación, carrera profesional, cargo de Inspector) corregidas o completadas, un tamaño de centro sin datos (p. ej. Baleares sin CEIP de tamaño A) que ahora usa el sueldo del tamaño real más cercano en vez de devolver 0€, y — desde el 01/10/2026 — Inspección y cargo directivo en Navarra, que tenían errores reales de lectura del documento oficial (un complemento de Inspección muy por debajo de su cifra real, y un desplazamiento de columna en la tabla de cargos de colegios) y — desde el 02/10/2026 — la residencia de Ceuta y Melilla, que el Excel pagaba en 14 pagas aunque la normativa dice 12 mensualidades. Esta cifra crece con cada comunidad que se revisa a fondo — no es un indicio de que la app sea menos fiable, es que cada revisión encuentra otra cifra que el Excel tenía desfasada. Ver las 'Observaciones' de cada comunidad en la pestaña Datos CCAA para el detalle.">Motor validado: 30/198 casos de control — 168 correcciones deliberadas frente al Excel original</span>
   </header>
 
   <!-- Compact profile selector: sits above "Su nómina" and "Comparativa" (both read the same
@@ -1018,6 +1018,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
     <p>Motor de cálculo replicado formula a fórmula desde <code>comparativa.xlsx</code> (hojas <em>Retribuciones</em> y
     <em>Nómina mensual</em>), revisado y corregido comunidad por comunidad contra las tablas oficiales de retribuciones
     2026.</p>
+    <p class="app-parity"><span class="badge" id="parityBadge" title="30/198 coinciden al céntimo con el Excel original (comparativa.xlsx). Los 168 restantes son correcciones deliberadas, verificadas contra las tablas oficiales de retribuciones 2026 de cada comunidad (ANPE, BOCyL y fuentes equivalentes) — no errores de esta aplicación. Motivos típicos: complementos actualizados a la subida salarial de 2026 que el Excel original no reflejaba, condiciones (Maestro ESO/Tutor/Carrera profesional) que nunca se activaban por errores de fórmula, estructuras propias de cada comunidad (CEA, consolidación, carrera profesional, cargo de Inspector) corregidas o completadas, un tamaño de centro sin datos (p. ej. Baleares sin CEIP de tamaño A) que ahora usa el sueldo del tamaño real más cercano en vez de devolver 0€, y — desde el 01/10/2026 — Inspección y cargo directivo en Navarra, que tenían errores reales de lectura del documento oficial (un complemento de Inspección muy por debajo de su cifra real, y un desplazamiento de columna en la tabla de cargos de colegios) y — desde el 02/10/2026 — la residencia de Ceuta y Melilla, que el Excel pagaba en 14 pagas aunque la normativa dice 12 mensualidades. Esta cifra crece con cada comunidad que se revisa a fondo — no es un indicio de que la app sea menos fiable, es que cada revisión encuentra otra cifra que el Excel tenía desfasada. Ver las 'Observaciones' de cada comunidad en la pestaña Datos CCAA para el detalle.">Motor validado: 30/198 casos de control — 168 correcciones deliberadas frente al Excel original</span></p>
     <p class="app-version">Versión de la app: 2026.09.20</p>
   </footer>
 </div>
