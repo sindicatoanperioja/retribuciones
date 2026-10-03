@@ -1094,6 +1094,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
 // ============================================================================
 // ============================================================================
 // ============================================================================
+// ============================================================================
 // ANPE Comparativa de Retribuciones Docentes — calculation engine
 // Ported cell-by-cell from comparativa.xlsx (sheets Retribuciones + Nómina mensual)
 // Column order for cuerpo docente arrays (index 0..8) = F..N in Retribuciones:
@@ -1791,7 +1792,7 @@ COMUNIDADES['Aragón'] = {
     // "12 mensualidades").
     adicionalESO: onlyF(139.7),
     complementoMejora: fill(0), productividad: fill(0),
-    jefeDepartamento: fill(83.69), // ANPE Aragón: "Jefe de Departamento/Seminario/División, Coordinador de Especialidad": 83,69€/mes
+    jefeDepartamento: arr9(0,83.69,83.69,83.69,83.69,83.69,83.69,83.69,83.69), // ANPE Aragón: "Jefe de Departamento/Seminario/División, Coordinador de Especialidad": 83,69€/mes
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
     // usuario): tabla oficial "Tablas_retribuciones_docentes_2026.xlsx", apdo. B.2 "Desempeño de puestos
     // de trabajo docentes singulares" — "Maestro orientador/Director de Equipo..." (597-Maestros):
@@ -2378,7 +2379,7 @@ COMUNIDADES['Cantabria'] = makeStandard({
   tutoria: fill(0),
   adicionalESO: onlyF(144.34),
   complementoMejora: fill(0), productividad: fill(0),
-  jefeDepartamento: fill(86.5), // ANPE Cantabria, "Jefe/a de Departamento": 86,50€/mes
+  jefeDepartamento: arr9(0,86.5,86.5,86.5,86.5,86.5,86.5,86.5,86.5), // ANPE Cantabria, "Jefe/a de Departamento": 86,50€/mes
   // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
   // usuario): BOC núm. 25 (06-02-2026), tabla "Equipos de Orientación Educativa y Psicopedagógica,
   // Equipos de Atención Temprana y Aulas de Interculturalidad" — tres tramos por tamaño de equipo:
@@ -2645,7 +2646,7 @@ COMUNIDADES['Cataluña'] = makeStandard({
   // hoja SINGULARS 2026, fila "Director grup A (528,28 + 477,13)"). Los 477,13 € restantes son el componente de puesto, que cobra
   // todo el personal del servicio y no se suma.
   directorEOEP: arr9(528.28,528.28,528.28,528.28,528.28,528.28,528.28,528.28,0),
-  jefeDepartamento: fill(93.6), // ANPE Catalunya, "Cap de Departament": 93,60€/mes
+  jefeDepartamento: arr9(0,93.6,93.6,93.6,93.6,93.6,93.6,93.6,93.6), // ANPE Catalunya, "Cap de Departament": 93,60€/mes
   // "Complement d'indemnització de la Vall d'Aran": Mestres 75,56€/mes, Secundaria i resta 104,83€/mes.
   residenciaVallAran: arr9(75.56,75.56,75.56,104.83,104.83,104.83,104.83,104.83,104.83),
 }, { overrides: {},
@@ -2691,7 +2692,7 @@ COMUNIDADES['Extremadura'] = makeStandard({
   // valor real y documentado, no una coincidencia derivada.
   adicionalESO: onlyF(137.03),
   complementoMejora: fill(0), productividad: fill(0),
-  jefeDepartamento: arr9(80.6,80.6,80.6,80.6,80.6,80.6,80.6,80.6,0), // ANPE Extremadura: "Jefatura Departamento" (Secundaria y otros centros): 80,60€/mes
+  jefeDepartamento: arr9(0,80.6,80.6,80.6,80.6,80.6,80.6,80.6,0), // ANPE Extremadura: "Jefatura Departamento" (Secundaria y otros centros): 80,60€/mes
   // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP): tabla oficial de Profex "Retribuciones
   // 2026 (incluido Acuerdo CG 13/01/2026)", página 2, "Otros cargos": Dirección EOEP Maestros 253,88€ y
   // Profesores/Prof. Técnicos 80,60€ (los de 2025, 250,12 y 79,40, más un 1,5 %). Los +80€ del acuerdo van en el
@@ -2745,7 +2746,7 @@ COMUNIDADES['Galicia'] = {
     adicionalESO: onlyF(137.03),
     complementoProfesorFP: arr9(0,158.16,0,0,0,0,0,0,0),
     // ANPE Galicia, "Xefatura de departamento, Coordinacións, ENDL": 83€/mes — no aplica a Inspección.
-    jefeDepartamento: arr9(83,83,83,83,83,83,83,83,0),
+    jefeDepartamento: arr9(0,83,83,83,83,83,83,83,0),
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
     // usuario): DOG, Orde do 23 de xaneiro de 2026, Anexo V, apdo. "Dous: Desempeño de postos de traballo
     // docentes singulares" (confirmado contra ANPE Galicia) — "Membros/as dos equipos de orientación
@@ -2859,7 +2860,7 @@ COMUNIDADES['Madrid'] = makeStandard({
   tutoria: arr9(44.15,70.94,70.94,70.94,70.94,70.94,70.94,70.94,0),
   adicionalESO: onlyF(133.97),
   complementoMejora: fill(0), productividad: fill(0),
-  jefeDepartamento: fill(100.09), // aproximación al tramo "3-6 miembros" del documento, ver nota arriba
+  jefeDepartamento: arr9(0,100.09,100.09,100.09,100.09,100.09,100.09,100.09,100.09), // aproximación al tramo "3-6 miembros" del documento, ver nota arriba
   // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
   // usuario): BOCM núm. 33 (09-02-2026), Orden de 3 de febrero de 2026, Anexo II, apdo. "Dos", tabla de
   // puestos de trabajo docentes singulares — dos tramos por tamaño de equipo: <12 profesionales
@@ -3015,7 +3016,7 @@ COMUNIDADES['País Vasco'] = makeStandard({
   tutoria: onlyF(71.35),
   adicionalESO: onlyF(182.4),
   complementoMejora: fill(0), productividad: fill(0),
-  jefeDepartamento: arr9(64.84,64.29,64.29,93.15,93.15,93.15,93.15,93.15,0),
+  jefeDepartamento: arr9(0,64.29,64.29,93.15,93.15,93.15,93.15,93.15,0),
 }, { overrides: {
     destino: arr9(701.21,880.09,880.09,880.09,880.09,880.09,880.09,1083.17,1083.17),
     trienios: arr9(52.73,52.73,52.73,63.87,63.87,63.87,63.87,63.87,63.87), // Antigüedad + Diferencia Básica
@@ -3052,7 +3053,7 @@ COMUNIDADES['La Rioja'] = {
     // Corrected 2026-09-22 a petición del usuario: la "Tabla de retribuciones 2026" oficial trae
     // 159,91€ para "Maestro ESO (CPT) (12 mensualidades)" — antes 153,71€ (fuente ANPE, desactualizada).
     adicionalESO: onlyF(159.91),
-    jefeDepartamento: fill(87.93), // ANPE La Rioja, "Jefe de Departamento": 87,93€/mes
+    jefeDepartamento: arr9(0,87.93,87.93,87.93,87.93,87.93,87.93,87.93,87.93), // ANPE La Rioja, "Jefe de Departamento": 87,93€/mes
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
     // usuario): "RETRIBUCIONES 2026" (larioja.org, idMmedia=1698473), apdo. 1.4.4 "Otros puestos
     // singulares" — "Equipos de orientación educativa y atención temprana, Director": 87,93€/mes.
@@ -3179,7 +3180,7 @@ COMUNIDADES['Murcia'] = {
     // — official CARM names: "factor complemento de destino" and "factor complemento específico":
     shiftDestino: arr9(240.24,295.87,295.87,295.87,295.87,295.87,295.87,354.36,354.36),
     shiftProdFija: arr9(524.07,524.07,524.07,524.07,524.07,524.07,524.07,586.77,621.89),
-    jefeDepartamento: fill(147.50),
+    jefeDepartamento: arr9(0,147.50,147.50,147.50,147.50,147.50,147.50,147.50,147.50),
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
     // usuario): BORM núm. 291 (18-12-2025), Anexo XI, apdo. 2.2 "Desempeño de puestos de trabajo
     // docentes singulares" — "Directores de Equipo del Servicio de Orientación Educativa y
@@ -3369,7 +3370,7 @@ COMUNIDADES['Ceuta y Melilla'] = {
     // los 8 importes de cargo directivo de CSIF 2026 a partir de sus equivalentes de ANPE 2022 (ver
     // CARGO_RAW arriba) — 82,18€. Es una estimación por escalado, no una cifra 2026 observada
     // directamente; sustituir en cuanto aparezca una fuente 2026 real.
-    jefeDepartamento: fill(82.18),
+    jefeDepartamento: arr9(0,82.18,82.18,82.18,82.18,82.18,82.18,82.18,82.18),
   },
   rules: {},
   calc(idx, anios, flags, cargoAmt, d, rules, today, items){
@@ -3515,7 +3516,7 @@ COMUNIDADES['Navarra'] = {
     // 6% de 2.258,75€ (sueldo inicial Secundaria/A1) = 135,53€.
     // DF 71/2012, Anexo I y art. 2.6: porcentaje sobre el sueldo inicial del nivel de quien ocupa el puesto; el Anexo no excluye ningún cuerpo.
     // 6 % (7 a 10 profesores): 114,01 € sobre el nivel B (Maestros, 591/598, 596) y 135,53 € sobre el A.
-    jefeDepartamento: arr9(114.01,114.01,114.01,135.53,135.53,135.53,135.53,135.53,0),
+    jefeDepartamento: arr9(0,114.01,114.01,135.53,135.53,135.53,135.53,135.53,0),
     // antigüedad ladder amounts, maestros-side (AB) used for idx 0-2, PES-side (AC) for idx 3-8
     ladderMaestros: {
       5: 24.15, 6.583333: 195.17, 10: 219.32, 13.166667: 390.34, 15: 408.45,
@@ -6163,7 +6164,6 @@ const PENDIENTES = {
   ],
   'Baleares (Islas)': [
     ['Formentera: 416,15 o 400 €', 'La web usa 416,15 €. El BOIB fija 400 € desde el 01-09-2025 para las plazas de muy difícil cobertura, que son todas las de Formentera. Falta saber si 416,15 € es el importe actualizado.'],
-    ['Jefe de departamento en Maestros', 'La web lo paga a 0. La tabla de 82,20 € no lo restringe por cuerpo. ¿Pueden cobrarlo?'],
   ],
   'Canarias': [
     ['¿El cargo directivo se reduce al 78% en la paga adicional?', 'La ley aplica el 78% al específico y a la formación permanente, y el cargo es un complemento específico, pero ningún documento lo dice. Hoy se paga íntegro.'],
