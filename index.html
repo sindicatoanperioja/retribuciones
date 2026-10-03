@@ -6470,8 +6470,8 @@ function buildAdmin(){
         <h3 style="margin-bottom:8px;">Escala de antigüedad (grados y quinquenios)</h3>
         <div class="data-table-scroll">
           <table class="data-table">
-            <thead><tr><th>Años</th><th>Maestros (597/591/596)</th><th>Secundaria y resto (590+)</th></tr></thead>
-            <tbody>${Object.keys(sd.ladderMaestros).map(t => `<tr><td>${t}</td>
+            <thead><tr><th>Años de servicio</th><th>Maestros (597/591/596)</th><th>Secundaria y resto (590+)</th></tr></thead>
+            <tbody>${Object.keys(sd.ladderMaestros).sort((x, y) => Number(x) - Number(y)).map(t => `<tr><td>${Number.isInteger(Number(t)) ? t + ' (quinquenio ' + (Number(t) / 5) + ')' : Math.floor(Number(t)) + ' años y ' + Math.round((Number(t) % 1) * 12) + ' meses (grado ' + Math.round(Number(t) / (79 / 12)) + ')'}</td>
               <td class="${provClass(name, 'ladderMaestros', 0)}"><input type="number" step="0.01" data-community="${name}" data-kind="navarra-ladder" data-ladder="ladderMaestros" data-tier="${t}" value="${sd.ladderMaestros[t]}"></td>
               <td class="${provClass(name, 'ladderPES', 3)}"><input type="number" step="0.01" data-community="${name}" data-kind="navarra-ladder" data-ladder="ladderPES" data-tier="${t}" value="${sd.ladderPES[t]}"></td>
             </tr>`).join('')}</tbody>
