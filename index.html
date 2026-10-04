@@ -948,7 +948,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
     <div class="card chart-card">
       <div class="section-title">
         <h2>Sueldo bruto anual por comunidad</h2>
-        <p>Ordenado de mayor a menor. Barra destacada: comunidad de referencia elegida.</p>
+        <p>Ordenado de mayor a menor. Barra destacada: comunidad de referencia elegida. Barra de otro color: media nacional.</p>
       </div>
       <div class="chart-wrap"><canvas id="chartAnual" role="img" aria-label="Gráfico de barras del sueldo bruto anual por comunidad"></canvas></div>
     </div>
@@ -5830,16 +5830,50 @@ function renderChart(){
   if (!lastResults) return;
   const canvas = document.getElementById('chartAnual');
   if (!canvas || canvas.offsetParent === null) { /* still build it; Chart.js handles hidden canvases on next resize */ }
-  const rows = E.COMUNIDAD_ORDER
+  const comunidades = E.COMUNIDAD_ORDER
     .map(c => ({ community:c, annual: lastResults[c].error ? null : lastResults[c].annual }))
     .filter(r => r.annual !== null)
     .sort((a,b)=>b.annual-a.annual);
+  // Media nacional: media simple de las comunidades con resultado, como una barra más en su sitio del orden.
+  const mediaNacional = comunidades.length ? comunidades.reduce((t, r) => t + r.annual, 0) / comunidades.length : 0;
+  const rows = comunidades.length
+    ? [...comunidades, { community:'Media nacional', annual: mediaNacional, isAvg:true }].sort((a,b)=>b.annual-a.annual)
+    : [];
   const colors = currentAccentColors();
   const refIndex = rows.findIndex(r => r.community === state.comunidadRef);
-  const bg = rows.map(r => r.community === state.comunidadRef ? colors.accent2 : colors.accent);
+  // Puesto de la comunidad de referencia entre las comunidades (la barra de la media no cuenta).
+  const refRank = comunidades.findIndex(r => r.community === state.comunidadRef) + 1;
+  const avgColor = getComputedStyle(document.documentElement).getPropertyValue('--warn').trim() || '#94651f';
+  const bg = rows.map(r => r.isAvg ? avgColor : (r.community === state.comunidadRef ? colors.accent2 : colors.accent));
+  // Texto de cada barra: blanco o casi negro según el fondo, para que se lea en claro y en oscuro.
+  const textOn = col => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(col);
+    if (!m) return '#ffffff';
+    const n = parseInt(m[1], 16), r = (n >> 16) & 255, g = (n >> 8) & 255, bl = n & 255;
+    return (0.299*r + 0.587*g + 0.114*bl) > 150 ? '#14202b' : '#ffffff';
+  };
   const data = {
     labels: rows.map(r=>r.community),
     datasets: [{ label:'Sueldo bruto anual', data: rows.map(r=>r.annual), backgroundColor:bg, borderRadius:4, maxBarThickness:34 }]
+  };
+  // Importe anual escrito dentro de cada barra, pegado a su extremo.
+  const valueInBarPlugin = {
+    id: 'valueInBar',
+    afterDatasetsDraw(chart){
+      const meta = chart.getDatasetMeta(0);
+      const {ctx} = chart;
+      ctx.save();
+      ctx.font = '700 12px "Source Sans 3", sans-serif';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      meta.data.forEach((bar, i) => {
+        const r = rows[i];
+        if (!r) return;
+        ctx.fillStyle = textOn(bg[i]);
+        ctx.fillText(fmtEUR(r.annual), bar.x - 8, bar.y + 1);
+      });
+      ctx.restore();
+    }
   };
   // Draws the comunidad de referencia's ranking position as a circular badge (matching the
   // "Compara Nómina" tab's rank-badge style) right past the tip of its own bar (2026-09-20, at the
@@ -5867,7 +5901,7 @@ function renderChart(){
       ctx.fillStyle = colors.accent2;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`${refIndex+1}`, cx, cy + 1);
+      ctx.fillText(`${refRank}`, cx, cy + 1);
       ctx.restore();
     }
   };
@@ -5875,7 +5909,7 @@ function renderChart(){
   chartInstance = new Chart(canvas.getContext('2d'), {
     type:'bar',
     data,
-    plugins:[rankLabelPlugin],
+    plugins:[rankLabelPlugin, valueInBarPlugin],
     options:{
       indexAxis:'y',
       responsive:true, maintainAspectRatio:false,
