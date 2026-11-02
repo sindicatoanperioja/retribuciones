@@ -1649,7 +1649,10 @@ COMUNIDADES['Galicia'] = {
     // 137,03€ = 135,00 de 2025 por 1,015, la regla del punto 6.º del Anexo V de la Orde de 23-01-2026 para lo no itemizado;
     // coincide con CIG, STEG y CSIF (ANPE Galicia traía 118,25€, que no cuadra con ninguna serie).
     adicionalESO: onlyF(137.03),
-    complementoProfesorFP: arr9(0,158.16,0,0,0,0,0,0,0),
+    // 158,22€ (2026-11-02, a petición del usuario): es la diferencia de sueldo base A1-A2 repartida en 14 pagas,
+    // ((1.387,24-1.199,52)*12 + (856,05-874,83)*2)/14, como define el Acordo de la Xunta; coincide con CIG-Ensino.
+    // ANPE Galicia trae 158,16€ (6 céntimos menos).
+    complementoProfesorFP: arr9(0,158.22,0,0,0,0,0,0,0),
     // ANPE Galicia, "Xefatura de departamento, Coordinacións, ENDL": 83€/mes — no aplica a Inspección.
     jefeDepartamento: arr9(0,83,83,83,83,83,83,83,0),
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
@@ -1888,11 +1891,11 @@ COMUNIDADES['Valencia'] = makeStandard({
 //  · Complemento de destino: 701,21€ nivel 21 (Maestros/as), 880,09€ nivel 24 (resto de A2 y Secundaria/
 //    EOI/Música/Artes Plásticas), 1.083,17€ nivel 26 (Catedráticos e Inspección).
 //  · Complemento específico en 3 capas: (a) específico general → `especifico`; (b) capitalización de
-//    sexenios → `sexenio` (ver abajo); (c) complejidad docente (2% de los conceptos salariales de 2025,
+//    sexenios → `sexenio` (ver abajo); (c) complejidad docente (2% de los conceptos salariales de 2025, x2,25 en la Instrucción de 25-09-2026,
 //    Decreto 252/2025 art. 67) → se modela en `especificoAutonomico` (mismo cálculo 14 pagas, se ve
 //    como línea aparte "Complemento específico autonómico"). Filas por cuerpo del documento:
-//    Maestros 50,42 / Maestros ESO 53,94 / FP (PES-FP, PTFP) 58,44 / Secundaria-EOI-Música-Artes 58,89 /
-//    Catedráticos 66,27 / Inspección 79,83.
+//    (25-09-2026) Maestros 113,44 / Maestros ESO 121,37 / FP (PES-FP, PTFP) 131,49 / Secundaria-EOI-Música-Artes 132,51 /
+//    Catedráticos 149,10 / Inspección 179,62 (en febrero eran 50,42 / 53,94 / 58,44 / 58,89 / 66,27 / 79,83).
 //  · Trienios: el documento los abona como Antigüedad (43,54 A2 / 53,39 A1) + "Diferencia Básica" (9,19 A2 /
 //    10,48 A1, solo 12 pagas). Se suman en un único importe mensual (override de `trienios`) para
 //    no tocar la fórmula compartida; la paga extra del trienio (31,74 / 32,96) es la genérica.
@@ -1911,15 +1914,15 @@ COMUNIDADES['Valencia'] = makeStandard({
 //  · Jefe de departamento: Coordinador/a de ciclo 64,84€ (Maestros), jefe seminario/dpto. 64,29€ (FP) y
 //    93,15€ (ESO; también aplicado a Catedráticos). Inspección no tiene equivalente → 0€.
 //  · Adicional Maestro ESO: no es una línea aparte en el documento, es que "Maestros/as ESO" pasan a
-//    nivel 24 (880,09 vs 701,21 = 178,88€) y su complejidad docente sube de 50,42 a 53,94€ (3,52€) —
-//    182,40€/mes en total, y como ambos son (14) se cobra también en la paga extra (adicionalESOInExtra).
+//    nivel 24 (880,09 vs 701,21 = 178,88€) y su complejidad docente sube de 113,44 a 121,37€ (7,93€) —
+//    186,81€/mes en total, y como ambos son (14) se cobra también en la paga extra (adicionalESOInExtra).
 COMUNIDADES['País Vasco'] = makeStandard({
   destino: arr9(701.21,880.09,880.09,880.09,880.09,880.09,880.09,1083.17,1083.17),
   especifico: arr9(704.28,932.57,932.57,797.33,797.33,797.33,797.33,968.51,1656.79),
-  especificoAutonomico: arr9(50.42,58.44,58.44,58.89,58.89,58.89,58.89,66.27,79.83),
+  especificoAutonomico: arr9(113.44,131.49,131.49,132.51,132.51,132.51,132.51,149.1,179.62),
   sexenio: {sin:316.77, s1:96.81, s2:0, s3:0, s4:57.75, s5:47.86}, // sin = capitalización 2º y 3º (ver nota arriba)
   tutoria: onlyF(71.35),
-  adicionalESO: onlyF(182.4),
+  adicionalESO: onlyF(186.81),
   complementoMejora: fill(0), productividad: fill(0),
   jefeDepartamento: arr9(0,64.29,64.29,93.15,93.15,93.15,93.15,93.15,0),
 }, { overrides: {

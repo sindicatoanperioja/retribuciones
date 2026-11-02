@@ -2757,7 +2757,10 @@ COMUNIDADES['Galicia'] = {
     // 137,03€ = 135,00 de 2025 por 1,015, la regla del punto 6.º del Anexo V de la Orde de 23-01-2026 para lo no itemizado;
     // coincide con CIG, STEG y CSIF (ANPE Galicia traía 118,25€, que no cuadra con ninguna serie).
     adicionalESO: onlyF(137.03),
-    complementoProfesorFP: arr9(0,158.16,0,0,0,0,0,0,0),
+    // 158,22€ (2026-11-02, a petición del usuario): es la diferencia de sueldo base A1-A2 repartida en 14 pagas,
+    // ((1.387,24-1.199,52)*12 + (856,05-874,83)*2)/14, como define el Acordo de la Xunta; coincide con CIG-Ensino.
+    // ANPE Galicia trae 158,16€ (6 céntimos menos).
+    complementoProfesorFP: arr9(0,158.22,0,0,0,0,0,0,0),
     // ANPE Galicia, "Xefatura de departamento, Coordinacións, ENDL": 83€/mes — no aplica a Inspección.
     jefeDepartamento: arr9(0,83,83,83,83,83,83,83,0),
     // Director de Equipo de Orientación Educativa y Psicopedagógica (EOEP) (2026-10-01, a petición del
@@ -2996,11 +2999,11 @@ COMUNIDADES['Valencia'] = makeStandard({
 //  · Complemento de destino: 701,21€ nivel 21 (Maestros/as), 880,09€ nivel 24 (resto de A2 y Secundaria/
 //    EOI/Música/Artes Plásticas), 1.083,17€ nivel 26 (Catedráticos e Inspección).
 //  · Complemento específico en 3 capas: (a) específico general → `especifico`; (b) capitalización de
-//    sexenios → `sexenio` (ver abajo); (c) complejidad docente (2% de los conceptos salariales de 2025,
+//    sexenios → `sexenio` (ver abajo); (c) complejidad docente (2% de los conceptos salariales de 2025, x2,25 en la Instrucción de 25-09-2026,
 //    Decreto 252/2025 art. 67) → se modela en `especificoAutonomico` (mismo cálculo 14 pagas, se ve
 //    como línea aparte "Complemento específico autonómico"). Filas por cuerpo del documento:
-//    Maestros 50,42 / Maestros ESO 53,94 / FP (PES-FP, PTFP) 58,44 / Secundaria-EOI-Música-Artes 58,89 /
-//    Catedráticos 66,27 / Inspección 79,83.
+//    (25-09-2026) Maestros 113,44 / Maestros ESO 121,37 / FP (PES-FP, PTFP) 131,49 / Secundaria-EOI-Música-Artes 132,51 /
+//    Catedráticos 149,10 / Inspección 179,62 (en febrero eran 50,42 / 53,94 / 58,44 / 58,89 / 66,27 / 79,83).
 //  · Trienios: el documento los abona como Antigüedad (43,54 A2 / 53,39 A1) + "Diferencia Básica" (9,19 A2 /
 //    10,48 A1, solo 12 pagas). Se suman en un único importe mensual (override de `trienios`) para
 //    no tocar la fórmula compartida; la paga extra del trienio (31,74 / 32,96) es la genérica.
@@ -3019,15 +3022,15 @@ COMUNIDADES['Valencia'] = makeStandard({
 //  · Jefe de departamento: Coordinador/a de ciclo 64,84€ (Maestros), jefe seminario/dpto. 64,29€ (FP) y
 //    93,15€ (ESO; también aplicado a Catedráticos). Inspección no tiene equivalente → 0€.
 //  · Adicional Maestro ESO: no es una línea aparte en el documento, es que "Maestros/as ESO" pasan a
-//    nivel 24 (880,09 vs 701,21 = 178,88€) y su complejidad docente sube de 50,42 a 53,94€ (3,52€) —
-//    182,40€/mes en total, y como ambos son (14) se cobra también en la paga extra (adicionalESOInExtra).
+//    nivel 24 (880,09 vs 701,21 = 178,88€) y su complejidad docente sube de 113,44 a 121,37€ (7,93€) —
+//    186,81€/mes en total, y como ambos son (14) se cobra también en la paga extra (adicionalESOInExtra).
 COMUNIDADES['País Vasco'] = makeStandard({
   destino: arr9(701.21,880.09,880.09,880.09,880.09,880.09,880.09,1083.17,1083.17),
   especifico: arr9(704.28,932.57,932.57,797.33,797.33,797.33,797.33,968.51,1656.79),
-  especificoAutonomico: arr9(50.42,58.44,58.44,58.89,58.89,58.89,58.89,66.27,79.83),
+  especificoAutonomico: arr9(113.44,131.49,131.49,132.51,132.51,132.51,132.51,149.1,179.62),
   sexenio: {sin:316.77, s1:96.81, s2:0, s3:0, s4:57.75, s5:47.86}, // sin = capitalización 2º y 3º (ver nota arriba)
   tutoria: onlyF(71.35),
-  adicionalESO: onlyF(182.4),
+  adicionalESO: onlyF(186.81),
   complementoMejora: fill(0), productividad: fill(0),
   jefeDepartamento: arr9(0,64.29,64.29,93.15,93.15,93.15,93.15,93.15,0),
 }, { overrides: {
@@ -4000,7 +4003,7 @@ const META = {
     fuentes: [
       {label:'Profex (Junta de Extremadura) — Tablas retributivas del personal docente', url:'https://profex.educarex.es/web/personal-docente/regimen-retributivo/tablas-retributivas'}
     ] },
-  'Galicia': { updated:'2026-09-22', notes:'Sin complemento autonómico (CEA) · Complemento de profesor de FP (solo PTFP) y complemento de cargo de Inspector son conceptos distintos · Xefatura de departamento no aplica a Inspección · Adicional Maestro ESO en la extra (14 mensualidades).',
+  'Galicia': { updated:'2026-11-02', notes:'Sin complemento autonómico (CEA) · Complemento de profesor de FP (solo PTFP) y complemento de cargo de Inspector son conceptos distintos · Xefatura de departamento no aplica a Inspección · Adicional Maestro ESO en la extra (14 mensualidades).',
     fuentes: [
       {label:'Xunta de Galicia — Retribucións do persoal funcionario docente (transparencia)', url:'https://ficheiros-web.xunta.gal/transparencia/retribucions/2024/funcionarios-docentes.pdf'},
       {label:'ORDE do 23 de xaneiro de 2026 — DOG núm. 16, 26-01-2026, Anexo V (retribucións docentes)', url:'https://www.xunta.gal/dog/Publicados/2026/20260126/AnuncioG0597-220126-0002_gl.html'},
@@ -4031,10 +4034,10 @@ const META = {
     ,
       {label:'BOE-A-2009-71 — Resolución de 2-1-2009 (Secretaría de Estado de Hacienda y Presupuestos): retribuciones del personal no transferido, Anexo VIII (Ceuta y Melilla) y Anexo XV (residencia)', url:'https://www.boe.es/buscar/doc.php?id=BOE-A-2009-71'}
     ] },
-  'País Vasco': { updated:'2026-09-21', notes:'Sistema propio: específico incluye "complejidad docente" (campo autonómico) · Sexenios: 2º y 3º capitalizados juntos (316,77€), desde el primer día · Trienios = Antigüedad + Diferencia Básica · Tutoría solo Maestros, también en la extra · Adicional Maestro ESO = subida de nivel de destino + complejidad, también en la extra · Cargo directivo: PTFP/Maestros de Taller y Catedráticos reutilizan tablas de otros cuerpos · No modelado: otros complementos del Anexo I (innovación, orientación, IRALE, Berritzegune...).',
+  'País Vasco': { updated:'2026-11-02', notes:'Sistema propio: específico incluye "complejidad docente" (campo autonómico) · Sexenios: 2º y 3º capitalizados juntos (316,77€), desde el primer día · Trienios = Antigüedad + Diferencia Básica · Tutoría solo Maestros, también en la extra · Adicional Maestro ESO = subida de nivel de destino + complejidad, también en la extra · Cargo directivo: PTFP/Maestros de Taller y Catedráticos reutilizan tablas de otros cuerpos · No modelado: otros complementos del Anexo I (innovación, orientación, IRALE, Berritzegune...).',
     fuentes: [
       {label:'Gobierno Vasco — Régimen económico del personal docente', url:'https://www.euskadi.eus/gobierno-vasco/-/regimen-economico/'},
-      {label:'Instrucción sobre retribuciones del personal docente (24-02-2026)', url:'https://www.euskadi.eus/contenidos/informacion/langile_nominas_servicio/es_def/adjuntos/Instruccion_retribuciones_24_02_26-.pdf'}
+      {label:'Instrucción sobre retribuciones del personal docente (25-09-2026)', url:'https://www.euskadi.eus/contenidos/informacion/langile_nominas_servicio/es_def/adjuntos/Instruccion-retribuciones_sep_2026-.pdf'}
     ] },
   'Navarra': { updated:'2026-10-01', notes:'Antigüedad por escala de grados y quinquenios (no trienios/sexenios); sin complemento de destino — sueldo base más alto para compensar · Maestro ESO: específico 859,79€ (+136,38€), en las 14 pagas · Jefe de Departamento aproximado al tramo intermedio (documento gradúa 3%/6%/9% por nº de profesores); solo Secundaria y superiores · Inspección: específico y complemento singular propios ("Dedicación exclusiva" + "Puesto de trabajo"), base legal distinta al resto de cuerpos · Cargo directivo en colegios (CEIP): sin Vicedirección (no existe ese cargo ahí); Jefatura de Estudios y su Adjunta solo en los 3 tamaños más grandes.',
     fuentes: [
@@ -4183,7 +4186,7 @@ const PROVENANCE = {
     residencia:1
   },
   'País Vasco': {
-    // Corregido 2026-09-21 contra la Instrucción 24-02-2026 (todas las cifras del motor salen de ese documento).
+    // Corregido 2026-09-21 contra la Instrucción 24-02-2026; complejidad docente actualizada 2026-11-02 con la de 25-09-2026.
     // especificoAutonomico = complejidad docente (interpretación de modelado). cargoDirectivo es nivel 1 salvo
     // que PTFP/Maestros de Taller y Catedráticos reutilizan tabla ajena (ver CARGO_RAW).
     destino:1, trienios:1, especifico:1, especificoAutonomico:1, sexenio:1, tutoria:1, adicionalESO:1,
@@ -4214,7 +4217,7 @@ const PROVENANCE = {
   // no están en el Anexo V, pero sí confirmados contra ANPE Galicia "Retribucións 2026" (enero 2026).
   'Galicia': {
     especifico:1, complementoCargoInspector:1, sexenio:1, tutoria:1, adicionalESO:2,
-    complementoProfesorFP:2, jefeDepartamento:1, cargoDirectivo:1,
+    complementoProfesorFP:3, jefeDepartamento:1, cargoDirectivo:1,
     // directorEOEP (2026-10-01): DOG, Orde do 23-01-2026, Anexo V — tarifa plana del equipo, sin cifra
     // diferenciada para quien lo dirige.
     directorEOEP:1
