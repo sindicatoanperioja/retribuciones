@@ -1539,12 +1539,10 @@ COMUNIDADES['Castilla y León'] = {
 // (75,56€ Mestres / 104,83€ Secundaria+).
 COMUNIDADES['Cataluña'] = makeStandard({
   destino: arr9(592.11,729.14,729.14,729.14,729.14,729.14,729.14,873.38,873.38),
-  // Específico = tabla oficial 2026 (704,95 / 720,83 / 785,45) + tramo 2026 (8,5 %) del incremento del 30 %
-  // del complemento específico: +59,92 Infantil y Primaria, +61,27 Secundaria (también Catedráticos y PTFP),
-  // según el Acord de 9-03-2026 y el acta de la comisión de seguimiento (calendario de tres años: 2026 8,5 %,
-  // 2027 12 %, 2028 9,5 %). Se paga en 14 pagas, ya incorporado al específico. Inspección no lo recibe (no es
-  // del colectivo docente de los centros) y queda con la tabla oficial. Los tramos de 2027 y 2028 no están aplicados.
-  especifico: arr9(764.87,782.10,782.10,782.10,782.10,782.10,782.10,846.72,720.83),
+  // Tabla oficial 2026. El tramo 2026 (8,5 %) del incremento del 30 % del específico (+59,92 Primaria, +61,27 Secundaria al
+  // mes) no se suma: el Acord GOV/88/2026 lo abona en un pago único en la nómina de mayo. Tramos de 2027 (12 %) y 2028 (9,5 %)
+  // tampoco aplicados.
+  especifico: arr9(704.95,720.83,720.83,720.83,720.83,720.83,720.83,785.45,720.83),
   complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,1476.25),
   especificoAutonomico: fill(0),
   sexenio: {sin:0, s1:128.88, s2:135.54, s3:153.66, s4:166.39, s5:145.65},
