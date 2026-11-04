@@ -2647,13 +2647,21 @@ COMUNIDADES['Castilla y León'] = {
 // (75,56€ Mestres / 104,83€ Secundaria+).
 COMUNIDADES['Cataluña'] = makeStandard({
   destino: arr9(592.11,729.14,729.14,729.14,729.14,729.14,729.14,873.38,873.38),
-  especifico: arr9(704.95,720.83,720.83,720.83,720.83,720.83,720.83,785.45,720.83),
+  // Específico = tabla oficial 2026 (704,95 / 720,83 / 785,45) + tramo 2026 (8,5 %) del incremento del 30 %
+  // del complemento específico: +59,92 Infantil y Primaria, +61,27 Secundaria (también Catedráticos y PTFP),
+  // según el Acord de 9-03-2026 y el acta de la comisión de seguimiento (calendario de tres años: 2026 8,5 %,
+  // 2027 12 %, 2028 9,5 %). Se paga en 14 pagas, ya incorporado al específico. Inspección no lo recibe (no es
+  // del colectivo docente de los centros) y queda con la tabla oficial. Los tramos de 2027 y 2028 no están aplicados.
+  especifico: arr9(764.87,782.10,782.10,782.10,782.10,782.10,782.10,846.72,720.83),
   complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,1476.25),
   especificoAutonomico: fill(0),
   sexenio: {sin:0, s1:128.88, s2:135.54, s3:153.66, s4:166.39, s5:145.65},
   tutoria: arr9(66.56,93.6,93.6,93.6,93.6,93.6,93.6,93.6,0),
   adicionalESO: onlyF(137.03),
-  complementoMejora: fill(0), productividad: fill(0),
+  // "Complement de millora del Servei d'Educació de Catalunya" (Acord GOV/205/2026, de 28 de julio, DOGC 30-07-2026): lineal y
+  // universal para el personal docente, consolidable, con pagas extraordinarias y efectos desde el 1-01-2026. 2026: 50 €/mes
+  // (2027, 2028 y 2029 aún sin aplicar). Inspección no lo recibe.
+  complementoMejora: arr9(50,50,50,50,50,50,50,50,0), productividad: fill(0),
   // Director de servicio educativo (EAP, CRP, CREDA, CdA): componente singular de cargo, 528,28 € (tablas oficiales del Departament,
   // hoja SINGULARS 2026, fila "Director grup A (528,28 + 477,13)"). Los 477,13 € restantes son el componente de puesto, que cobra
   // todo el personal del servicio y no se suma.
@@ -2663,6 +2671,7 @@ COMUNIDADES['Cataluña'] = makeStandard({
   residenciaVallAran: arr9(75.56,75.56,75.56,104.83,104.83,104.83,104.83,104.83,104.83),
 }, { overrides: {},
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
+  complementoMejoraAlwaysOn: true, complementoMejoraInExtra: true, complementoMejoraLabel: 'Complement de millora',
   // adicionalESOInExtra (2026-09-21, a petición del usuario, "revisa comunidad por comunidad"): el
   // "1r Cicle d'ESO" catalán es, igual que en Andalucía/Extremadura/Valencia, una compensación por la
   // diferencia entre el Complement de Destinació nivell 21 i nivell 24 (no un plus aparte) — fuentes
@@ -2968,9 +2977,11 @@ COMUNIDADES['Valencia'] = makeStandard({
   // (not `729.14-592.11`, which is 137.02999999999997 in floating point and was leaking that many
   // decimals into the "Datos particulares" input field) — a petición del usuario.
   adicionalESO: onlyF(137.03),
-  // Complemento específico autonómico y Complemento de mejora/carrera profesional eliminados
-  // 2026-09-21 (a petición del usuario): el DOGV no recoge ninguno de los dos para el personal
-  // docente valenciano — no son "0€ sin verificar", son conceptos que Valencia no tiene.
+  // Complemento específico autonómico: +75 €/mes desde septiembre de 2026, primer tramo de los +200 € del Acord global
+  // per a l'educació pública de 9-06-2026 (más +75 € en enero de 2027 y +50 € en enero de 2028, aún sin aplicar). No
+  // figura en el DOGV 10312 (las tablas son de febrero, anteriores al acuerdo). Se paga en 14 pagas. Inspección no
+  // lo recibe (el acuerdo no cita al cuerpo). Complemento de mejora/carrera profesional: Valencia no lo tiene.
+  especificoAutonomico: arr9(75,75,75,75,75,75,75,75,0),
   productividad: fill(0),
   // DOGV 10312 bis, Tabla 2: "Cap departament" 84,76€ para Profesores, PTFP y Catedráticos; el Maestro (6531) tiene "-".
   jefeDepartamento: arr9(0,84.76,84.76,84.76,84.76,84.76,84.76,84.76,84.76),
@@ -3995,9 +4006,10 @@ const META = {
     fuentes: [
       {label:'BOCyL — ORDEN PRE/1/2026, retribuciones del personal (05-01-2026)', url:'https://bocyl.jcyl.es/boletines/2026/01/05/pdf/BOCYL-D-05012026-2-2.pdf'}
     ] },
-  'Cataluña': { updated:'2026-09-20', notes:'Complemento de cargo de Inspector aparte · Cap de Departament: 93,60€ · Residencia (Vall d\'Aran) con su propio interruptor · Sin complemento autonómico ni carrera profesional/productividad (ocultos) · Adicional Maestro ESO ("1r Cicle d\'ESO") en la extra.',
+  'Cataluña': { updated:'2026-11-04', notes:'Específico con el tramo 2026 del incremento del 30 % (+59,92 Primaria, +61,27 Secundaria; Inspección no) · Complement de millora: 50 €/mes en 14 pagas (Inspección no) · Complemento de cargo de Inspector aparte · Cap de Departament: 93,60€ · Residencia (Vall d\'Aran) con su propio interruptor · Sin complemento autonómico ni carrera profesional/productividad · Adicional Maestro ESO ("1r Cicle d\'ESO") en la extra.',
     fuentes: [
-      {label:'Departament d\'Educació i Formació Professional — Taules de retribució', url:'https://educacio.gencat.cat/ca/arees-actuacio/professors/retribucions/taules-retribucio/'}
+      {label:'Departament d\'Educació i Formació Professional — Taules de retribució', url:'https://educacio.gencat.cat/ca/arees-actuacio/professors/retribucions/taules-retribucio/'},
+      {label:'Govern: creació del complement de millora dels docents (Acord GOV/205/2026, 28-07-2026)', url:'https://govern.cat/salapremsa/notes-premsa/855436/govern-aprova-creacio-del-complement-retributiu-als-docents-pactat-passat-mes-maig'}
     ] },
   'Extremadura': { updated:'2026-10-01', notes:'Tutoría solo Secundaria y superiores (no Maestros ni Inspección), se cobra en la extra · Adicional Maestro ESO en la extra · CEA plano salvo Inspección (cifra propia, 434,85€) · Complemento de cargo de Inspector aparte del CEA · Sin Vicedirección (no existe ese cargo en Extremadura).',
     fuentes: [
@@ -4023,9 +4035,10 @@ const META = {
       {label:'BORM — Acuerdo de Consejo de Gobierno, incremento retributivo (18-12-2025)', url:'https://www.carm.es/web/descarga?ALIAS=ARCH&ARCHIVO=2025-6124.pdf&IDCONTENIDO=203579&RASTRO=c313%24m3501%2C3612%2C2711'},
       {label:'ANPE Murcia — Retribuciones (actualización noviembre 2025)', url:'https://documentos.anpemurcia.es/docs/Documentos/Retriuciones/Ret2025-nov.pdf'}
     ] },
-  'Valencia': { updated:'2026-10-01', notes:'Sin tutoría (no existe en Valencia) · Jefatura de Departamento: 84,76€ · Inspección tiene un componente singular aparte del específico general · Sin complemento autonómico ni carrera profesional/complemento de mejora · Cargo directivo: sin Jefatura de Estudios Adjunta; tipos D-F sin columna de Secundaria (A1), salvo un Vicedirector suelto en tipo E.',
+  'Valencia': { updated:'2026-11-04', notes:'Sin tutoría (no existe en Valencia) · Jefatura de Departamento: 84,76€ · Inspección tiene un componente singular aparte del específico general · Complemento específico autonómico: 75 € desde septiembre de 2026 (Inspección no; +75 en enero de 2027 y +50 en enero de 2028 sin aplicar) · Sin carrera profesional/complemento de mejora · Cargo directivo: sin Jefatura de Estudios Adjunta; tipos D-F sin columna de Secundaria (A1), salvo un Vicedirector suelto en tipo E.',
     fuentes: [
-      {label:'DOGV núm. 10312 — Acuerdo de 27-02-2026, tablas retributivas de la Generalitat', url:'https://dogv.gva.es/datos/2026/02/27/pdf/2026_6352_es.pdf'}
+      {label:'DOGV núm. 10312 — Acuerdo de 27-02-2026, tablas retributivas de la Generalitat', url:'https://dogv.gva.es/datos/2026/02/27/pdf/2026_6352_es.pdf'},
+      {label:'Generalitat: primeros 75 € del acuerdo retributivo docente, en la nómina de septiembre de 2026', url:'https://comunica.gva.es/es/detalle?id=414824835&site=373430869'}
     ] },
   'Ceuta y Melilla': { updated:'2026-10-02', notes:'Sin tabla oficial 2026: las cifras singulares (específico, cargos, sexenios, tutoría, Maestro ESO, jefe de dpto.) son las de la Resolución de 2-1-2009 (BOE-A-2009-71, Anexo VIII, personal no transferido en Ceuta y Melilla) puestas al día ×1,19, el mismo factor que el complemento de destino de 2009 a 2026 · Específico general: componente de 2009 por 1,1915 (baja con la antigüedad según UGT, sin detalle) · Residencia en 12 mensualidades, sin repercusión en pagas extra (según las tablas oficiales de la indemnización; importe 2026 extrapolado de la base de 2007/2017, sin tabla oficial 2026); trienios de residencia propios · Adicional Maestro ESO en la extra · Jefatura de Estudios Adjunta solo en IES · Cargo directivo, específico de Catedráticos/Inspección, su componente singular y Jefe de Departamento son cifras escaladas, sin tabla oficial propia (ver bordes en Datos particulares) · Sin complemento de mejora/carrera profesional.',
     fuentes: [
@@ -4151,7 +4164,7 @@ const PROVENANCE = {
   },
   'Cataluña': {
     especifico: [1,1,1,1,1,1,1,1,4], complementoCargoInspector:1, sexenio:1, tutoria:1, adicionalESO:1,
-    jefeDepartamento:1, cargoDirectivo:1
+    jefeDepartamento:1, cargoDirectivo:1, complementoMejora:1
   },
   'Madrid': {
     especifico:1, complementoCargoInspector:1, sexenio:1, tutoria:1, adicionalESO:1, jefeDepartamento:1,
@@ -4175,7 +4188,7 @@ const PROVENANCE = {
     directorEOEP:1
   },
   'Valencia': {
-    especifico:1, complementoCargoInspector:1, sexenio:1, jefeDepartamento:1, cargoDirectivo:1, adicionalESO:1,
+    especifico:1, complementoCargoInspector:1, sexenio:1, jefeDepartamento:1, cargoDirectivo:1, adicionalESO:1, especificoAutonomico:1,
     // directorEOEP (2026-10-01): DOGV núm. 10312 bis (27-02-2026), "Director/a de S.P.E.".
     directorEOEP:1
   },
@@ -6297,7 +6310,7 @@ function buildAdmin(){
       // especificoAutonomico/complementoMejora added 2026-09-20 at the user's request: Cataluña has
       // no complemento específico autonómico (CEA) nor a "carrera profesional"/productividad concept
       // at all — both are fill(0) in salaryData, confirmed dead the same way as productividad above.
-      'Cataluña': ['productividad', 'especificoAutonomico', 'complementoMejora'],
+      'Cataluña': ['productividad', 'especificoAutonomico'],
       'Extremadura': ['productividad', 'complementoMejora'],
       'Galicia': ['productividad'],
       'Madrid': ['productividad', 'complementoMejora'],

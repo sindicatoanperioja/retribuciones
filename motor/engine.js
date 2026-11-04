@@ -1539,13 +1539,21 @@ COMUNIDADES['Castilla y León'] = {
 // (75,56€ Mestres / 104,83€ Secundaria+).
 COMUNIDADES['Cataluña'] = makeStandard({
   destino: arr9(592.11,729.14,729.14,729.14,729.14,729.14,729.14,873.38,873.38),
-  especifico: arr9(704.95,720.83,720.83,720.83,720.83,720.83,720.83,785.45,720.83),
+  // Específico = tabla oficial 2026 (704,95 / 720,83 / 785,45) + tramo 2026 (8,5 %) del incremento del 30 %
+  // del complemento específico: +59,92 Infantil y Primaria, +61,27 Secundaria (también Catedráticos y PTFP),
+  // según el Acord de 9-03-2026 y el acta de la comisión de seguimiento (calendario de tres años: 2026 8,5 %,
+  // 2027 12 %, 2028 9,5 %). Se paga en 14 pagas, ya incorporado al específico. Inspección no lo recibe (no es
+  // del colectivo docente de los centros) y queda con la tabla oficial. Los tramos de 2027 y 2028 no están aplicados.
+  especifico: arr9(764.87,782.10,782.10,782.10,782.10,782.10,782.10,846.72,720.83),
   complementoCargoInspector: arr9(0,0,0,0,0,0,0,0,1476.25),
   especificoAutonomico: fill(0),
   sexenio: {sin:0, s1:128.88, s2:135.54, s3:153.66, s4:166.39, s5:145.65},
   tutoria: arr9(66.56,93.6,93.6,93.6,93.6,93.6,93.6,93.6,0),
   adicionalESO: onlyF(137.03),
-  complementoMejora: fill(0), productividad: fill(0),
+  // "Complement de millora del Servei d'Educació de Catalunya" (Acord GOV/205/2026, de 28 de julio, DOGC 30-07-2026): lineal y
+  // universal para el personal docente, consolidable, con pagas extraordinarias y efectos desde el 1-01-2026. 2026: 50 €/mes
+  // (2027, 2028 y 2029 aún sin aplicar). Inspección no lo recibe.
+  complementoMejora: arr9(50,50,50,50,50,50,50,50,0), productividad: fill(0),
   // Director de servicio educativo (EAP, CRP, CREDA, CdA): componente singular de cargo, 528,28 € (tablas oficiales del Departament,
   // hoja SINGULARS 2026, fila "Director grup A (528,28 + 477,13)"). Los 477,13 € restantes son el componente de puesto, que cobra
   // todo el personal del servicio y no se suma.
@@ -1555,6 +1563,7 @@ COMUNIDADES['Cataluña'] = makeStandard({
   residenciaVallAran: arr9(75.56,75.56,75.56,104.83,104.83,104.83,104.83,104.83,104.83),
 }, { overrides: {},
   finalTerms:(idx,anios,flags,d)=> d.productividad[idx]*2,
+  complementoMejoraAlwaysOn: true, complementoMejoraInExtra: true, complementoMejoraLabel: 'Complement de millora',
   // adicionalESOInExtra (2026-09-21, a petición del usuario, "revisa comunidad por comunidad"): el
   // "1r Cicle d'ESO" catalán es, igual que en Andalucía/Extremadura/Valencia, una compensación por la
   // diferencia entre el Complement de Destinació nivell 21 i nivell 24 (no un plus aparte) — fuentes
@@ -1860,9 +1869,11 @@ COMUNIDADES['Valencia'] = makeStandard({
   // (not `729.14-592.11`, which is 137.02999999999997 in floating point and was leaking that many
   // decimals into the "Datos particulares" input field) — a petición del usuario.
   adicionalESO: onlyF(137.03),
-  // Complemento específico autonómico y Complemento de mejora/carrera profesional eliminados
-  // 2026-09-21 (a petición del usuario): el DOGV no recoge ninguno de los dos para el personal
-  // docente valenciano — no son "0€ sin verificar", son conceptos que Valencia no tiene.
+  // Complemento específico autonómico: +75 €/mes desde septiembre de 2026, primer tramo de los +200 € del Acord global
+  // per a l'educació pública de 9-06-2026 (más +75 € en enero de 2027 y +50 € en enero de 2028, aún sin aplicar). No
+  // figura en el DOGV 10312 (las tablas son de febrero, anteriores al acuerdo). Se paga en 14 pagas. Inspección no
+  // lo recibe (el acuerdo no cita al cuerpo). Complemento de mejora/carrera profesional: Valencia no lo tiene.
+  especificoAutonomico: arr9(75,75,75,75,75,75,75,75,0),
   productividad: fill(0),
   // DOGV 10312 bis, Tabla 2: "Cap departament" 84,76€ para Profesores, PTFP y Catedráticos; el Maestro (6531) tiene "-".
   jefeDepartamento: arr9(0,84.76,84.76,84.76,84.76,84.76,84.76,84.76,84.76),
