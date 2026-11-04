@@ -268,6 +268,7 @@ th[tabindex]:focus-visible, a:focus-visible{
 /* Row 1 (perfil/retención): each control sized to what it actually needs, instead of a uniform
    width for everything — long-text selects get room to breathe, IRPF stays small. */
 .pb-situacion{width:178px;}
+.pb-jornada{width:110px;}
 .pb-cuerpo{width:210px;}
 .pb-anios{width:200px;}
 /* Antigüedad: stepper − / número / + con atajos a los saltos donde cambia el sueldo (trienios y
@@ -769,7 +770,8 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
      columnas en todos los niveles (fila 1, interruptores, fila 2) para que el emparejamiento sea
      fijo — un flex-wrap depende del ancho del contenido y no siempre empareja igual. */
   .pb-row1{display:grid; grid-template-columns:1fr 1fr; gap:8px 10px; justify-items:stretch;}
-  .pb-situacion, .pb-cuerpo, .pb-anios, .pb-irpf{width:100%;}
+  .pb-situacion, .pb-jornada, .pb-cuerpo, .pb-anios, .pb-irpf{width:100%;}
+  .pb-cuerpo{grid-column:1/-1;}
   .pb-switch-group{
     grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr; gap:8px 14px;
     height:auto; padding:10px 14px;
@@ -832,6 +834,15 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
           <option value="clasesPasivas">Funcionario Clases Pasivas</option>
           <option value="ssocial">Funcionario Seguridad Social</option>
           <option value="interino">Interino o Laboral</option>
+        </select>
+      </div>
+      <div class="pb-field pb-jornada" title="Todos los conceptos de la nómina se multiplican por la fracción de jornada: 2/3, 1/2 o 1/3.">
+        <label for="f-jornada">Jornada</label>
+        <select id="f-jornada">
+          <option value="completa">Completa</option>
+          <option value="2/3">2/3</option>
+          <option value="1/2">1/2</option>
+          <option value="1/3">1/3</option>
         </select>
       </div>
       <div class="pb-field pb-cuerpo">
@@ -3731,6 +3742,23 @@ function resolveSingularesFor(community, profile){
 // EXACTAMENTE las mismas banderas: antes se le pasaba el perfil crudo, así que Baleares veía
 // flags.funcionario sin definir (CEA de interino en la extra aunque fuese funcionario, con una fila
 // "Ajuste" de +125€) y Galicia flags.is598 sin definir.
+// Tipo de jornada (2026-11-04, a petición del usuario): "completa" (por defecto), 2/3, 1/2 o 1/3. Todos los
+// conceptos de la nómina (sueldo, complementos, trienios, sexenios, pagas extra, cargos) y las cuotas de
+// MUFACE y Derechos Pasivos se multiplican por el mismo factor. Un perfil sin `jornada` cuenta como completa.
+const JORNADA_FACTOR = { 'completa': 1, '2/3': 2/3, '1/2': 1/2, '1/3': 1/3 };
+function jornadaFactor(profile){
+  const k = profile && profile.jornada !== undefined ? JORNADA_FACTOR[profile.jornada] : 1;
+  return (typeof k === 'number') ? k : 1;
+}
+function scaleItems(items, k){
+  if (!items || k === 1) return items;
+  return items.map(it => {
+    const o = Object.assign({}, it);
+    if (typeof o.monthly === 'number') o.monthly *= k;
+    if (typeof o.displayMonthly === 'number') o.displayMonthly *= k;
+    return o;
+  });
+}
 // Baleares' calc() reads flags.funcionario==='carrera' to gate its seniority-scaled autonomous
 // complement — a structurally different concept from the national 3-way "Situación Laboral" field
 // (it means "not an interino/prácticas hire"). Anything other than Interino/Laboral counts as "carrera".
@@ -3770,7 +3798,7 @@ function pagaExtraItemsFor(community, profile){
     const f = (def.rules && def.rules.reduccionPagaExtra !== undefined && def.cargoReducidoEnExtra) ? def.rules.reduccionPagaExtra : 1;
     items.push({label:'Cargo directivo', monthly: rs.cargoAmt * f});
   }
-  return items;
+  return scaleItems(items, jornadaFactor(profile));
 }
 
 // Compute one community's full breakdown for a given profile.
@@ -3857,6 +3885,11 @@ function computeCommunity(community, profile, today, wantItems){
       pagaExtraTotal = def.pagaExtraOverride(idx, profile.anios, flags, dEff, def.rules);
     }
   }
+  const k = jornadaFactor(profile);
+  if (k !== 1){
+    return { annual: annual*k, muface: muface*k, clasesPasivas: clasesPasivas*k, items: scaleItems(items, k),
+      mensualBruto: mensualBruto*k, pagaExtraTotal: pagaExtraTotal*k };
+  }
   return { annual, muface, clasesPasivas, items, mensualBruto, pagaExtraTotal };
 }
 
@@ -3935,7 +3968,7 @@ global.SalaryEngine = {
   CUERPOS, CUERPO_ORDER: CUERPOS, CUERPO_SELECT_OPTIONS, CUERPO_ALIASES, CUERPO_598_LABEL, CUERPO_598_SHORT, COMUNIDADES, COMUNIDAD_ORDER, CARGOS, TIPOS,
   CARGO_TABLE, setCargoTable, getCargoAmount, emptyCargoTable,
   groupOf, cuerpoIndex, computeCommunity, computeNational, computeAll, normSituacion, resolveSingulares, resolveSingularesFor,
-  buildFlags, pagaExtraItemsFor,
+  buildFlags, pagaExtraItemsFor, jornadaFactor,
   GENERIC_DATA, GENERIC_FIELDS, SS_RATES, getOverride, setOverride, setGenericData,
   resolveSalaryData, resolveAllSalaryData, recalcMadridCargoDirectivo
 };
@@ -4352,7 +4385,7 @@ const SITUACION_LABELS = {
   clasesPasivas: 'Funcionario Clases Pasivas', ssocial: 'Funcionario Seguridad Social', interino: 'Interino o Laboral'
 };
 const state = {
-  cuerpo: '590-Profesores Enseñanza Secundaria', situacionLaboral:'interino', anios:12, maestroESO:'NO', pagaExtra:'NO',
+  cuerpo: '590-Profesores Enseñanza Secundaria', situacionLaboral:'interino', jornada:'completa', anios:12, maestroESO:'NO', pagaExtra:'NO',
   islaNoCapitalina:'NO', islaBaleares:'Mallorca', vallAran:'NO', tutor:'NO', cargoDirectivo:'Sin cargo',
   tipoCentro:'A', comunidadRef:'La Rioja', irpf:0.215, jefeDepartamento:'NO', directorEOEP:'NO', tablaCargo:'A1',
   carreraGeneral:'NO',
@@ -4392,6 +4425,7 @@ fillSelect(document.getElementById('f-comunidad-ref'), [...E.COMUNIDAD_ORDER].so
 document.getElementById('f-cuerpo').value = state.cuerpo;
 document.getElementById('f-tablaCargo').value = state.tablaCargo;
 document.getElementById('f-situacion').value = state.situacionLaboral;
+document.getElementById('f-jornada').value = state.jornada;
 document.getElementById('f-comunidad-ref').value = state.comunidadRef;
 document.getElementById('f-anios').value = state.anios;
 document.querySelectorAll('#aniosChips button').forEach(b => b.classList.toggle('active', +b.dataset.v === state.anios));
@@ -4423,6 +4457,7 @@ function updateConditionalFields(){
 }
 
 document.getElementById('f-situacion').addEventListener('change', e => { state.situacionLaboral = e.target.value; recompute(); });
+document.getElementById('f-jornada').addEventListener('change', e => { state.jornada = e.target.value; recompute(); });
 document.getElementById('f-cuerpo').addEventListener('change', e => { state.cuerpo = e.target.value; recompute(); });
 document.getElementById('f-tipoCentro').addEventListener('change', e => { state.tipoCentro = e.target.value; recompute(); });
 document.getElementById('f-cargo').addEventListener('change', e => { state.cargoDirectivo = e.target.value; recompute(); });
@@ -4507,6 +4542,7 @@ function updateProfileBarSummary(){
     .map(sw => sw.previousElementSibling && sw.previousElementSibling.tagName === 'LABEL' ? sw.previousElementSibling.textContent.trim() : '')
     .filter(Boolean);
   const parts = [state.comunidadRef, cuerpoCode, `${state.anios} años`];
+  if (state.jornada !== 'completa') parts.push(`jornada ${state.jornada}`);
   if (activeSwitches.length) parts.push(activeSwitches.join(', '));
   el.textContent = parts.join(' · ');
 }
@@ -4582,7 +4618,7 @@ function buildProfile(){
     ? ((state.islaBaleares && state.islaBaleares !== 'Mallorca') ? 'SI' : 'NO')
     : state.islaNoCapitalina;
   return {
-    cuerpo: state.cuerpo, situacionLaboral: state.situacionLaboral, anios: state.anios,
+    cuerpo: state.cuerpo, situacionLaboral: state.situacionLaboral, jornada: state.jornada, anios: state.anios,
     maestroESO: state.maestroESO, pagaExtra: state.pagaExtra, islaNoCapitalina,
     islaBaleares: state.islaBaleares, vallAran: state.vallAran, tutor: state.tutor, cargoDirectivo: state.cargoDirectivo,
     tipoCentro: state.tipoCentro, irpf: state.irpf, jefeDepartamento: state.jefeDepartamento,
@@ -4893,6 +4929,7 @@ function renderNomina(){
       <dl>
         <dt>Cuerpo docente</dt><dd>${cuerpoLabel}</dd>
         <dt>Situación</dt><dd>${SITUACION_LABELS[state.situacionLaboral] || state.situacionLaboral}</dd>
+        ${state.jornada !== 'completa' ? `<dt>Jornada</dt><dd>${state.jornada}</dd>` : ''}
         <dt>Años de servicio</dt><dd>${state.anios}</dd>
         <dt>Cargo directivo</dt><dd>${cargoDirLabel}${isla}</dd>
         <dt>Mes con paga extra</dt><dd>${pagaExtraOn ? 'Sí (junio/diciembre)' : 'No'}</dd>

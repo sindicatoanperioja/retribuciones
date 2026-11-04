@@ -2623,6 +2623,23 @@ function resolveSingularesFor(community, profile){
 // EXACTAMENTE las mismas banderas: antes se le pasaba el perfil crudo, así que Baleares veía
 // flags.funcionario sin definir (CEA de interino en la extra aunque fuese funcionario, con una fila
 // "Ajuste" de +125€) y Galicia flags.is598 sin definir.
+// Tipo de jornada (2026-11-04, a petición del usuario): "completa" (por defecto), 2/3, 1/2 o 1/3. Todos los
+// conceptos de la nómina (sueldo, complementos, trienios, sexenios, pagas extra, cargos) y las cuotas de
+// MUFACE y Derechos Pasivos se multiplican por el mismo factor. Un perfil sin `jornada` cuenta como completa.
+const JORNADA_FACTOR = { 'completa': 1, '2/3': 2/3, '1/2': 1/2, '1/3': 1/3 };
+function jornadaFactor(profile){
+  const k = profile && profile.jornada !== undefined ? JORNADA_FACTOR[profile.jornada] : 1;
+  return (typeof k === 'number') ? k : 1;
+}
+function scaleItems(items, k){
+  if (!items || k === 1) return items;
+  return items.map(it => {
+    const o = Object.assign({}, it);
+    if (typeof o.monthly === 'number') o.monthly *= k;
+    if (typeof o.displayMonthly === 'number') o.displayMonthly *= k;
+    return o;
+  });
+}
 // Baleares' calc() reads flags.funcionario==='carrera' to gate its seniority-scaled autonomous
 // complement — a structurally different concept from the national 3-way "Situación Laboral" field
 // (it means "not an interino/prácticas hire"). Anything other than Interino/Laboral counts as "carrera".
@@ -2662,7 +2679,7 @@ function pagaExtraItemsFor(community, profile){
     const f = (def.rules && def.rules.reduccionPagaExtra !== undefined && def.cargoReducidoEnExtra) ? def.rules.reduccionPagaExtra : 1;
     items.push({label:'Cargo directivo', monthly: rs.cargoAmt * f});
   }
-  return items;
+  return scaleItems(items, jornadaFactor(profile));
 }
 
 // Compute one community's full breakdown for a given profile.
@@ -2749,6 +2766,11 @@ function computeCommunity(community, profile, today, wantItems){
       pagaExtraTotal = def.pagaExtraOverride(idx, profile.anios, flags, dEff, def.rules);
     }
   }
+  const k = jornadaFactor(profile);
+  if (k !== 1){
+    return { annual: annual*k, muface: muface*k, clasesPasivas: clasesPasivas*k, items: scaleItems(items, k),
+      mensualBruto: mensualBruto*k, pagaExtraTotal: pagaExtraTotal*k };
+  }
   return { annual, muface, clasesPasivas, items, mensualBruto, pagaExtraTotal };
 }
 
@@ -2827,7 +2849,7 @@ global.SalaryEngine = {
   CUERPOS, CUERPO_ORDER: CUERPOS, CUERPO_SELECT_OPTIONS, CUERPO_ALIASES, CUERPO_598_LABEL, CUERPO_598_SHORT, COMUNIDADES, COMUNIDAD_ORDER, CARGOS, TIPOS,
   CARGO_TABLE, setCargoTable, getCargoAmount, emptyCargoTable,
   groupOf, cuerpoIndex, computeCommunity, computeNational, computeAll, normSituacion, resolveSingulares, resolveSingularesFor,
-  buildFlags, pagaExtraItemsFor,
+  buildFlags, pagaExtraItemsFor, jornadaFactor,
   GENERIC_DATA, GENERIC_FIELDS, SS_RATES, getOverride, setOverride, setGenericData,
   resolveSalaryData, resolveAllSalaryData, recalcMadridCargoDirectivo
 };
