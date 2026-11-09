@@ -2621,6 +2621,23 @@ function resolveSingularesFor(community, profile){
 // EXACTAMENTE las mismas banderas: antes se le pasaba el perfil crudo, así que Baleares veía
 // flags.funcionario sin definir (CEA de interino en la extra aunque fuese funcionario, con una fila
 // "Ajuste" de +125€) y Galicia flags.is598 sin definir.
+// Jefe de inspección (2026-11-09, a petición del usuario): cargo propio del cuerpo de Inspección (510), que se elige
+// en el selector de Cargo directivo. El importe de cada comunidad es el INCREMENTO mensual sobre lo que cobra un
+// inspector sin cargo (ver JEFE_INSPECCION_DATA al final del motor) y se paga en 14 pagas. Solo cuenta para el cuerpo 510.
+const JEFE_INSPECCION = 'Jefe de inspección';
+function jefeInspeccionAmount(def, idx, profile){
+  if (idx !== 8 || !profile || profile.cargoDirectivo !== JEFE_INSPECCION) return 0;
+  const a = def.salaryData && def.salaryData.jefeInspeccion;
+  return (a && a[idx]) || 0;
+}
+// Pagas extra del jefe de inspección respecto a la mensualidad: Aragón (def.rules.reduccionPagaExtra, 0,9), Murcia (solo 12
+// pagas) y Canarias (el específico va al 78 % y el destino completo: (170,17 + 164,45 x 0,78) / 334,62).
+const JEFE_INSPECCION_EXTRA = { 'Murcia': 0, 'Canarias': 0.8919 };
+function jefeInspeccionExtraFactor(community, def){
+  if (JEFE_INSPECCION_EXTRA[community] !== undefined) return JEFE_INSPECCION_EXTRA[community];
+  const f = def.rules && def.rules.reduccionPagaExtra;
+  return (typeof f === 'number') ? f : 1;
+}
 // Tipo de jornada (2026-11-04, a petición del usuario): "completa" (por defecto), 2/3, 1/2 o 1/3. Todos los
 // conceptos de la nómina (sueldo, complementos, trienios, sexenios, pagas extra, cargos) y las cuotas de
 // MUFACE y Derechos Pasivos se multiplican por el mismo factor. Un perfil sin `jornada` cuenta como completa.
@@ -2677,6 +2694,8 @@ function pagaExtraItemsFor(community, profile){
     const f = (def.rules && def.rules.reduccionPagaExtra !== undefined && def.cargoReducidoEnExtra) ? def.rules.reduccionPagaExtra : 1;
     items.push({label:'Cargo directivo', monthly: rs.cargoAmt * f});
   }
+  const jefeInsp = jefeInspeccionAmount(def, idx, profile);
+  if (jefeInsp > 0) items.push({label: JEFE_INSPECCION, monthly: jefeInsp * jefeInspeccionExtraFactor(community, def)});
   return scaleItems(items, jornadaFactor(profile));
 }
 
@@ -2713,7 +2732,7 @@ function computeCommunity(community, profile, today, wantItems){
   flags.directorEOEP = sing.eoepFlag;
   const dEff = sing.sd;
   const items = wantItems ? [] : undefined;
-  const annual = def.calc(idx, profile.anios, flags, sing.cargoAmt, dEff, def.rules, today, items);
+  let annual = def.calc(idx, profile.anios, flags, sing.cargoAmt, dEff, def.rules, today, items);
   const muface = def.salaryData.muface[idx];
   const clasesPasivas = def.salaryData.clasesPasivas[idx];
   let mensualBruto, pagaExtraTotal;
@@ -2762,6 +2781,15 @@ function computeCommunity(community, profile, today, wantItems){
     // `annual` itself (and thus mensualBruto's ordinary-month figure) stays untouched/validated.
     if (typeof def.pagaExtraOverride === 'function'){
       pagaExtraTotal = def.pagaExtraOverride(idx, profile.anios, flags, dEff, def.rules);
+    }
+  }
+  const jefeInsp = jefeInspeccionAmount(def, idx, profile);
+  if (jefeInsp > 0){
+    const fx = jefeInspeccionExtraFactor(community, def);
+    annual += jefeInsp * 12 + jefeInsp * fx * 2;
+    if (wantItems){
+      mensualBruto += jefeInsp; pagaExtraTotal += jefeInsp * fx;
+      items.push({label: JEFE_INSPECCION, monthly: jefeInsp});
     }
   }
   const k = jornadaFactor(profile);
@@ -2843,11 +2871,39 @@ function computeAll(profile, today, wantItems){
   return out;
 }
 
+// ---------- JEFE DE INSPECCIÓN ----------
+// Incremento mensual (14 pagas) sobre el inspector sin cargo, por comunidad. 0 = sin importe documentado.
+const JEFE_INSPECCION_DATA = {
+  // Incremento mensual del jefe de inspección sobre un inspector sin cargo (14 pagas salvo JEFE_INSPECCION_EXTRA).
+  // Se toma la jefatura territorial/provincial (tipos B y C donde hay A/B/C). Detalle y fuentes en Observaciones (Datos CCAA).
+  'Andalucía': 143.35,          // Servicio de Inspección (nivel 28): 2.319,16 - 2.175,81; deducido de la Jefatura de Málaga 2026
+  'Aragón': 281.72,             // jefe provincial tipos B y C: 1.131,90 - 850,18 (12 pagas; extras al 90 %); tipo A +369,65
+  'Asturias': 241.36,           // Inspector Jefe de Distrito: 1.160,91 - 919,55
+  'Baleares (Islas)': 0,        // sin cifra: solo hay la del coordinador (+118,64) y el cap no tiene fila
+  'Canarias': 334.62,           // jefe territorial: 75 frente a 68,5 puntos x 25,30 (+164,45) y destino 28 frente a 26 (+170,17)
+  'Cantabria': 461.53,          // Inspector Jefe: general +186,52 y singular +275,01
+  'Castilla La Mancha': 474.17, // Inspector Central / Jefe de Servicio: 1.569,88 - 1.095,71
+  'Castilla y León': 279.45,    // jefe provincial tipos B y C: 1.081,33 - 801,88; tipo A +366,70
+  'Cataluña': 873.15,           // inspector en cap / cap d'Inspecció: +873,15 sobre el singular de inspector
+  'Extremadura': 355.76,        // jefatura provincial / inspección general: 965,98 - 610,22
+  'Galicia': 294.90,            // inspector jefe provincial: 1.233,28 - 938,38
+  'La Rioja': 634.90,           // Inspector Jefe: singular 1.133,28 - 666,22 (+467,06) y destino 28 frente a 26 (+167,84)
+  'Madrid': 590.33,             // jefe de inspección tipos B y C: 1.829,06 - 1.238,73; tipo A +754,71
+  'Murcia': 368.09,             // Jefe de Inspección: 1.357,99 - 989,90 (12 pagas)
+  'Valencia': 511.54,           // inspector jefe territorial (cap territorial): incremento sobre el específico base
+  'Ceuta y Melilla': 271.05,    // estimación: jefe provincial tipos B y C de 2009 (+232,04) x 1,16814
+  'País Vasco': 490.37,         // jefe territorial (Adicional cargo/función); el inspector general es +1.366,93
+  'Navarra': 0,                 // sin cifra: el director del Servicio es puesto de la plantilla general foral
+};
+for (const c of Object.keys(COMUNIDADES)){
+  COMUNIDADES[c].salaryData.jefeInspeccion = arr9(0,0,0,0,0,0,0,0, JEFE_INSPECCION_DATA[c] || 0);
+}
+
 global.SalaryEngine = {
   CUERPOS, CUERPO_ORDER: CUERPOS, CUERPO_SELECT_OPTIONS, CUERPO_ALIASES, CUERPO_598_LABEL, CUERPO_598_SHORT, COMUNIDADES, COMUNIDAD_ORDER, CARGOS, TIPOS,
   CARGO_TABLE, setCargoTable, getCargoAmount, emptyCargoTable,
   groupOf, cuerpoIndex, computeCommunity, computeNational, computeAll, normSituacion, resolveSingulares, resolveSingularesFor,
-  buildFlags, pagaExtraItemsFor, jornadaFactor,
+  buildFlags, pagaExtraItemsFor, jornadaFactor, JEFE_INSPECCION,
   GENERIC_DATA, GENERIC_FIELDS, SS_RATES, getOverride, setOverride, setGenericData,
   resolveSalaryData, resolveAllSalaryData, recalcMadridCargoDirectivo
 };
