@@ -2891,7 +2891,7 @@ const JEFE_INSPECCION_DATA = {
   'Madrid': 590.33,             // jefe de inspección tipos B y C: 1.829,06 - 1.238,73; tipo A +754,71
   'Murcia': 368.09,             // Jefe de Inspección: 1.357,99 - 989,90 (12 pagas)
   'Valencia': 511.54,           // inspector jefe territorial (cap territorial): incremento sobre el específico base
-  'Ceuta y Melilla': 271.05,    // estimación: jefe provincial tipos B y C de 2009 (+232,04) x 1,16814
+  'Ceuta y Melilla': 276.48,    // estimación: jefe provincial tipos B y C de 2009 (754,22 - 522,18 = 232,04) x 1,1915, el factor del singular de inspector
   'País Vasco': 490.37,         // jefe territorial (Adicional cargo/función); el inspector general es +1.366,93
   'Navarra': 0,                 // sin cifra: el director del Servicio es puesto de la plantilla general foral
 };
