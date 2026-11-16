@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Raleway:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js" integrity="sha512-WoViKhKD4qI2WruSZqv9+kvM4WfFhUMQCLN4QlDTt5aU56fLQy2gYoxWIqlEnXqJy/+Ac5q/hk1oWfqnMDhwMA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <style>
 /* ============================================================================
@@ -332,6 +332,8 @@ th[tabindex]:focus-visible, a:focus-visible{
   .pb-switch-group{ flex:1 1 100%; flex-wrap:wrap; height:auto; padding:10px 14px; row-gap:10px; }
 }
 .pb-switch-field label{font-size:.76rem; font-weight:600; color:var(--ink-2); white-space:nowrap; margin:0;}
+.sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; border:0;}
+label[for^="sw-"]{cursor:pointer;}
 .switch{
   position:relative; width:38px; height:22px; flex:0 0 auto; padding:0; cursor:pointer;
   border:1.5px solid var(--cielo); border-radius:999px; background:var(--surface-2); transition:background .15s, border-color .15s;
@@ -898,24 +900,24 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
       </div>
       <div class="pb-switch-group">
         <div class="pb-switch-field" title="Cada comunidad usa su propia lógica cuando está activo (importe fijo, escala por años, etc.); si no está activo, no se suma en ninguna comunidad.">
-          <label>Carrera profesional</label>
-          <button type="button" class="switch" role="switch" aria-checked="false" data-toggle="carreraGeneral" data-val="NO"><span class="switch-thumb"></span></button>
+          <label for="sw-carreraGeneral">Carrera profesional</label>
+          <button type="button" class="switch" role="switch" aria-checked="false" id="sw-carreraGeneral" data-toggle="carreraGeneral" data-val="NO"><span class="switch-thumb"></span></button>
         </div>
         <div class="pb-switch-field">
-          <label>Jefe de departamento</label>
-          <button type="button" class="switch" role="switch" aria-checked="false" data-toggle="jefeDepartamento" data-val="NO"><span class="switch-thumb"></span></button>
+          <label for="sw-jefeDepartamento">Jefe de departamento</label>
+          <button type="button" class="switch" role="switch" aria-checked="false" id="sw-jefeDepartamento" data-toggle="jefeDepartamento" data-val="NO"><span class="switch-thumb"></span></button>
         </div>
         <div class="pb-switch-field">
-          <label>Tutor</label>
-          <button type="button" class="switch" role="switch" aria-checked="false" data-toggle="tutor" data-val="NO"><span class="switch-thumb"></span></button>
+          <label for="sw-tutor">Tutor</label>
+          <button type="button" class="switch" role="switch" aria-checked="false" id="sw-tutor" data-toggle="tutor" data-val="NO"><span class="switch-thumb"></span></button>
         </div>
         <div class="pb-switch-field">
-          <label>Maestro ESO</label>
-          <button type="button" class="switch" role="switch" aria-checked="false" data-toggle="maestroESO" data-val="NO"><span class="switch-thumb"></span></button>
+          <label for="sw-maestroESO">Maestro ESO</label>
+          <button type="button" class="switch" role="switch" aria-checked="false" id="sw-maestroESO" data-toggle="maestroESO" data-val="NO"><span class="switch-thumb"></span></button>
         </div>
         <div class="pb-switch-field" title="Dirección de un Equipo de Orientación Educativa y Psicopedagógica (EOEP) de zona, no un cargo dentro de un colegio. Incompatible con Cargo directivo/Jefe de departamento: solo se cobra el de mayor importe.">
-          <label>Director de EOEP</label>
-          <button type="button" class="switch" role="switch" aria-checked="false" data-toggle="directorEOEP" data-val="NO"><span class="switch-thumb"></span></button>
+          <label for="sw-directorEOEP">Director de EOEP</label>
+          <button type="button" class="switch" role="switch" aria-checked="false" id="sw-directorEOEP" data-toggle="directorEOEP" data-val="NO"><span class="switch-thumb"></span></button>
         </div>
       </div>
     </div>
@@ -933,12 +935,12 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
             </select>
           </div>
           <div class="pb-field" id="grp-islaNoCapitalina">
-            <label>Isla no capitalina</label>
-            <button type="button" class="switch" role="switch" aria-checked="false" data-toggle="islaNoCapitalina" data-val="NO"><span class="switch-thumb"></span></button>
+            <label for="sw-islaNoCapitalina">Isla no capitalina</label>
+            <button type="button" class="switch" role="switch" aria-checked="false" id="sw-islaNoCapitalina" data-toggle="islaNoCapitalina" data-val="NO"><span class="switch-thumb"></span></button>
           </div>
           <div class="pb-field" id="grp-vallAran">
-            <label>Trabaja en Vall d'Aran</label>
-            <button type="button" class="switch" role="switch" aria-checked="false" data-toggle="vallAran" data-val="NO"><span class="switch-thumb"></span></button>
+            <label for="sw-vallAran">Trabaja en Vall d'Aran</label>
+            <button type="button" class="switch" role="switch" aria-checked="false" id="sw-vallAran" data-toggle="vallAran" data-val="NO"><span class="switch-thumb"></span></button>
           </div>
         </div>
       </div>
@@ -960,8 +962,8 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
         </div>
       </div>
       <div class="pb-field">
-        <label>Mes paga extra</label>
-        <button type="button" class="switch" role="switch" aria-checked="false" data-toggle="pagaExtra" data-val="NO"><span class="switch-thumb"></span></button>
+        <label for="sw-pagaExtra">Mes paga extra</label>
+        <button type="button" class="switch" role="switch" aria-checked="false" id="sw-pagaExtra" data-toggle="pagaExtra" data-val="NO"><span class="switch-thumb"></span></button>
       </div>
     </div>
     </div>
@@ -1004,6 +1006,7 @@ footer.appfoot .app-version{font-weight:600; margin-bottom:0;}
       </div>
       <div class="table-scroll">
         <table id="mainTable">
+          <caption class="sr-only">Sueldo de cada comunidad para el perfil elegido</caption>
           <thead><tr>
             <th data-key="rank" tabindex="0">#</th>
             <th data-key="community" tabindex="0">Comunidad</th>
@@ -4523,7 +4526,7 @@ const TABLA_CARGO_OPTIONS = [
 }
 // Alphabetical for this dropdown only (readability) — E.COMUNIDAD_ORDER itself stays untouched,
 // since tables/rankings/admin sidebar elsewhere rely on its original order.
-fillSelect(document.getElementById('f-comunidad-ref'), [...E.COMUNIDAD_ORDER].sort((a,b)=>a.localeCompare(b,'es')));
+fillSelect(document.getElementById('f-comunidad-ref'), E.COMUNIDAD_ORDER.toSorted((a,b)=>a.localeCompare(b,'es')));
 document.getElementById('f-cuerpo').value = state.cuerpo;
 document.getElementById('f-tablaCargo').value = state.tablaCargo;
 document.getElementById('f-situacion').value = state.situacionLaboral;
@@ -4617,6 +4620,19 @@ document.querySelectorAll('.switch[data-toggle]').forEach(sw => {
     state[key] = next;
     recompute();
   });
+});
+
+// Las ayudas en title de los campos del perfil solo se ven con ratón: se copian a un texto oculto
+// enlazado con aria-describedby para que el lector de pantalla también las lea.
+document.querySelectorAll('#profileBar [title]').forEach((field, i) => {
+  const control = field.querySelector('select, input, button');
+  if (!control) return;
+  const desc = document.createElement('span');
+  desc.id = 'pb-desc-' + i;
+  desc.className = 'sr-only';
+  desc.textContent = field.getAttribute('title');
+  field.appendChild(desc);
+  control.setAttribute('aria-describedby', desc.id);
 });
 
 // Formulario de perfil plegable en móvil (2026-09-22): el botón solo se ve por debajo de 760px (ver
@@ -4767,7 +4783,7 @@ function renderResultados(){
 
   // Ranking (by sueldo bruto anual, de mayor a menor) — fixed regardless of how the table below is
   // sorted, so "posición" always answers "¿en qué puesto queda esta comunidad frente a las demás?".
-  const ranked = [...okRows].sort((a,b)=>b.annual-a.annual);
+  const ranked = okRows.toSorted((a,b)=>b.annual-a.annual);
   ranked.forEach((r,i) => { r.rank = i+1; });
   const refRank = lastResults[state.comunidadRef] && !lastResults[state.comunidadRef].error
     ? rows.find(r=>r.community===state.comunidadRef).rank : null;
@@ -4824,7 +4840,7 @@ function renderResultados(){
   } else {
     const diffs = okRows.map(r=>({c:r.community, d:r.annual-refVal})).sort((a,b)=>b.d-a.d);
     refBlock.innerHTML = `<p class="hint">Sueldo bruto anual en <strong>${state.comunidadRef}</strong>: ${fmtEUR2(refVal)}</p>` +
-      `<div class="table-scroll"><table><thead><tr><th>Comunidad</th><th>Diferencia anual</th></tr></thead><tbody>` +
+      `<div class="table-scroll"><table><caption class="sr-only">Diferencia anual con ${state.comunidadRef}</caption><thead><tr><th>Comunidad</th><th>Diferencia anual</th></tr></thead><tbody>` +
       diffs.map(x=>`<tr class="${x.c===state.comunidadRef?'me':''}"><td>${x.c}</td><td><span class="pill ${x.d>=0?'good':'bad'}">${fmtSigned(x.d)}</span></td></tr>`).join('') +
       `</tbody></table></div>`;
   }
@@ -4832,7 +4848,7 @@ function renderResultados(){
   // vs average block
   const avgDiffs = okRows.map(r=>({c:r.community, d:r.annual-avg, rel:(r.annual-avg)/avg})).sort((a,b)=>b.d-a.d);
   document.getElementById('vsAvgBlock').innerHTML = `<p class="hint">Media de las 18: ${fmtEUR2(avg)}</p>` +
-    `<div class="table-scroll"><table><thead><tr><th>Comunidad</th><th>Diferencia</th><th>%</th></tr></thead><tbody>` +
+    `<div class="table-scroll"><table><caption class="sr-only">Diferencia con la media de las 18 comunidades</caption><thead><tr><th>Comunidad</th><th>Diferencia</th><th>%</th></tr></thead><tbody>` +
     avgDiffs.map(x=>{
       const tag = x.c===maxRow.community ? ' <span class="pill good">MÁX</span>' : (x.c===minRow.community ? ' <span class="pill bad">MÍN</span>' : '');
       return `<tr class="${x.c===state.comunidadRef?'me':''}"><td>${x.c}${tag}</td><td><span class="pill ${x.d>=0?'good':'bad'}">${fmtSigned(x.d)}</span></td><td>${fmtPct(x.rel)}</td></tr>`;
@@ -5050,7 +5066,7 @@ function renderNomina(){
     <div class="payslip-grid">
       <div>
         <h3 style="margin-bottom:8px;">Devengos (conceptos brutos mensuales)</h3>
-        <table class="payslip">
+        <table class="payslip"><caption class="sr-only">Devengos mensuales</caption>
           <thead><tr><th>Concepto</th><th>Importe</th></tr></thead>
           <tbody>
             ${itemsRows}
@@ -5060,7 +5076,7 @@ function renderNomina(){
       </div>
       <div>
         <h3 style="margin-bottom:8px;">Deducciones</h3>
-        <table class="payslip">
+        <table class="payslip"><caption class="sr-only">Deducciones</caption>
           <thead><tr><th>Concepto</th><th>Importe</th></tr></thead>
           <tbody>
             ${r.cuotasMuface ? `<tr class="deduction"><td>Cuotas MUFACE</td><td>${fmtEUR2(r.cuotasMuface)}</td></tr>` : ''}
@@ -5088,6 +5104,9 @@ function renderNomina(){
 // ratón podía activarlas (un <th> no recibe foco ni Enter/Espacio por defecto), y no anunciaban su
 // estado de orden. tabindex="0" en el HTML las hace alcanzables con Tab; aria-sort refleja columna y
 // dirección actuales para lectores de pantalla.
+// Id único para asociar cada <label> generado en Datos CCAA con su campo.
+function nextFieldId(){ nextFieldId.n = (nextFieldId.n || 0) + 1; return 'fld-' + nextFieldId.n; }
+
 function updateMainTableAriaSort(){
   document.querySelectorAll('#mainTable thead th[data-key]').forEach(th=>{
     th.setAttribute('aria-sort', th.dataset.key===sortKey ? (sortDir===1 ? 'ascending' : 'descending') : 'none');
@@ -5542,7 +5561,7 @@ function renderAnalisis(){
     <div class="card">
       <div class="section-title">
       <p>Pulsa una cabecera para ordenar.</p></div>
-      <div class="table-scroll"><table id="analisisTable">
+      <div class="table-scroll"><table id="analisisTable"><caption class="sr-only">Qué complementos paga cada comunidad</caption>
         <thead><tr>
           <th data-key="name" tabindex="0" aria-sort="${ariaSort('name')}">Comunidad${arrow('name')}</th>
           ${cols.map(c => `<th data-key="${c.key}" tabindex="0" aria-sort="${ariaSort(c.key)}">${c.headerLabel}<span class="col-meta">(${countTrue(c.key)}/18)${arrow(c.key)}</span></th>`).join('')}
@@ -5966,7 +5985,7 @@ function renderComparaNomina(){
       ${comparaPickerHtml}
       ${refColStyle}
       <div class="table-scroll">
-        <table id="comparaNominaTable" class="data-table">
+        <table id="comparaNominaTable" class="data-table"><caption class="sr-only">Nómina mensual por concepto en cada comunidad</caption>
           <thead><tr><th>Concepto</th>${headHtml}</tr></thead>
           <tbody>${rowsHtml}${extraHeaderRow}${extraRowsHtml}${totalBrutoRow}${annualRow}${gapRow}${retencionesHeaderRow}${deductionRowsHtml}${totalNetoRow}${totalNetoAnualRow}</tbody>
         </table>
@@ -6160,7 +6179,7 @@ function buildGenericPageHtml(){
     <div class="meta-row">
       <div><h3 style="margin-bottom:8px;">Datos genéricos (Ministerio de Educación)</h3></div>
       <div>
-        <label>Última actualización</label>
+        <label for="genericUpdatedInput">Última actualización</label>
         <input type="date" id="genericUpdatedInput" value="${GENERIC_META.updated || ''}">
       </div>
     </div>
@@ -6284,9 +6303,10 @@ function cargoTableHtml(name){
         const allSame = values.length > 0 && values.every(v => v === values[0]);
         const pc = provClass(name, 'cargoDirectivo', 0);
         if (allSame){
+          const fieldId = nextFieldId();
           return `<div class="flat-cargo-row" style="margin-bottom:8px; display:flex; align-items:center; gap:8px;">
-            <label style="font-size:.85rem; font-weight:600;">${cargo} (importe fijo, no depende del tamaño de centro):</label>
-            <input class="${pc}" type="number" step="0.01" value="${values[0]}"
+            <label for="${fieldId}" style="font-size:.85rem; font-weight:600;">${cargo} (importe fijo, no depende del tamaño de centro):</label>
+            <input id="${fieldId}" class="${pc}" type="number" step="0.01" value="${values[0]}"
               data-kind="cargo-flat" data-community="${name}" data-grupo="${grpsWithValue.join(',')}" data-cargo="${cargo}">
           </div>`;
         }
@@ -6294,9 +6314,10 @@ function cargoTableHtml(name){
         <div style="margin-bottom:6px; font-size:.85rem; font-weight:600;">${cargo} (importe fijo, no depende del tamaño de centro):</div>
         ${grpsWithValue.map(grp => {
           const v = table[grp]['A'][cargo];
+          const fieldId = nextFieldId();
           return `<div class="flat-cargo-row" style="margin:0 0 8px 12px; display:flex; align-items:center; gap:8px;">
-            <label style="font-size:.8rem;">${CARGO_GROUP_LABELS[grp]}:</label>
-            <input class="${pc}" type="number" step="0.01" value="${typeof v === 'number' ? v : 0}"
+            <label for="${fieldId}" style="font-size:.8rem;">${CARGO_GROUP_LABELS[grp]}:</label>
+            <input id="${fieldId}" class="${pc}" type="number" step="0.01" value="${typeof v === 'number' ? v : 0}"
               data-kind="cargo-flat" data-community="${name}" data-grupo="${grp}" data-cargo="${cargo}">
           </div>`;
         }).join('')}`;
@@ -6530,7 +6551,8 @@ function buildAdmin(){
       const type = isDate ? 'date' : (typeof v === 'number' ? 'number' : 'text');
       const step = type==='number' ? ' step="0.01"' : '';
       const hint = RULE_HINTS[k] ? ` title="${RULE_HINTS[k]}"` : '';
-      return `<div><label${hint}>${label}</label><input type="${type}"${step}${hint} data-community="${name}" data-kind="rule" data-rule="${k}" value="${v}"></div>`;
+      const fieldId = nextFieldId();
+      return `<div><label for="${fieldId}"${hint}>${label}</label><input id="${fieldId}" type="${type}"${step}${hint} data-community="${name}" data-kind="rule" data-rule="${k}" value="${v}"></div>`;
     }).join('') + `</div>` : `<p class="no-rules">${SPECIAL_NOTES[name] ? SPECIAL_NOTES[name] + ' ' : ''}No hay parámetros configurables especiales: solo cifras.</p>`;
 
     const updatedFlag = meta.updated ? meta.updated : '';
@@ -6683,7 +6705,7 @@ function buildAdmin(){
     return `<div class="admin-page community-card card" data-page="${slugifyCC(name)}" id="page-${slugifyCC(name)}">
       <h2 class="page-title">
         <span class="page-title-name">${name}</span>
-        <span class="page-title-date"><label>Última actualización</label><input type="date" data-community="${name}" data-kind="meta-updated" value="${updatedFlag}">${updatedWarn}</span>
+        <span class="page-title-date"><label for="updated-${slugifyCC(name)}">Última actualización</label><input type="date" id="updated-${slugifyCC(name)}" data-community="${name}" data-kind="meta-updated" value="${updatedFlag}">${updatedWarn}</span>
       </h2>
       <div class="body">
         <p class="community-intro">Esta ficha reúne las cifras que usa la calculadora para esta comunidad y sirve para comprobar que son correctas. Cada cifra lleva un marco de color según su origen, como explica la leyenda. Lo ideal es que todas queden sin marco, es decir, respaldadas por un documento oficial enlazado. Las que tienen marco son las que aún hay que respaldar con uno.</p>
